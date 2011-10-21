@@ -19,6 +19,11 @@
 #include "replayer.h"
 #include <stdio.h>
 
-int load(replay_workload* replay_wld, FILE* input_file);
+int
+load (replay_workload* replay_wld, FILE* input_file);
+
+int
+parse_line (replay_command *cmd, char* line);
+
 	 
 #endif /* _LOADER_H */

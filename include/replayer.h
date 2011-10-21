@@ -14,31 +14,35 @@
 #define _REPLAYER_H
 
 #define MAX_ARGS 5
-
-typedef struct timeval_s {
-  unsigned long secs;
-  unsigned long usecs;
-} timeval_t;
-
-typedef struct s_timeval_s {
-  long secs;
-  long usecs;
-} s_timeval_t;
+#define PROC_NAME_LEN 256 //FIXME TOO BIG. search for exec name in task structs
 
 typedef unsigned short op_t;
-	 
+
+#define ZEROTH_OP	0
+#define CLOSE_OP        (ZEROTH_OP + 1)
+#define MUNMAP_OP       (ZEROTH_OP + 2)
+
+//TODO: timestamps
+//TODO: actual returned value
 struct replay_command {
 	op_t command;
-	timeval_t time;
+	struct caller* caller;
 	int args[MAX_ARGS];
-	int ret;
 	int expected_retval;
 };
 
+struct caller {
+	unsigned int uid;
+	unsigned int pid;
+	unsigned int tid;
+	//char exec_name[PROC_NAME_LEN]	
+	char* exec_name;
+};
+
 struct replay_workload {
-        struct replay_command* srcmdp;
-        unsigned int cmd_num;
-        unsigned int cur_cmd;
+        struct replay_command* cmd;//FIXME think it should be a **
+        unsigned int num_cmds;
+        unsigned int current_cmd;
 };
 
 #endif /* _REPLAYER_H */

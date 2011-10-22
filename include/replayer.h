@@ -35,8 +35,7 @@ struct caller {
 	unsigned int uid;
 	unsigned int pid;
 	unsigned int tid;
-	//char exec_name[PROC_NAME_LEN]	
-	char* exec_name;
+//	char exec_name[PROC_NAME_LEN];
 };
 
 struct replay_workload {

@@ -52,10 +52,7 @@ load (replay_workload* replay_wld, FILE* input_file)
       if (tmp >= 0)
         {
 	  tmp = parse_line (replay_wld->cmd, line);
-	  if (tmp == 0)
-            {
-		loaded_commands += 1;
-            }
+	  loaded_commands += 1;
 	}
     }
   replay_wld->current_cmd = 0;
@@ -77,16 +74,10 @@ parse_line (replay_command* cmd, char* line)
   token = strtok (NULL, " ");
   cmd->caller->tid = atoi (token);
 
+  token = strtok (NULL, " ");//exec_name
   token = strtok (NULL, " ");
   op_t loaded_cmd = marker2operation (token);
-  if (loaded_cmd == NONE)
-    {
-      return UNKNOW_OP_ERROR;//free something ?
-    }
-  else
-    {
-    cmd->command = loaded_cmd;
-    }
-  cmd->caller->exec_name = "udisks-daemon";
-  return 0;
+  cmd->command = loaded_cmd;
+  return (loaded_cmd == NONE) ? UNKNOW_OP_ERROR : 0;
+//free something ?
 }

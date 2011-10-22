@@ -19,6 +19,23 @@
 #include <string.h>
 #include "loader.h"
 
+static struct lookuptab {
+	char *string;
+	int code;
+} tab[] = {
+	{"sys_close",	CLOSE_OP},
+	{"sys_munmap",	MUNMAP_OP},
+};
+
+int marker2operation (char *string)
+{
+  int i;
+  for(i = 0; i < sizeof(tab) / sizeof(tab[0]); i++)
+    if(strcmp(tab[i].string, string) == 0)
+      return tab[i].code;
+  return NONE;
+}
+
 int 
 load (replay_workload* replay_wld, FILE* input_file)
 {
@@ -46,12 +63,13 @@ load (replay_workload* replay_wld, FILE* input_file)
   return 0;
 }
 
+#define UNKNOW_OP_ERROR -2
+
 int
 parse_line (replay_command* cmd, char* line)
 {
-  cmd->command = CLOSE_OP;
   cmd->caller = (caller*) malloc (sizeof (caller));
-
+//ugly, eh !
   char* token = strtok (line, " ");
   cmd->caller->uid = atoi (token);
   token = strtok (NULL, " ");
@@ -59,10 +77,16 @@ parse_line (replay_command* cmd, char* line)
   token = strtok (NULL, " ");
   cmd->caller->tid = atoi (token);
 
-//  while (token != NULL)
-  //  {
-     // token = strtok (NULL, " ");
-    //}
+  token = strtok (NULL, " ");
+  op_t loaded_cmd = marker2operation (token);
+  if (loaded_cmd == NONE)
+    {
+      return UNKNOW_OP_ERROR;//free something ?
+    }
+  else
+    {
+    cmd->command = loaded_cmd;
+    }
   cmd->caller->exec_name = "udisks-daemon";
   return 0;
 }

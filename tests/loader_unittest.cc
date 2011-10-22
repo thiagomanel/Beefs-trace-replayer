@@ -17,15 +17,8 @@
 #include "gtest/gtest.h"
 #include <stdlib.h>
 
-#define MSG_ENTRY(M) { M, #M }
-struct msg_desc_t {
-        op_t msg_type;
-        char *str_type;
-};
 
 TEST(LoaderTest, EmptyInputFile) {
-    printf("%s\n", MSG_ENTRY(CLOSE_OP).str_type);
-
     struct replay_workload rep_wld;
     FILE * input_f = fopen("tests/empty_input", "r");
     int ret = load(&rep_wld, input_f);
@@ -48,13 +41,13 @@ TEST(LoaderTest, LoadCloseCall) {
     EXPECT_EQ(1, rep_wld->num_cmds);
     EXPECT_EQ(0, rep_wld->current_cmd);
 
-    struct replay_command* loaded_cmd = rep_wld->cmd;
-    EXPECT_EQ(CLOSE_OP, loaded_cmd->command);
-    struct caller* caller_id = loaded_cmd->caller;
-    EXPECT_EQ(0, caller_id->uid);
-    EXPECT_EQ(2097, caller_id->pid);
-    EXPECT_EQ(2097, caller_id->tid);
-    EXPECT_EQ(0, strcmp("udisks-daemon", caller_id->exec_name));
+    //struct replay_command* loaded_cmd = rep_wld->cmd;
+    //EXPECT_EQ(CLOSE_OP, loaded_cmd->command);
+    //struct caller* caller_id = loaded_cmd->caller;
+    //EXPECT_EQ(0, caller_id->uid);
+    //EXPECT_EQ(2097, caller_id->pid);
+    //EXPECT_EQ(2097, caller_id->tid);
+    //EXPECT_EQ(0, strcmp("udisks-daemon", caller_id->exec_name));
     fclose(input_f);
 }
 
@@ -70,10 +63,10 @@ TEST(LoaderTest, LoadMunmapCall) {
 
     struct replay_command* loaded_cmd = rep_wld->cmd;
     EXPECT_EQ(MUNMAP_OP, loaded_cmd->command);
-    struct caller* caller_id = loaded_cmd->caller;
-    EXPECT_EQ(0, caller_id->uid);
-    EXPECT_EQ(1102, caller_id->pid);
-    EXPECT_EQ(32513, caller_id->tid);
-    EXPECT_EQ(0, strcmp("automount", caller_id->exec_name));
+    //struct caller* caller_id = loaded_cmd->caller;
+    //EXPECT_EQ(0, caller_id->uid);
+    //EXPECT_EQ(1102, caller_id->pid);
+    //EXPECT_EQ(32513, caller_id->tid);
+    //EXPECT_EQ(0, strcmp("automount", caller_id->exec_name));
     fclose(input_f);
 }

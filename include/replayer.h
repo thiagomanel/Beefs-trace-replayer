@@ -18,9 +18,9 @@
 
 typedef unsigned short op_t;
 
-#define ZEROTH_OP	0
-#define CLOSE_OP        (ZEROTH_OP + 1)
-#define MUNMAP_OP       (ZEROTH_OP + 2)
+#define NONE		0
+#define CLOSE_OP        (NONE + 1)
+#define MUNMAP_OP       (CLOSE_OP + 1)
 
 //TODO: timestamps
 //TODO: actual returned value

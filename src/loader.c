@@ -35,6 +35,9 @@ static struct lookuptab {
 	{"readdir",	READDIR_OP},
 	{"unlink",	UNLINK_OP},
 	{"getattr",	GETATTR_OP},
+	{"open",	OPEN_OP},
+	{"dup2",	DUP2_OP},
+	{"dup3",	DUP3_OP},
 };
 
 int marker2operation (char *string)
@@ -87,10 +90,37 @@ parse_line (replay_command* cmd, char* line)
   token = strtok (NULL, " ");//exec_name
   token = strtok (NULL, " ");
   op_t loaded_cmd = marker2operation (token);
-  token = strtok (NULL, " ");//timestamp
-  token = strtok (NULL, " ");//arg
-  token = strtok (NULL, " ");
-  int exp_rvalue = atoi (token);
+  int exp_rvalue;
+  switch (loaded_cmd)
+    {
+      case OPEN_OP:
+        token = strtok (NULL, " ");//timestamp
+        token = strtok (NULL, " ");//fullpath
+        token = strtok (NULL, " ");//flag
+        token = strtok (NULL, " ");//mode
+        token = strtok (NULL, " ");
+        exp_rvalue = atoi (token);
+      break;
+      case DUP2_OP:
+        token = strtok (NULL, " ");//timestamp
+        token = strtok (NULL, " ");//oldfd
+        token = strtok (NULL, " ");//new_fd
+        token = strtok (NULL, " ");
+        exp_rvalue = atoi (token);
+        break;
+      case DUP3_OP:
+        token = strtok (NULL, " ");//timestamp
+        token = strtok (NULL, " ");//oldfd
+        token = strtok (NULL, " ");//new_fd
+        token = strtok (NULL, " ");
+        exp_rvalue = atoi (token);
+        break;/**/
+      default:
+        token = strtok (NULL, " ");//timestamp
+        token = strtok (NULL, " ");//arg
+        token = strtok (NULL, " ");
+        exp_rvalue = atoi (token);
+    }
   cmd->command = loaded_cmd;
   cmd->expected_retval = exp_rvalue;
   return (loaded_cmd == NONE) ? UNKNOW_OP_ERROR : 0;

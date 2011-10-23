@@ -31,6 +31,9 @@ typedef unsigned short op_t;
 #define READDIR_OP	(FSTATFS_OP + 1)
 #define UNLINK_OP	(READDIR_OP + 1)
 #define GETATTR_OP	(UNLINK_OP + 1)
+#define OPEN_OP		(GETATTR_OP + 1)
+#define DUP2_OP		(OPEN_OP + 1)
+#define DUP3_OP		(DUP2_OP + 1)
 
 //TODO: timestamps
 //TODO: actual returned value

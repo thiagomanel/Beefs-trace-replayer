@@ -271,3 +271,70 @@ TEST(LoaderTest, LoadGetattrCall) {
     EXPECT_EQ(1547, caller_id->tid);
     fclose(input_f);
 }
+
+//FIXME test problems when reading file input
+TEST(LoaderTest, LoadOpenCall) {
+	//TODO: args
+    //syscall.open
+    //uid pid tid exec_name open begin-elapsed fullpath flags mode return
+    //0 2097 2097 (udisks-daemon) open 1318539063003892-2505 /dev/sdb 34816 0 7
+    struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
+    FILE * input_f = fopen("tests/open_input", "r");
+    int ret = load(rep_wld, input_f);
+
+    EXPECT_EQ(0, ret);
+    EXPECT_EQ(1, rep_wld->num_cmds);
+    EXPECT_EQ(0, rep_wld->current_cmd);
+
+    struct replay_command* loaded_cmd = rep_wld->cmd;
+    EXPECT_EQ(OPEN_OP, loaded_cmd->command);
+    EXPECT_EQ(7, loaded_cmd->expected_retval);
+    struct caller* caller_id = loaded_cmd->caller;
+    EXPECT_EQ(0, caller_id->uid);
+    EXPECT_EQ(2097, caller_id->pid);
+    EXPECT_EQ(2097, caller_id->tid);
+    fclose(input_f);
+}
+
+TEST(LoaderTest, LoadDup2Call) {
+	//syscall.dup2
+	//uid pid tid exec_name dup2 begin-elapsed oldfd newfd return
+	//0 32544 32544 (sshd) dup2 1318539601707761-41 4 0 0
+    struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
+    FILE * input_f = fopen("tests/dup2_input", "r");
+    int ret = load(rep_wld, input_f);
+
+    EXPECT_EQ(0, ret);
+    EXPECT_EQ(1, rep_wld->num_cmds);
+    EXPECT_EQ(0, rep_wld->current_cmd);
+
+    struct replay_command* loaded_cmd = rep_wld->cmd;
+    EXPECT_EQ(DUP2_OP, loaded_cmd->command);
+    EXPECT_EQ(0, loaded_cmd->expected_retval);
+    struct caller* caller_id = loaded_cmd->caller;
+    EXPECT_EQ(0, caller_id->uid);
+    EXPECT_EQ(32544, caller_id->pid);
+    EXPECT_EQ(32544, caller_id->tid);
+    fclose(input_f);
+}
+TEST(LoaderTest, LoadDup3Call) {
+	//syscall.dup3
+	//uid pid tid exec_name dup3 begin-elapsed oldfd newfd return
+	//0 32544 32544 (sshd) dup3 1318539601707761-41 4 0 0
+    struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
+    FILE * input_f = fopen("tests/dup3_input", "r");
+    int ret = load(rep_wld, input_f);
+        
+    EXPECT_EQ(0, ret);
+    EXPECT_EQ(1, rep_wld->num_cmds);
+    EXPECT_EQ(0, rep_wld->current_cmd);
+
+    struct replay_command* loaded_cmd = rep_wld->cmd;
+    EXPECT_EQ(DUP3_OP, loaded_cmd->command);
+    EXPECT_EQ(0, loaded_cmd->expected_retval);
+    struct caller* caller_id = loaded_cmd->caller;
+    EXPECT_EQ(0, caller_id->uid);
+    EXPECT_EQ(32544, caller_id->pid);
+    EXPECT_EQ(32544, caller_id->tid);
+    fclose(input_f);
+}

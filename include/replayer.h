@@ -26,6 +26,8 @@ typedef unsigned short op_t;
 #define LSTAT_OP	(RMDIR_OP + 1)
 #define STAT_OP		(LSTAT_OP + 1)
 #define STATFS_OP	(STAT_OP + 1)
+#define DUP_OP		(STATFS_OP + 1)
+#define FSTATFS_OP	(DUP_OP + 1)
 
 //TODO: timestamps
 //TODO: actual returned value

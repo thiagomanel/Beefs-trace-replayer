@@ -161,3 +161,47 @@ TEST(LoaderTest, LoadStatfsCall) {
     EXPECT_EQ(2053, caller_id->tid);
     fclose(input_f);
 }
+
+TEST(LoaderTest, LoadDupCall) {
+    //syscall.dup
+    //uid pid tid exec_name dup begin-elapsed fd return
+    //0 32544 32544 (sshd) dup 1318539601707575-31 4 5
+    struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
+    FILE * input_f = fopen("tests/dup_input", "r");
+    int ret = load(rep_wld, input_f);
+
+    EXPECT_EQ(0, ret);
+    EXPECT_EQ(1, rep_wld->num_cmds);
+    EXPECT_EQ(0, rep_wld->current_cmd);
+
+    struct replay_command* loaded_cmd = rep_wld->cmd;
+    EXPECT_EQ(DUP_OP, loaded_cmd->command);
+    EXPECT_EQ(5, loaded_cmd->expected_retval);
+    struct caller* caller_id = loaded_cmd->caller;
+    EXPECT_EQ(0, caller_id->uid);
+    EXPECT_EQ(32544, caller_id->pid);
+    EXPECT_EQ(32544, caller_id->tid);
+    fclose(input_f);
+}
+
+TEST(LoaderTest, LoadFstatfsCall) {
+    //syscall.fstatfs
+    //uid pid tid exec_name fstatfs begin-elapsed fd return
+    //0 32544 32544 (sshd) fstatfs 1318539601707575-31 4 -1
+    struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
+    FILE * input_f = fopen("tests/fstatfs_input", "r");
+    int ret = load(rep_wld, input_f);
+
+    EXPECT_EQ(0, ret);
+    EXPECT_EQ(1, rep_wld->num_cmds);
+    EXPECT_EQ(0, rep_wld->current_cmd);
+
+    struct replay_command* loaded_cmd = rep_wld->cmd;
+    EXPECT_EQ(FSTATFS_OP, loaded_cmd->command);
+    EXPECT_EQ(-1, loaded_cmd->expected_retval);
+    struct caller* caller_id = loaded_cmd->caller;
+    EXPECT_EQ(0, caller_id->uid);
+    EXPECT_EQ(32544, caller_id->pid);
+    EXPECT_EQ(32544, caller_id->tid);
+    fclose(input_f);
+}

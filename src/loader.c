@@ -30,6 +30,8 @@ static struct lookuptab {
 	{"lstat",	LSTAT_OP},
 	{"stat",	STAT_OP},
 	{"statfs",	STATFS_OP},
+	{"dup",		DUP_OP},
+	{"fstatfs",	FSTATFS_OP},
 };
 
 int marker2operation (char *string)

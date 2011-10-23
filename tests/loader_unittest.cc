@@ -68,3 +68,46 @@ TEST(LoaderTest, LoadMunmapCall) {
     EXPECT_EQ(32513, caller_id->tid);
     fclose(input_f);
 }
+
+TEST(LoaderTest, LoadFstatCall) {
+	//syscall.fstat
+	//uid pid tid exec_name sys_fstat begin-elapsed fd return
+	//1159 2076 2194 (gnome-do) sys_fstat64 1318539073583678-143 23 0
+	//FIXME What if in other arch the calls name is not fstat64 ?
+    struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
+    FILE * input_f = fopen("tests/fstat_input", "r");
+    int ret = load(rep_wld, input_f);
+
+    EXPECT_EQ(0, ret);
+    EXPECT_EQ(1, rep_wld->num_cmds);
+    EXPECT_EQ(0, rep_wld->current_cmd);
+
+    struct replay_command* loaded_cmd = rep_wld->cmd;
+    EXPECT_EQ(FSTAT_OP, loaded_cmd->command);
+    struct caller* caller_id = loaded_cmd->caller;
+    EXPECT_EQ(1159, caller_id->uid);
+    EXPECT_EQ(2076, caller_id->pid);
+    EXPECT_EQ(2194, caller_id->tid);
+    fclose(input_f);
+}
+
+TEST(LoaderTest, LoadRmdirCall) {
+    //uid pid tid exec_name rmdir begin-elapsed fullpath return
+    //1159 2364 32311 (eclipse) rmdir 1318539134542480-46 /home/thiagoepdc/workspace_beefs/.metadata/.plugins/org.eclipse.jdt.ui/jdt-images 0
+
+    struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
+    FILE * input_f = fopen("tests/rmdir_input", "r");
+    int ret = load(rep_wld, input_f);
+
+    EXPECT_EQ(0, ret);
+    EXPECT_EQ(1, rep_wld->num_cmds);
+    EXPECT_EQ(0, rep_wld->current_cmd);
+
+    struct replay_command* loaded_cmd = rep_wld->cmd;
+    EXPECT_EQ(RMDIR_OP, loaded_cmd->command);
+    struct caller* caller_id = loaded_cmd->caller;
+    EXPECT_EQ(1159, caller_id->uid);
+    EXPECT_EQ(2364, caller_id->pid);
+    EXPECT_EQ(32311, caller_id->tid);
+    fclose(input_f);
+}

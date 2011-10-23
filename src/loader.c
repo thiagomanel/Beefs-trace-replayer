@@ -25,6 +25,8 @@ static struct lookuptab {
 } tab[] = {
 	{"sys_close",	CLOSE_OP},
 	{"sys_munmap",	MUNMAP_OP},
+	{"sys_fstat64",	FSTAT_OP},
+	{"rmdir",	RMDIR_OP},
 };
 
 int marker2operation (char *string)

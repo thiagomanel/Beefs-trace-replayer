@@ -226,3 +226,25 @@ TEST(LoaderTest, LoadReaddirCall) {
     EXPECT_EQ(2194, caller_id->tid);
     fclose(input_f);
 }
+
+TEST(LoaderTest, LoadUnlinkCall) {
+    //syscall.unlink
+    //uid pid tid exec_name sys_unlink begin-elapsed fullpath return
+    //1159 2364 32311 (eclipse) sys_unlink 1318539134533662-8118 /home/thiagoepdc/ /local/thiagoepdc/workspace_beefs/.metadata/.plugins/org.eclipse.jdt.ui/jdt-images/1.png 0
+    struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
+    FILE * input_f = fopen("tests/unlink_input", "r");
+    int ret = load(rep_wld, input_f);
+
+    EXPECT_EQ(0, ret);
+    EXPECT_EQ(1, rep_wld->num_cmds);
+    EXPECT_EQ(0, rep_wld->current_cmd);
+
+    struct replay_command* loaded_cmd = rep_wld->cmd;
+    EXPECT_EQ(UNLINK_OP, loaded_cmd->command);
+    EXPECT_EQ(0, loaded_cmd->expected_retval);
+    struct caller* caller_id = loaded_cmd->caller;
+    EXPECT_EQ(1159, caller_id->uid);
+    EXPECT_EQ(2364, caller_id->pid);
+    EXPECT_EQ(32311, caller_id->tid);
+    fclose(input_f);
+}

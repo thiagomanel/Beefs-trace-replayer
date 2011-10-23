@@ -33,6 +33,7 @@ static struct lookuptab {
 	{"dup",		DUP_OP},
 	{"fstatfs",	FSTATFS_OP},
 	{"readdir",	READDIR_OP},
+	{"unlink",	UNLINK_OP},
 };
 
 int marker2operation (char *string)

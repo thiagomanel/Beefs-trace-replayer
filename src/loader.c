@@ -29,6 +29,7 @@ static struct lookuptab {
 	{"rmdir",	RMDIR_OP},
 	{"lstat",	LSTAT_OP},
 	{"stat",	STAT_OP},
+	{"statfs",	STATFS_OP},
 };
 
 int marker2operation (char *string)

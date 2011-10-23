@@ -138,3 +138,26 @@ TEST(LoaderTest, LoadStatCall) {
     EXPECT_EQ(1163, caller_id->tid);
     fclose(input_f);
 }
+
+TEST(LoaderTest, LoadStatfsCall) {
+    //syscall.statfs
+    //uid pid tid exec_name statfs begin-elapsed cwd pathname return
+    //1159 2053 2053 (gnome-settings-) statfs 1318540136505344-287 /local/tracer/logs_nfs 0
+
+    struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
+    FILE * input_f = fopen("tests/statfs_input", "r");
+    int ret = load(rep_wld, input_f);
+
+    EXPECT_EQ(0, ret);
+    EXPECT_EQ(1, rep_wld->num_cmds);
+    EXPECT_EQ(0, rep_wld->current_cmd);
+
+    struct replay_command* loaded_cmd = rep_wld->cmd;
+    EXPECT_EQ(STATFS_OP, loaded_cmd->command);
+    EXPECT_EQ(0, loaded_cmd->expected_retval);
+    struct caller* caller_id = loaded_cmd->caller;
+    EXPECT_EQ(1159, caller_id->uid);
+    EXPECT_EQ(2053, caller_id->pid);
+    EXPECT_EQ(2053, caller_id->tid);
+    fclose(input_f);
+}

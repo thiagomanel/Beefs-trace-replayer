@@ -30,6 +30,7 @@ TEST(LoaderTest, EmptyInputFile) {
 
 //FIXME test args for the loaded syscalls
 //FIXME test timestamp for the loaded syscalls.
+//test for a misformatted op
 
 TEST(LoaderTest, LoadCloseCall) {
 //0 2097 2097 (udisks-daemon) close 1318539063006403-37 7 0
@@ -229,8 +230,8 @@ TEST(LoaderTest, LoadReaddirCall) {
 
 TEST(LoaderTest, LoadUnlinkCall) {
     //syscall.unlink
-    //uid pid tid exec_name sys_unlink begin-elapsed fullpath return
-    //1159 2364 32311 (eclipse) sys_unlink 1318539134533662-8118 /home/thiagoepdc/ /local/thiagoepdc/workspace_beefs/.metadata/.plugins/org.eclipse.jdt.ui/jdt-images/1.png 0
+    //uid pid tid exec_name unlink begin-elapsed fullpath return
+    //1159 2364 32311 (eclipse) unlink 1318539134533662-8118 /local/thiagoepdc/workspace_beefs/.metadata/.plugins/org.eclipse.jdt.ui/jdt-images/1.png 0
     struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
     FILE * input_f = fopen("tests/unlink_input", "r");
     int ret = load(rep_wld, input_f);
@@ -246,5 +247,27 @@ TEST(LoaderTest, LoadUnlinkCall) {
     EXPECT_EQ(1159, caller_id->uid);
     EXPECT_EQ(2364, caller_id->pid);
     EXPECT_EQ(32311, caller_id->tid);
+    fclose(input_f);
+}
+
+TEST(LoaderTest, LoadGetattrCall) {
+    //getattr
+    //uid pid tid exec_name getattr begin-elapsed fullpath return
+    //0 1547 1547 (puppet) getattr 1318539062631232-30 /etc/puppet/puppet.conf 0
+    struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
+    FILE * input_f = fopen("tests/getattr_input", "r");
+    int ret = load(rep_wld, input_f);
+
+    EXPECT_EQ(0, ret);
+    EXPECT_EQ(1, rep_wld->num_cmds);
+    EXPECT_EQ(0, rep_wld->current_cmd);
+
+    struct replay_command* loaded_cmd = rep_wld->cmd;
+    EXPECT_EQ(GETATTR_OP, loaded_cmd->command);
+    EXPECT_EQ(0, loaded_cmd->expected_retval);
+    struct caller* caller_id = loaded_cmd->caller;
+    EXPECT_EQ(0, caller_id->uid);
+    EXPECT_EQ(1547, caller_id->pid);
+    EXPECT_EQ(1547, caller_id->tid);
     fclose(input_f);
 }

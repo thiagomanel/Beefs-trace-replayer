@@ -205,3 +205,24 @@ TEST(LoaderTest, LoadFstatfsCall) {
     EXPECT_EQ(32544, caller_id->tid);
     fclose(input_f);
 }
+
+TEST(LoaderTest, LoadReaddirCall) {
+    //uid pid tid exec_name readdir begin-elapsed fullpath return
+    //1159 2076 2194 (gnome-do) readdir 1318539555798359-27 /usr/share/applications/ 0
+    struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
+    FILE * input_f = fopen("tests/readdir_input", "r");
+    int ret = load(rep_wld, input_f);
+
+    EXPECT_EQ(0, ret);
+    EXPECT_EQ(1, rep_wld->num_cmds);
+    EXPECT_EQ(0, rep_wld->current_cmd);
+
+    struct replay_command* loaded_cmd = rep_wld->cmd;
+    EXPECT_EQ(READDIR_OP, loaded_cmd->command);
+    EXPECT_EQ(0, loaded_cmd->expected_retval);
+    struct caller* caller_id = loaded_cmd->caller;
+    EXPECT_EQ(1159, caller_id->uid);
+    EXPECT_EQ(2076, caller_id->pid);
+    EXPECT_EQ(2194, caller_id->tid);
+    fclose(input_f);
+}

@@ -32,7 +32,7 @@ TEST(LoaderTest, EmptyInputFile) {
 //FIXME test timestamp for the loaded syscalls.
 
 TEST(LoaderTest, LoadCloseCall) {
-//0 2097 2097 (udisks-daemon) sys_close 1318539063006403-37 7 0
+//0 2097 2097 (udisks-daemon) close 1318539063006403-37 7 0
     struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
     FILE * input_f = fopen("tests/close_input", "r");
     int ret = load(rep_wld, input_f);
@@ -53,8 +53,8 @@ TEST(LoaderTest, LoadCloseCall) {
 
 TEST(LoaderTest, LoadFstatCall) {
 	//syscall.fstat
-	//uid pid tid exec_name sys_fstat begin-elapsed fd return
-	//1159 2076 2194 (gnome-do) sys_fstat64 1318539073583678-143 23 0
+	//uid pid tid exec_name fstat begin-elapsed fd return
+	//1159 2076 2194 (gnome-do) fstat 1318539073583678-143 23 0
 	//FIXME What if in other arch the calls name is not fstat64 ?
     struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
     FILE * input_f = fopen("tests/fstat_input", "r");
@@ -93,5 +93,48 @@ TEST(LoaderTest, LoadRmdirCall) {
     EXPECT_EQ(1159, caller_id->uid);
     EXPECT_EQ(2364, caller_id->pid);
     EXPECT_EQ(32311, caller_id->tid);
+    fclose(input_f);
+}
+
+TEST(LoaderTest, LoadLstatCall) {
+//uid pid tid exec_name lstat begin-elapsed cwd filename return
+//1159 2076 2194 (gnome-do) lstat 1318539555812393-87 /usr/share/applications/gnome-sudoku.desktop 0
+    struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
+    FILE * input_f = fopen("tests/lstat_input", "r");
+    int ret = load(rep_wld, input_f);
+
+    EXPECT_EQ(0, ret);
+    EXPECT_EQ(1, rep_wld->num_cmds);
+    EXPECT_EQ(0, rep_wld->current_cmd);
+
+    struct replay_command* loaded_cmd = rep_wld->cmd;
+    EXPECT_EQ(LSTAT_OP, loaded_cmd->command);
+    EXPECT_EQ(0, loaded_cmd->expected_retval);
+    struct caller* caller_id = loaded_cmd->caller;
+    EXPECT_EQ(1159, caller_id->uid);
+    EXPECT_EQ(2076, caller_id->pid);
+    EXPECT_EQ(2194, caller_id->tid);
+    fclose(input_f);
+}
+
+TEST(LoaderTest, LoadStatCall) {
+    //syscall.stat
+    //uid pid tid exec_name stat begin-elapsed fullpath return
+    //0 1163 1163 (cron) stat 1317750601526436-18178 /var/spool/cron/crontabs 0
+    struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
+    FILE * input_f = fopen("tests/stat_input", "r");
+    int ret = load(rep_wld, input_f);
+
+    EXPECT_EQ(0, ret);
+    EXPECT_EQ(1, rep_wld->num_cmds);
+    EXPECT_EQ(0, rep_wld->current_cmd);
+
+    struct replay_command* loaded_cmd = rep_wld->cmd;
+    EXPECT_EQ(STAT_OP, loaded_cmd->command);
+    EXPECT_EQ(0, loaded_cmd->expected_retval);
+    struct caller* caller_id = loaded_cmd->caller;
+    EXPECT_EQ(0, caller_id->uid);
+    EXPECT_EQ(1163, caller_id->pid);
+    EXPECT_EQ(1163, caller_id->tid);
     fclose(input_f);
 }

@@ -23,6 +23,8 @@ typedef unsigned short op_t;
 #define MUNMAP_OP       (CLOSE_OP + 1)
 #define FSTAT_OP	(MUNMAP_OP + 1)
 #define RMDIR_OP	(FSTAT_OP + 1)
+#define LSTAT_OP	(RMDIR_OP + 1)
+#define STAT_OP		(LSTAT_OP + 1)
 
 //TODO: timestamps
 //TODO: actual returned value

@@ -55,6 +55,7 @@ static struct lookuptab {
 	{"fremovexattr",	FREMOVEXATTR_OP},
 	{"fsetxattr",	FSETXATTR_OP},
 	{"flistxattr",	FLISTXATTR_OP},
+	{"lsetxattr",	LSETXATTR_OP},
 
 };
 
@@ -179,6 +180,15 @@ parse_line (replay_command* cmd, char* line)
         token = strtok (NULL, " ");//
         exp_rvalue = atoi (token);
 	break;
+      case LSETXATTR_OP:
+        token = strtok (NULL, " ");//timestamp
+        token = strtok (NULL, " ");//fullpath
+        token = strtok (NULL, " ");//name
+        token = strtok (NULL, " ");//value
+        token = strtok (NULL, " ");//flag
+        token = strtok (NULL, " ");//
+        exp_rvalue = atoi (token);
+        break;
       default://FIXME we need a case to NONE_OP, test it
         token = strtok (NULL, " ");//timestamp
         token = strtok (NULL, " ");//arg

@@ -38,6 +38,7 @@ typedef unsigned short op_t;
 #define WRITE_OP	(DUP3_OP + 1)
 #define READ_OP		(WRITE_OP + 1)
 #define LLSEEK_OP	(READ_OP + 1)
+#define MKDIR_OP	(LLSEEK_OP + 1)
 
 //TODO: timestamps
 //TODO: actual returned value

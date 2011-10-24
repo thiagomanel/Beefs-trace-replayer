@@ -404,3 +404,26 @@ TEST(LoaderTest, LoadLLseekCall) {
     EXPECT_EQ(2364, caller_id->tid);
     fclose(input_f);
 }
+
+TEST(LoaderTest, LoadMkdirCall) {
+
+//syscall.mkdir
+//uid pid tid exec_name mkdir begin-elapsed fulpath mode return
+//1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /local/thiagoepdc/workspace_beefs/.metadata/.plugins/org.eclipse.jdt.ui/jdt-images 511 0
+    struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
+    FILE * input_f = fopen("tests/mkdir_input", "r");
+    int ret = load(rep_wld, input_f);
+
+    EXPECT_EQ(0, ret);
+    EXPECT_EQ(1, rep_wld->num_cmds);
+    EXPECT_EQ(0, rep_wld->current_cmd);
+
+    struct replay_command* loaded_cmd = rep_wld->cmd;
+    EXPECT_EQ(MKDIR_OP, loaded_cmd->command);
+    EXPECT_EQ(0, loaded_cmd->expected_retval);
+    struct caller* caller_id = loaded_cmd->caller;
+    EXPECT_EQ(1159, caller_id->uid);
+    EXPECT_EQ(2364, caller_id->pid);
+    EXPECT_EQ(32311, caller_id->tid);
+    fclose(input_f);
+}

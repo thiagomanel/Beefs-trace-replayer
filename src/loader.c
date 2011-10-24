@@ -41,6 +41,7 @@ static struct lookuptab {
 	{"write",	WRITE_OP},
 	{"read",	READ_OP},
 	{"llseek",	LLSEEK_OP},
+	{"mkdir",	MKDIR_OP},
 };
 
 int marker2operation (char *string)
@@ -131,6 +132,13 @@ parse_line (replay_command* cmd, char* line)
         token = strtok (NULL, " ");
         exp_rvalue = atoi (token);
       break;
+      case MKDIR_OP:
+        token = strtok (NULL, " ");//timestamp
+        token = strtok (NULL, " ");//fullpath
+        token = strtok (NULL, " ");//mode
+        token = strtok (NULL, " ");
+        exp_rvalue = atoi (token);
+	break;
       default:
         token = strtok (NULL, " ");//timestamp
         token = strtok (NULL, " ");//arg

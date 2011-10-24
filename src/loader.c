@@ -44,6 +44,7 @@ static struct lookuptab {
 	{"mkdir",	MKDIR_OP},
 	{"mknod",	MKNOD_OP},
 	{"symlink",	SYMLINK_OP},
+	{"readlink",	READLINK_OP},
 };
 
 int marker2operation (char *string)

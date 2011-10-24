@@ -48,6 +48,11 @@ typedef unsigned short op_t;
 #define LISTXATTR_OP	(SETXATTR_OP + 1)
 #define LREMOVEXATTR_OP	(LISTXATTR_OP + 1)
 #define LLISTXATTR_OP	(LREMOVEXATTR_OP + 1)
+#define FGETXATTR_OP	(LLISTXATTR_OP + 1)
+#define FREMOVEXATTR_OP (FGETXATTR_OP + 1)
+#define FSETXATTR_OP (FREMOVEXATTR_OP + 1)
+#define FLISTXATTR_OP (FSETXATTR_OP + 1)
+#define LSETXATTR_OP (FLISTXATTR_OP + 1)
 
 //TODO: timestamps
 //TODO: actual returned value

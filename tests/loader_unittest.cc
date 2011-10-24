@@ -406,7 +406,6 @@ TEST(LoaderTest, LoadLLseekCall) {
 }
 
 TEST(LoaderTest, LoadMkdirCall) {
-
 //syscall.mkdir
 //uid pid tid exec_name mkdir begin-elapsed fulpath mode return
 //1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /local/thiagoepdc/workspace_beefs/.metadata/.plugins/org.eclipse.jdt.ui/jdt-images 511 0
@@ -425,5 +424,28 @@ TEST(LoaderTest, LoadMkdirCall) {
     EXPECT_EQ(1159, caller_id->uid);
     EXPECT_EQ(2364, caller_id->pid);
     EXPECT_EQ(32311, caller_id->tid);
+    fclose(input_f);
+}
+
+TEST(LoaderTest, LoadMknodCall) {
+//mknod
+//uid pid tid exec_name mknod begin-elapsed fullpath mode dev return
+//1159 11407 11407 (gconftool-2) mknod 1319207649254700-14 /home/thiagoepdc/orbit-thiagoepdc/linc-2c8f-0-69f0eff3e2d5 S_IFSOCK|S_IXOTH|S_IROTH|S_IXGRP|S_IRGRP|S_IRWXU 0 0
+//TODO: we need to convert mode from string to a number type
+    struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
+    FILE * input_f = fopen("tests/mknod_input", "r");
+    int ret = load(rep_wld, input_f);
+
+    EXPECT_EQ(0, ret);
+    EXPECT_EQ(1, rep_wld->num_cmds);
+    EXPECT_EQ(0, rep_wld->current_cmd);
+
+    struct replay_command* loaded_cmd = rep_wld->cmd;
+    EXPECT_EQ(MKNOD_OP, loaded_cmd->command);
+    EXPECT_EQ(0, loaded_cmd->expected_retval);
+    struct caller* caller_id = loaded_cmd->caller;
+    EXPECT_EQ(1159, caller_id->uid);
+    EXPECT_EQ(11407, caller_id->pid);
+    EXPECT_EQ(11407, caller_id->tid);
     fclose(input_f);
 }

@@ -42,6 +42,7 @@ static struct lookuptab {
 	{"read",	READ_OP},
 	{"llseek",	LLSEEK_OP},
 	{"mkdir",	MKDIR_OP},
+	{"mknod",	MKNOD_OP},
 };
 
 int marker2operation (char *string)
@@ -139,7 +140,15 @@ parse_line (replay_command* cmd, char* line)
         token = strtok (NULL, " ");
         exp_rvalue = atoi (token);
 	break;
-      default:
+      case MKNOD_OP:
+        token = strtok (NULL, " ");//timestamp
+        token = strtok (NULL, " ");//fullpath
+        token = strtok (NULL, " ");//mode
+        token = strtok (NULL, " ");//dev
+        token = strtok (NULL, " ");//
+        exp_rvalue = atoi (token);
+	break;
+      default://FIXME we need a case to NONE_OP, test it
         token = strtok (NULL, " ");//timestamp
         token = strtok (NULL, " ");//arg
         token = strtok (NULL, " ");

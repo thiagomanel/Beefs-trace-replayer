@@ -40,6 +40,7 @@ typedef unsigned short op_t;
 #define LLSEEK_OP	(READ_OP + 1)
 #define MKDIR_OP	(LLSEEK_OP + 1)
 #define MKNOD_OP	(MKDIR_OP + 1)
+#define SYMLINK_OP	(MKNOD_OP + 1)
 
 //TODO: timestamps
 //TODO: actual returned value

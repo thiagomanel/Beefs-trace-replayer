@@ -43,6 +43,7 @@ static struct lookuptab {
 	{"llseek",	LLSEEK_OP},
 	{"mkdir",	MKDIR_OP},
 	{"mknod",	MKNOD_OP},
+	{"symlink",	SYMLINK_OP},
 };
 
 int marker2operation (char *string)
@@ -145,6 +146,13 @@ parse_line (replay_command* cmd, char* line)
         token = strtok (NULL, " ");//fullpath
         token = strtok (NULL, " ");//mode
         token = strtok (NULL, " ");//dev
+        token = strtok (NULL, " ");//
+        exp_rvalue = atoi (token);
+	break;
+      case SYMLINK_OP:
+        token = strtok (NULL, " ");//timestamp
+        token = strtok (NULL, " ");//fullpath_old_name
+        token = strtok (NULL, " ");//fullpath_new_name
         token = strtok (NULL, " ");//
         exp_rvalue = atoi (token);
 	break;

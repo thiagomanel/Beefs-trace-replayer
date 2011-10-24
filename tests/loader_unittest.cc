@@ -449,3 +449,25 @@ TEST(LoaderTest, LoadMknodCall) {
     EXPECT_EQ(11407, caller_id->tid);
     fclose(input_f);
 }
+
+TEST(LoaderTest, LoadSymlink) {
+//syscall.symlink
+//uid pid tid exec_name symlink begin-elapsed  oldname newname return
+//0 603 603 (update-rc.d) symlink 1318540206298997-36 /etc/rcS.d/../init.d/puppet /etc/rc0.d/K20puppet 0
+    struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
+    FILE * input_f = fopen("tests/symlink_input", "r");
+    int ret = load(rep_wld, input_f);
+
+    EXPECT_EQ(0, ret);
+    EXPECT_EQ(1, rep_wld->num_cmds);
+    EXPECT_EQ(0, rep_wld->current_cmd);
+
+    struct replay_command* loaded_cmd = rep_wld->cmd;
+    EXPECT_EQ(SYMLINK_OP, loaded_cmd->command);
+    EXPECT_EQ(0, loaded_cmd->expected_retval);
+    struct caller* caller_id = loaded_cmd->caller;
+    EXPECT_EQ(0, caller_id->uid);
+    EXPECT_EQ(603, caller_id->pid);
+    EXPECT_EQ(603, caller_id->tid);
+    fclose(input_f);
+}

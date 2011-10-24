@@ -338,3 +338,47 @@ TEST(LoaderTest, LoadDup3Call) {
     EXPECT_EQ(32544, caller_id->tid);
     fclose(input_f);
 }
+
+TEST(LoaderTest, LoadWriteCall) {
+	//syscall.write
+	//uid pid tid exec_name write begin-elapsed root pwd fullpath fd count return
+	//0 6194 6194 (xprintidle) write 1318539063058255-131 /local/userActivityTracker/logs/tracker.log 1 17 17
+    struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
+    FILE * input_f = fopen("tests/write_input", "r");
+    int ret = load(rep_wld, input_f);
+
+    EXPECT_EQ(0, ret);
+    EXPECT_EQ(1, rep_wld->num_cmds);
+    EXPECT_EQ(0, rep_wld->current_cmd);
+
+    struct replay_command* loaded_cmd = rep_wld->cmd;
+    EXPECT_EQ(WRITE_OP, loaded_cmd->command);
+    EXPECT_EQ(17, loaded_cmd->expected_retval);
+    struct caller* caller_id = loaded_cmd->caller;
+    EXPECT_EQ(0, caller_id->uid);
+    EXPECT_EQ(6194, caller_id->pid);
+    EXPECT_EQ(6194, caller_id->tid);
+    fclose(input_f);
+}
+
+TEST(LoaderTest, LoadReadCall) {
+	//syscall.read
+	//uid pid tid exec_name read begin-elapsed fullpath fd count return
+	//114 1562 1562 (snmpd) read 1318539063447564-329 /proc/stat 8 3072 2971
+    struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
+    FILE * input_f = fopen("tests/read_input", "r");
+    int ret = load(rep_wld, input_f);
+
+    EXPECT_EQ(0, ret);
+    EXPECT_EQ(1, rep_wld->num_cmds);
+    EXPECT_EQ(0, rep_wld->current_cmd);
+
+    struct replay_command* loaded_cmd = rep_wld->cmd;
+    EXPECT_EQ(READ_OP, loaded_cmd->command);
+    EXPECT_EQ(2971, loaded_cmd->expected_retval);
+    struct caller* caller_id = loaded_cmd->caller;
+    EXPECT_EQ(114, caller_id->uid);
+    EXPECT_EQ(1562, caller_id->pid);
+    EXPECT_EQ(1562, caller_id->tid);
+    fclose(input_f);
+}

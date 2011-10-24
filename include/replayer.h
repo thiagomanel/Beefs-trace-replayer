@@ -34,6 +34,9 @@ typedef unsigned short op_t;
 #define OPEN_OP		(GETATTR_OP + 1)
 #define DUP2_OP		(OPEN_OP + 1)
 #define DUP3_OP		(DUP2_OP + 1)
+#define DUP3_OP		(DUP2_OP + 1)
+#define WRITE_OP	(DUP3_OP + 1)
+#define READ_OP		(WRITE_OP + 1)
 
 //TODO: timestamps
 //TODO: actual returned value

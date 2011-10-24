@@ -51,6 +51,11 @@ static struct lookuptab {
 	{"listxattr",	LISTXATTR_OP},
 	{"lremovexattr",LREMOVEXATTR_OP},
 	{"llistxattr",	LLISTXATTR_OP},
+	{"fgetxattr",	FGETXATTR_OP},
+	{"fremovexattr",	FREMOVEXATTR_OP},
+	{"fsetxattr",	FSETXATTR_OP},
+	{"flistxattr",	FLISTXATTR_OP},
+
 };
 
 int marker2operation (char *string)

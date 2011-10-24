@@ -40,6 +40,7 @@ static struct lookuptab {
 	{"dup3",	DUP3_OP},
 	{"write",	WRITE_OP},
 	{"read",	READ_OP},
+	{"llseek",	LLSEEK_OP},
 };
 
 int marker2operation (char *string)
@@ -117,6 +118,16 @@ parse_line (replay_command* cmd, char* line)
         token = strtok (NULL, " ");//fullpath
         token = strtok (NULL, " ");//fd
         token = strtok (NULL, " ");//count
+        token = strtok (NULL, " ");
+        exp_rvalue = atoi (token);
+      break;
+      case LLSEEK_OP://TODO: write and read have the same token sequence than open
+        token = strtok (NULL, " ");//timestamp
+        token = strtok (NULL, " ");//fullpath
+        token = strtok (NULL, " ");//fd
+        token = strtok (NULL, " ");//offset_high
+        token = strtok (NULL, " ");//offset_low
+        token = strtok (NULL, " ");//whence_str
         token = strtok (NULL, " ");
         exp_rvalue = atoi (token);
       break;

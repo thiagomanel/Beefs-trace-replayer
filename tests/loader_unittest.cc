@@ -382,3 +382,25 @@ TEST(LoaderTest, LoadReadCall) {
     EXPECT_EQ(1562, caller_id->tid);
     fclose(input_f);
 }
+
+TEST(LoaderTest, LoadLLseekCall) {
+//syscall.llseek
+//uid pid tid exec_name llseek begin-elapsed fullpath fd offset_high offset_low whence_str $result
+//1159 2364 2364 (eclipse) llseek 1318539072857083-113 /local/thiagoepdc/eclipse/configuration/org.eclipse.core.runtime/.mainData.4 30 0 931001 SEEK_SET 931001
+    struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
+    FILE * input_f = fopen("tests/llseek_input", "r");
+    int ret = load(rep_wld, input_f);
+
+    EXPECT_EQ(0, ret);
+    EXPECT_EQ(1, rep_wld->num_cmds);
+    EXPECT_EQ(0, rep_wld->current_cmd);
+
+    struct replay_command* loaded_cmd = rep_wld->cmd;
+    EXPECT_EQ(LLSEEK_OP, loaded_cmd->command);
+    EXPECT_EQ(931001, loaded_cmd->expected_retval);
+    struct caller* caller_id = loaded_cmd->caller;
+    EXPECT_EQ(1159, caller_id->uid);
+    EXPECT_EQ(2364, caller_id->pid);
+    EXPECT_EQ(2364, caller_id->tid);
+    fclose(input_f);
+}

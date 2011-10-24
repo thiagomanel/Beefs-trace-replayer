@@ -45,6 +45,12 @@ static struct lookuptab {
 	{"mknod",	MKNOD_OP},
 	{"symlink",	SYMLINK_OP},
 	{"readlink",	READLINK_OP},
+	{"getxattr",	GETXATTR_OP},
+	{"removexattr",	REMOVEXATTR_OP},
+	{"setxattr",	SETXATTR_OP},
+	{"listxattr",	LISTXATTR_OP},
+	{"lremovexattr",LREMOVEXATTR_OP},
+	{"llistxattr",	LLISTXATTR_OP},
 };
 
 int marker2operation (char *string)
@@ -154,6 +160,17 @@ parse_line (replay_command* cmd, char* line)
         token = strtok (NULL, " ");//timestamp
         token = strtok (NULL, " ");//fullpath_old_name
         token = strtok (NULL, " ");//fullpath_new_name
+        token = strtok (NULL, " ");//
+        exp_rvalue = atoi (token);
+	break;
+      case GETXATTR_OP:
+      case REMOVEXATTR_OP:
+      case SETXATTR_OP:
+      case LISTXATTR_OP:
+      case LREMOVEXATTR_OP:
+      case LLISTXATTR_OP:
+        token = strtok (NULL, " ");//timestamp
+        token = strtok (NULL, " ");//fullpath
         token = strtok (NULL, " ");//
         exp_rvalue = atoi (token);
 	break;

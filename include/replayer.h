@@ -42,6 +42,12 @@ typedef unsigned short op_t;
 #define MKNOD_OP	(MKDIR_OP + 1)
 #define SYMLINK_OP	(MKNOD_OP + 1)
 #define READLINK_OP	(SYMLINK_OP + 1)
+#define GETXATTR_OP	(READLINK_OP + 1)
+#define REMOVEXATTR_OP	(GETXATTR_OP + 1)
+#define SETXATTR_OP	(REMOVEXATTR_OP + 1)
+#define LISTXATTR_OP	(SETXATTR_OP + 1)
+#define LREMOVEXATTR_OP	(LISTXATTR_OP + 1)
+#define LLISTXATTR_OP	(LREMOVEXATTR_OP + 1)
 
 //TODO: timestamps
 //TODO: actual returned value

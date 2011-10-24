@@ -493,3 +493,137 @@ TEST(LoaderTest, LoadReadlink) {
     EXPECT_EQ(2092, caller_id->tid);
     fclose(input_f);
 }
+
+//Note xattr calls will be called as fake
+TEST(LoaderTest, LoadGetxattr) {
+//getxattr
+//uid pid tid exec_name getxattr begin-elapsed fullpath return
+//1159 32362 32362 (ls) getxattr 1318539209608557-21 /tmp/0014b4e97285d -95
+    struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
+    FILE * input_f = fopen("tests/getxattr_input", "r");
+    int ret = load(rep_wld, input_f);
+
+    EXPECT_EQ(0, ret);
+    EXPECT_EQ(1, rep_wld->num_cmds);
+    EXPECT_EQ(0, rep_wld->current_cmd);
+
+    struct replay_command* loaded_cmd = rep_wld->cmd;
+    EXPECT_EQ(GETXATTR_OP, loaded_cmd->command);
+    EXPECT_EQ(-95, loaded_cmd->expected_retval);
+    struct caller* caller_id = loaded_cmd->caller;
+    EXPECT_EQ(1159, caller_id->uid);
+    EXPECT_EQ(32362, caller_id->pid);
+    EXPECT_EQ(32362, caller_id->tid);
+    fclose(input_f);
+}
+
+TEST(LoaderTest, LoadRemovexattr) {
+//syscall.removexattr
+//uid pid tid exec_name removexattr begin-elapsed fullpath return
+//1159 32362 32362 (ls) removexattr 1318539209608557-21 /tmp/0014b4e97285d 0
+    struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
+    FILE * input_f = fopen("tests/removexattr_input", "r");
+    int ret = load(rep_wld, input_f);
+
+    EXPECT_EQ(0, ret);
+    EXPECT_EQ(1, rep_wld->num_cmds);
+    EXPECT_EQ(0, rep_wld->current_cmd);
+
+    struct replay_command* loaded_cmd = rep_wld->cmd;
+    EXPECT_EQ(REMOVEXATTR_OP, loaded_cmd->command);
+    EXPECT_EQ(0, loaded_cmd->expected_retval);
+    struct caller* caller_id = loaded_cmd->caller;
+    EXPECT_EQ(1159, caller_id->uid);
+    EXPECT_EQ(32362, caller_id->pid);
+    EXPECT_EQ(32362, caller_id->tid);
+    fclose(input_f);
+}
+
+TEST(LoaderTest, LoadSetxattr) {
+//syscall.setxattr
+//uid pid tid exec_name setxattr begin-elapsed fullpath return
+//1159 32362 32362 (ls) setxattr 1318539209608557-21 /tmp/0014b4e97285d -3
+    struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
+    FILE * input_f = fopen("tests/setxattr_input", "r");
+    int ret = load(rep_wld, input_f);
+
+    EXPECT_EQ(0, ret);
+    EXPECT_EQ(1, rep_wld->num_cmds);
+    EXPECT_EQ(0, rep_wld->current_cmd);
+
+    struct replay_command* loaded_cmd = rep_wld->cmd;
+    EXPECT_EQ(SETXATTR_OP, loaded_cmd->command);
+    EXPECT_EQ(-3, loaded_cmd->expected_retval);
+    struct caller* caller_id = loaded_cmd->caller;
+    EXPECT_EQ(1159, caller_id->uid);
+    EXPECT_EQ(32362, caller_id->pid);
+    EXPECT_EQ(32362, caller_id->tid);
+    fclose(input_f);
+}
+
+TEST(LoaderTest, LoadListxattr) {
+//syscall.listxattr
+//uid pid tid exec_name listxattr begin-elapsed fullpath return
+//1159 32362 32362 (ls) listxattr 1318539209608557-21 /tmp/0014b4e97285d 0
+    struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
+    FILE * input_f = fopen("tests/listxattr_input", "r");
+    int ret = load(rep_wld, input_f);
+
+    EXPECT_EQ(0, ret);
+    EXPECT_EQ(1, rep_wld->num_cmds);
+    EXPECT_EQ(0, rep_wld->current_cmd);
+
+    struct replay_command* loaded_cmd = rep_wld->cmd;
+    EXPECT_EQ(LISTXATTR_OP, loaded_cmd->command);
+    EXPECT_EQ(0, loaded_cmd->expected_retval);
+    struct caller* caller_id = loaded_cmd->caller;
+    EXPECT_EQ(1159, caller_id->uid);
+    EXPECT_EQ(32362, caller_id->pid);
+    EXPECT_EQ(32362, caller_id->tid);
+    fclose(input_f);
+}
+
+TEST(LoaderTest, LoadLremovexattr) {
+//syscall.lremovexattr
+//uid pid tid exec_name lremovexattr begin-elapsed fulpath return
+//1159 32362 32362 (ls) lremovexattr 1318539209608557-21 /tmp/0014b4e97285d -1
+
+    struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
+    FILE * input_f = fopen("tests/lremovexattr_input", "r");
+    int ret = load(rep_wld, input_f);
+
+    EXPECT_EQ(0, ret);
+    EXPECT_EQ(1, rep_wld->num_cmds);
+    EXPECT_EQ(0, rep_wld->current_cmd);
+
+    struct replay_command* loaded_cmd = rep_wld->cmd;
+    EXPECT_EQ(LREMOVEXATTR_OP, loaded_cmd->command);
+    EXPECT_EQ(-1, loaded_cmd->expected_retval);
+    struct caller* caller_id = loaded_cmd->caller;
+    EXPECT_EQ(1159, caller_id->uid);
+    EXPECT_EQ(32362, caller_id->pid);
+    EXPECT_EQ(32362, caller_id->tid);
+    fclose(input_f);
+}
+
+TEST(LoaderTest, LoadLlistxattr) {
+//syscall.llistxattr
+//uid pid tid exec_name llistxattr begin-elapsed fullpath list return
+//1159 32362 32362 (ls) llistxattr 1318539209608557-21 /tmp/0014b4e97285d -1
+    struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
+    FILE * input_f = fopen("tests/llistxattr_input", "r");
+    int ret = load(rep_wld, input_f);
+
+    EXPECT_EQ(0, ret);
+    EXPECT_EQ(1, rep_wld->num_cmds);
+    EXPECT_EQ(0, rep_wld->current_cmd);
+
+    struct replay_command* loaded_cmd = rep_wld->cmd;
+    EXPECT_EQ(LLISTXATTR_OP, loaded_cmd->command);
+    EXPECT_EQ(-1, loaded_cmd->expected_retval);
+    struct caller* caller_id = loaded_cmd->caller;
+    EXPECT_EQ(1159, caller_id->uid);
+    EXPECT_EQ(32362, caller_id->pid);
+    EXPECT_EQ(32362, caller_id->tid);
+    fclose(input_f);
+}

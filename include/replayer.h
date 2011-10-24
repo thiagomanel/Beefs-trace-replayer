@@ -59,9 +59,18 @@ typedef unsigned short op_t;
 struct replay_command {
 	op_t command;
 	struct caller* caller;
+	struct parms* params;
 	int args[MAX_ARGS];
 	int expected_retval;
 };
+
+struct parms {
+  union args {
+    int i_val;
+    long l_val;
+    char* char_prt_val;
+  } a;
+}
 
 struct caller {
 	unsigned int uid;

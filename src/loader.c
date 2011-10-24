@@ -68,6 +68,8 @@ int marker2operation (char *string)
   return NONE;
 }
 
+#define NULL_FILE_OP_ERROR -3
+
 int 
 load (replay_workload* replay_wld, FILE* input_file)
 {
@@ -76,6 +78,14 @@ load (replay_workload* replay_wld, FILE* input_file)
   char* line;
   int loaded_commands = 0;
   replay_wld->cmd = (replay_command*) malloc (sizeof (replay_command));
+
+  if(input_file == NULL)
+    {
+      replay_wld->current_cmd = 0;
+      replay_wld->num_cmds = 0;
+      return NULL_FILE_OP_ERROR;
+    }
+
   while (! feof (input_file))
     {
       line = NULL;

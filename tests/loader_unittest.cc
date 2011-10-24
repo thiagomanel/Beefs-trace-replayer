@@ -28,6 +28,15 @@ TEST(LoaderTest, EmptyInputFile) {
     fclose(input_f);
 }
 
+TEST(LoaderTest, NonexistentInputFile) {
+    struct replay_workload rep_wld;
+    FILE * input_f = fopen("tests/nonexistent_input", "r");
+    int ret = load(&rep_wld, input_f);
+    EXPECT_EQ(-3, ret);
+    EXPECT_EQ(0, rep_wld.num_cmds);
+    EXPECT_EQ(0, rep_wld.current_cmd);
+}
+
 //FIXME test args for the loaded syscalls
 //FIXME test timestamp for the loaded syscalls.
 //test for a misformatted op

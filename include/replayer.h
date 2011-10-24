@@ -80,4 +80,7 @@ struct replay_workload {
         unsigned int current_cmd;
 };
 
+int
+replay (replay_workload* rep_workload);
+
 #endif /* _REPLAYER_H */

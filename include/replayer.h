@@ -70,7 +70,7 @@ struct parms {
     long l_val;
     char* char_prt_val;
   } a;
-}
+};
 
 struct caller {
 	unsigned int uid;

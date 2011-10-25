@@ -18,5 +18,6 @@
 int
 replay (replay_workload* rep_workload)
 {
-  return -1;
+ 
+ return -1;
 }

@@ -20,7 +20,7 @@
 
 TEST(LoaderTest, EmptyInputFile) {
     struct replay_workload rep_wld;
-    FILE * input_f = fopen("tests/empty_input", "r");
+    FILE * input_f = fopen("tests/input_data/empty_input", "r");
     int ret = load(&rep_wld, input_f);
     EXPECT_EQ(0, ret);
     EXPECT_EQ(0, rep_wld.num_cmds);
@@ -30,7 +30,7 @@ TEST(LoaderTest, EmptyInputFile) {
 
 TEST(LoaderTest, NonexistentInputFile) {
     struct replay_workload rep_wld;
-    FILE * input_f = fopen("tests/nonexistent_input", "r");
+    FILE * input_f = fopen("tests/input_data/nonexistent_input", "r");
     int ret = load(&rep_wld, input_f);
     EXPECT_EQ(-3, ret);
     EXPECT_EQ(0, rep_wld.num_cmds);
@@ -44,7 +44,7 @@ TEST(LoaderTest, NonexistentInputFile) {
 TEST(LoaderTest, LoadCloseCall) {
 //0 2097 2097 (udisks-daemon) close 1318539063006403-37 7 0
     struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
-    FILE * input_f = fopen("tests/close_input", "r");
+    FILE * input_f = fopen("tests/input_data/close_input", "r");
     int ret = load(rep_wld, input_f);
 
     EXPECT_EQ(0, ret);
@@ -67,7 +67,7 @@ TEST(LoaderTest, LoadFstatCall) {
 	//1159 2076 2194 (gnome-do) fstat 1318539073583678-143 23 0
 	//FIXME What if in other arch the calls name is not fstat64 ?
     struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
-    FILE * input_f = fopen("tests/fstat_input", "r");
+    FILE * input_f = fopen("tests/input_data/fstat_input", "r");
     int ret = load(rep_wld, input_f);
 
     EXPECT_EQ(0, ret);
@@ -89,7 +89,7 @@ TEST(LoaderTest, LoadRmdirCall) {
     //1159 2364 32311 (eclipse) rmdir 1318539134542480-46 /home/thiagoepdc/workspace_beefs/.metadata/.plugins/org.eclipse.jdt.ui/jdt-images -1
 
     struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
-    FILE * input_f = fopen("tests/rmdir_input", "r");
+    FILE * input_f = fopen("tests/input_data/rmdir_input", "r");
     int ret = load(rep_wld, input_f);
 
     EXPECT_EQ(0, ret);
@@ -110,7 +110,7 @@ TEST(LoaderTest, LoadLstatCall) {
 //uid pid tid exec_name lstat begin-elapsed cwd filename return
 //1159 2076 2194 (gnome-do) lstat 1318539555812393-87 /usr/share/applications/gnome-sudoku.desktop 0
     struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
-    FILE * input_f = fopen("tests/lstat_input", "r");
+    FILE * input_f = fopen("tests/input_data/lstat_input", "r");
     int ret = load(rep_wld, input_f);
 
     EXPECT_EQ(0, ret);
@@ -132,7 +132,7 @@ TEST(LoaderTest, LoadStatCall) {
     //uid pid tid exec_name stat begin-elapsed fullpath return
     //0 1163 1163 (cron) stat 1317750601526436-18178 /var/spool/cron/crontabs 0
     struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
-    FILE * input_f = fopen("tests/stat_input", "r");
+    FILE * input_f = fopen("tests/input_data/stat_input", "r");
     int ret = load(rep_wld, input_f);
 
     EXPECT_EQ(0, ret);
@@ -155,7 +155,7 @@ TEST(LoaderTest, LoadStatfsCall) {
     //1159 2053 2053 (gnome-settings-) statfs 1318540136505344-287 /local/tracer/logs_nfs 0
 
     struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
-    FILE * input_f = fopen("tests/statfs_input", "r");
+    FILE * input_f = fopen("tests/input_data/statfs_input", "r");
     int ret = load(rep_wld, input_f);
 
     EXPECT_EQ(0, ret);
@@ -177,7 +177,7 @@ TEST(LoaderTest, LoadDupCall) {
     //uid pid tid exec_name dup begin-elapsed fd return
     //0 32544 32544 (sshd) dup 1318539601707575-31 4 5
     struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
-    FILE * input_f = fopen("tests/dup_input", "r");
+    FILE * input_f = fopen("tests/input_data/dup_input", "r");
     int ret = load(rep_wld, input_f);
 
     EXPECT_EQ(0, ret);
@@ -199,7 +199,7 @@ TEST(LoaderTest, LoadFstatfsCall) {
     //uid pid tid exec_name fstatfs begin-elapsed fd return
     //0 32544 32544 (sshd) fstatfs 1318539601707575-31 4 -1
     struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
-    FILE * input_f = fopen("tests/fstatfs_input", "r");
+    FILE * input_f = fopen("tests/input_data/fstatfs_input", "r");
     int ret = load(rep_wld, input_f);
 
     EXPECT_EQ(0, ret);
@@ -220,7 +220,7 @@ TEST(LoaderTest, LoadReaddirCall) {
     //uid pid tid exec_name readdir begin-elapsed fullpath return
     //1159 2076 2194 (gnome-do) readdir 1318539555798359-27 /usr/share/applications/ 0
     struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
-    FILE * input_f = fopen("tests/readdir_input", "r");
+    FILE * input_f = fopen("tests/input_data/readdir_input", "r");
     int ret = load(rep_wld, input_f);
 
     EXPECT_EQ(0, ret);
@@ -242,7 +242,7 @@ TEST(LoaderTest, LoadUnlinkCall) {
     //uid pid tid exec_name unlink begin-elapsed fullpath return
     //1159 2364 32311 (eclipse) unlink 1318539134533662-8118 /local/thiagoepdc/workspace_beefs/.metadata/.plugins/org.eclipse.jdt.ui/jdt-images/1.png 0
     struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
-    FILE * input_f = fopen("tests/unlink_input", "r");
+    FILE * input_f = fopen("tests/input_data/unlink_input", "r");
     int ret = load(rep_wld, input_f);
 
     EXPECT_EQ(0, ret);
@@ -264,7 +264,7 @@ TEST(LoaderTest, LoadGetattrCall) {
     //uid pid tid exec_name getattr begin-elapsed fullpath return
     //0 1547 1547 (puppet) getattr 1318539062631232-30 /etc/puppet/puppet.conf 0
     struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
-    FILE * input_f = fopen("tests/getattr_input", "r");
+    FILE * input_f = fopen("tests/input_data/getattr_input", "r");
     int ret = load(rep_wld, input_f);
 
     EXPECT_EQ(0, ret);
@@ -288,7 +288,7 @@ TEST(LoaderTest, LoadOpenCall) {
     //uid pid tid exec_name open begin-elapsed fullpath flags mode return
     //0 2097 2097 (udisks-daemon) open 1318539063003892-2505 /dev/sdb 34816 0 7
     struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
-    FILE * input_f = fopen("tests/open_input", "r");
+    FILE * input_f = fopen("tests/input_data/open_input", "r");
     int ret = load(rep_wld, input_f);
 
     EXPECT_EQ(0, ret);
@@ -310,7 +310,7 @@ TEST(LoaderTest, LoadDup2Call) {
 	//uid pid tid exec_name dup2 begin-elapsed oldfd newfd return
 	//0 32544 32544 (sshd) dup2 1318539601707761-41 4 0 0
     struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
-    FILE * input_f = fopen("tests/dup2_input", "r");
+    FILE * input_f = fopen("tests/input_data/dup2_input", "r");
     int ret = load(rep_wld, input_f);
 
     EXPECT_EQ(0, ret);
@@ -331,7 +331,7 @@ TEST(LoaderTest, LoadDup3Call) {
 	//uid pid tid exec_name dup3 begin-elapsed oldfd newfd return
 	//0 32544 32544 (sshd) dup3 1318539601707761-41 4 0 0
     struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
-    FILE * input_f = fopen("tests/dup3_input", "r");
+    FILE * input_f = fopen("tests/input_data/dup3_input", "r");
     int ret = load(rep_wld, input_f);
         
     EXPECT_EQ(0, ret);
@@ -353,7 +353,7 @@ TEST(LoaderTest, LoadWriteCall) {
 	//uid pid tid exec_name write begin-elapsed root pwd fullpath fd count return
 	//0 6194 6194 (xprintidle) write 1318539063058255-131 /local/userActivityTracker/logs/tracker.log 1 17 17
     struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
-    FILE * input_f = fopen("tests/write_input", "r");
+    FILE * input_f = fopen("tests/input_data/write_input", "r");
     int ret = load(rep_wld, input_f);
 
     EXPECT_EQ(0, ret);
@@ -375,7 +375,7 @@ TEST(LoaderTest, LoadReadCall) {
 	//uid pid tid exec_name read begin-elapsed fullpath fd count return
 	//114 1562 1562 (snmpd) read 1318539063447564-329 /proc/stat 8 3072 2971
     struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
-    FILE * input_f = fopen("tests/read_input", "r");
+    FILE * input_f = fopen("tests/input_data/read_input", "r");
     int ret = load(rep_wld, input_f);
 
     EXPECT_EQ(0, ret);
@@ -397,7 +397,7 @@ TEST(LoaderTest, LoadLLseekCall) {
 //uid pid tid exec_name llseek begin-elapsed fullpath fd offset_high offset_low whence_str $result
 //1159 2364 2364 (eclipse) llseek 1318539072857083-113 /local/thiagoepdc/eclipse/configuration/org.eclipse.core.runtime/.mainData.4 30 0 931001 SEEK_SET 931001
     struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
-    FILE * input_f = fopen("tests/llseek_input", "r");
+    FILE * input_f = fopen("tests/input_data/llseek_input", "r");
     int ret = load(rep_wld, input_f);
 
     EXPECT_EQ(0, ret);
@@ -419,7 +419,7 @@ TEST(LoaderTest, LoadMkdirCall) {
 //uid pid tid exec_name mkdir begin-elapsed fulpath mode return
 //1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /local/thiagoepdc/workspace_beefs/.metadata/.plugins/org.eclipse.jdt.ui/jdt-images 511 0
     struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
-    FILE * input_f = fopen("tests/mkdir_input", "r");
+    FILE * input_f = fopen("tests/input_data/mkdir_input", "r");
     int ret = load(rep_wld, input_f);
 
     EXPECT_EQ(0, ret);
@@ -442,7 +442,7 @@ TEST(LoaderTest, LoadMknodCall) {
 //1159 11407 11407 (gconftool-2) mknod 1319207649254700-14 /home/thiagoepdc/orbit-thiagoepdc/linc-2c8f-0-69f0eff3e2d5 S_IFSOCK|S_IXOTH|S_IROTH|S_IXGRP|S_IRGRP|S_IRWXU 0 0
 //TODO: we need to convert mode from string to a number type
     struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
-    FILE * input_f = fopen("tests/mknod_input", "r");
+    FILE * input_f = fopen("tests/input_data/mknod_input", "r");
     int ret = load(rep_wld, input_f);
 
     EXPECT_EQ(0, ret);
@@ -464,7 +464,7 @@ TEST(LoaderTest, LoadSymlink) {
 //uid pid tid exec_name symlink begin-elapsed  oldname newname return
 //0 603 603 (update-rc.d) symlink 1318540206298997-36 /etc/rcS.d/../init.d/puppet /etc/rc0.d/K20puppet 0
     struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
-    FILE * input_f = fopen("tests/symlink_input", "r");
+    FILE * input_f = fopen("tests/input_data/symlink_input", "r");
     int ret = load(rep_wld, input_f);
 
     EXPECT_EQ(0, ret);
@@ -486,7 +486,7 @@ TEST(LoaderTest, LoadReadlink) {
 //uid pid tid exec_name readlink begin-elapsed fullpath return
 //1159 2092 2092 (gvfs-gdu-volume) readlink 1318539355485686-40 /dev/scd0 3
     struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
-    FILE * input_f = fopen("tests/readlink_input", "r");
+    FILE * input_f = fopen("tests/input_data/readlink_input", "r");
     int ret = load(rep_wld, input_f);
 
     EXPECT_EQ(0, ret);
@@ -509,7 +509,7 @@ TEST(LoaderTest, LoadGetxattr) {
 //uid pid tid exec_name getxattr begin-elapsed fullpath return
 //1159 32362 32362 (ls) getxattr 1318539209608557-21 /tmp/0014b4e97285d -95
     struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
-    FILE * input_f = fopen("tests/getxattr_input", "r");
+    FILE * input_f = fopen("tests/input_data/getxattr_input", "r");
     int ret = load(rep_wld, input_f);
 
     EXPECT_EQ(0, ret);
@@ -531,7 +531,7 @@ TEST(LoaderTest, LoadRemovexattr) {
 //uid pid tid exec_name removexattr begin-elapsed fullpath return
 //1159 32362 32362 (ls) removexattr 1318539209608557-21 /tmp/0014b4e97285d 0
     struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
-    FILE * input_f = fopen("tests/removexattr_input", "r");
+    FILE * input_f = fopen("tests/input_data/removexattr_input", "r");
     int ret = load(rep_wld, input_f);
 
     EXPECT_EQ(0, ret);
@@ -553,7 +553,7 @@ TEST(LoaderTest, LoadSetxattr) {
 //uid pid tid exec_name setxattr begin-elapsed fullpath return
 //1159 32362 32362 (ls) setxattr 1318539209608557-21 /tmp/0014b4e97285d -3
     struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
-    FILE * input_f = fopen("tests/setxattr_input", "r");
+    FILE * input_f = fopen("tests/input_data/setxattr_input", "r");
     int ret = load(rep_wld, input_f);
 
     EXPECT_EQ(0, ret);
@@ -575,7 +575,7 @@ TEST(LoaderTest, LoadListxattr) {
 //uid pid tid exec_name listxattr begin-elapsed fullpath return
 //1159 32362 32362 (ls) listxattr 1318539209608557-21 /tmp/0014b4e97285d 0
     struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
-    FILE * input_f = fopen("tests/listxattr_input", "r");
+    FILE * input_f = fopen("tests/input_data/listxattr_input", "r");
     int ret = load(rep_wld, input_f);
 
     EXPECT_EQ(0, ret);
@@ -598,7 +598,7 @@ TEST(LoaderTest, LoadLremovexattr) {
 //1159 32362 32362 (ls) lremovexattr 1318539209608557-21 /tmp/0014b4e97285d -1
 
     struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
-    FILE * input_f = fopen("tests/lremovexattr_input", "r");
+    FILE * input_f = fopen("tests/input_data/lremovexattr_input", "r");
     int ret = load(rep_wld, input_f);
 
     EXPECT_EQ(0, ret);
@@ -620,7 +620,7 @@ TEST(LoaderTest, LoadLlistxattr) {
 //uid pid tid exec_name llistxattr begin-elapsed fullpath list return
 //1159 32362 32362 (ls) llistxattr 1318539209608557-21 /tmp/0014b4e97285d -1
     struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
-    FILE * input_f = fopen("tests/llistxattr_input", "r");
+    FILE * input_f = fopen("tests/input_data/llistxattr_input", "r");
     int ret = load(rep_wld, input_f);
 
     EXPECT_EQ(0, ret);
@@ -642,7 +642,7 @@ TEST(LoaderTest, LoadFgetxattr) {
 //uid pid tid exec_name fgetxattr begin-elapsed fd return
 //1159 32362 32362 (ls) fgetxattr 1318539209608557-21 /tmp/0014b4e97285d -1
     struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
-    FILE * input_f = fopen("tests/fgetxattr_input", "r");
+    FILE * input_f = fopen("tests/input_data/fgetxattr_input", "r");
     int ret = load(rep_wld, input_f);
 
     EXPECT_EQ(0, ret);
@@ -664,7 +664,7 @@ TEST(LoaderTest, LoadFremovexattr) {
 //uid pid tid exec_name fremovexattr begin-elapsed fd return
 //1159 32362 32362 (ls) fremovexattr 1318539209608557-21 /tmp/0014b4e97285d 0
     struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
-    FILE * input_f = fopen("tests/fremovexattr_input", "r");
+    FILE * input_f = fopen("tests/input_data/fremovexattr_input", "r");
     int ret = load(rep_wld, input_f);
 
     EXPECT_EQ(0, ret);
@@ -686,7 +686,7 @@ TEST(LoaderTest, LoadFsetxattr) {
 //uid pid tid exec_name fsetxattr begin-elapsed fd return
 //1159 32362 32362 (ls) fsetxattr 1318539209608557-21 /tmp/0014b4e97285d -2
     struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
-    FILE * input_f = fopen("tests/fsetxattr_input", "r");
+    FILE * input_f = fopen("tests/input_data/fsetxattr_input", "r");
     int ret = load(rep_wld, input_f);
 
     EXPECT_EQ(0, ret);
@@ -708,7 +708,7 @@ TEST(LoaderTest, LoadFlistxattr) {
 //uid pid tid exec_name flistxattr begin-elapsed fd return
 //1159 32362 32362 (ls) flistxattr 1318539209608557-21 /tmp/0014b4e97285d 0
     struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
-    FILE * input_f = fopen("tests/flistxattr_input", "r");
+    FILE * input_f = fopen("tests/input_data/flistxattr_input", "r");
     int ret = load(rep_wld, input_f);
 
     EXPECT_EQ(0, ret);
@@ -730,7 +730,7 @@ TEST(LoaderTest, LoadLsetxattr) {
 //uid pid tid exec_name lsetxattr begin-elapsed cwd pathname name value flags return
 //1159 32362 32362 (chmod) lsetxattr 1318539209608557-21 /tmp/0014b4e97285d 34 33 0
     struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
-    FILE * input_f = fopen("tests/lsetxattr_input", "r");
+    FILE * input_f = fopen("tests/input_data/lsetxattr_input", "r");
     int ret = load(rep_wld, input_f);
 
     EXPECT_EQ(0, ret);

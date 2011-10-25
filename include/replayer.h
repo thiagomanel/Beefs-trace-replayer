@@ -69,7 +69,7 @@ struct parms {
     int i_val;
     long l_val;
     char* char_prt_val;
-  } a;
+  };
 };
 
 struct caller {

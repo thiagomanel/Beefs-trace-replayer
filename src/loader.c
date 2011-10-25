@@ -55,6 +55,7 @@ static struct lookuptab {
 	{"fremovexattr",	FREMOVEXATTR_OP},
 	{"fsetxattr",	FSETXATTR_OP},
 	{"flistxattr",	FLISTXATTR_OP},
+	{"lsetxattr",	LSETXATTR_OP},
 
 };
 
@@ -67,6 +68,8 @@ int marker2operation (char *string)
   return NONE;
 }
 
+#define NULL_FILE_OP_ERROR -3
+
 int 
 load (replay_workload* replay_wld, FILE* input_file)
 {
@@ -75,6 +78,14 @@ load (replay_workload* replay_wld, FILE* input_file)
   char* line;
   int loaded_commands = 0;
   replay_wld->cmd = (replay_command*) malloc (sizeof (replay_command));
+
+  if(input_file == NULL)
+    {
+      replay_wld->current_cmd = 0;
+      replay_wld->num_cmds = 0;
+      return NULL_FILE_OP_ERROR;
+    }
+
   while (! feof (input_file))
     {
       line = NULL;
@@ -179,6 +190,15 @@ parse_line (replay_command* cmd, char* line)
         token = strtok (NULL, " ");//
         exp_rvalue = atoi (token);
 	break;
+      case LSETXATTR_OP:
+        token = strtok (NULL, " ");//timestamp
+        token = strtok (NULL, " ");//fullpath
+        token = strtok (NULL, " ");//name
+        token = strtok (NULL, " ");//value
+        token = strtok (NULL, " ");//flag
+        token = strtok (NULL, " ");//
+        exp_rvalue = atoi (token);
+        break;
       default://FIXME we need a case to NONE_OP, test it
         token = strtok (NULL, " ");//timestamp
         token = strtok (NULL, " ");//arg

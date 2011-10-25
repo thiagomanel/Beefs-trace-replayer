@@ -28,6 +28,15 @@ TEST(LoaderTest, EmptyInputFile) {
     fclose(input_f);
 }
 
+TEST(LoaderTest, NonexistentInputFile) {
+    struct replay_workload rep_wld;
+    FILE * input_f = fopen("tests/nonexistent_input", "r");
+    int ret = load(&rep_wld, input_f);
+    EXPECT_EQ(-3, ret);
+    EXPECT_EQ(0, rep_wld.num_cmds);
+    EXPECT_EQ(0, rep_wld.current_cmd);
+}
+
 //FIXME test args for the loaded syscalls
 //FIXME test timestamp for the loaded syscalls.
 //test for a misformatted op
@@ -686,7 +695,7 @@ TEST(LoaderTest, LoadFsetxattr) {
 
     struct replay_command* loaded_cmd = rep_wld->cmd;
     EXPECT_EQ(FSETXATTR_OP, loaded_cmd->command);
-    EXPECT_EQ(-1, loaded_cmd->expected_retval);
+    EXPECT_EQ(-2, loaded_cmd->expected_retval);
     struct caller* caller_id = loaded_cmd->caller;
     EXPECT_EQ(1159, caller_id->uid);
     EXPECT_EQ(32362, caller_id->pid);
@@ -719,7 +728,6 @@ TEST(LoaderTest, LoadFlistxattr) {
 TEST(LoaderTest, LoadLsetxattr) {
 //syscall.lsetxattr
 //uid pid tid exec_name lsetxattr begin-elapsed cwd pathname name value flags return
-
 //1159 32362 32362 (chmod) lsetxattr 1318539209608557-21 /tmp/0014b4e97285d 34 33 0
     struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
     FILE * input_f = fopen("tests/lsetxattr_input", "r");

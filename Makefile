@@ -69,6 +69,9 @@ gtest_main.a : gtest-all.o gtest_main.o
 # gtest_main.a, depending on whether it defines its own main()
 # function.
 
+replayer.o : $(USER_DIR)/src/replayer.c $(USER_DIR)/include/replayer.h $(GTEST_HEADERS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/src/replayer.c
+
 loader.o : $(USER_DIR)/src/loader.c $(USER_DIR)/src/loader.h $(GTEST_HEADERS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/src/loader.c
 
@@ -76,5 +79,5 @@ loader_unittest.o : $(USER_DIR)/tests/loader_unittest.cc \
                      $(USER_DIR)/src/loader.h $(GTEST_HEADERS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/tests/loader_unittest.cc
 
-loader_unittest : loader.o loader_unittest.o gtest_main.a
+loader_unittest : replayer.o loader.o loader_unittest.o gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@

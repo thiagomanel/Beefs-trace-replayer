@@ -18,6 +18,15 @@
 int
 replay (replay_workload* rep_workload)
 {
- 
- return -1;
+  for (int i = 0; i < rep_workload->num_cmds; i++)
+    {
+      switch(rep_workload->cmd[i].command)
+        {
+	  case MKNOD_OP:
+	    break;
+          default:
+	    return -1;  	
+	}
+    }
+  return -1;
 }

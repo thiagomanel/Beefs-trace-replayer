@@ -14,6 +14,9 @@
 * limitations under the License.
 */
 #include <replayer.h>
+#include <loader.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 int
 replay (replay_workload* rep_workload)
@@ -23,10 +26,28 @@ replay (replay_workload* rep_workload)
       switch(rep_workload->cmd[i].command)
         {
 	  case MKNOD_OP:
+            //#include <sys/types.h>#include <sys/stat.h>#include <fcntl.h>#include <unistd.h>
+	    //int mknod(const char *pathname, mode_t mode, dev_t dev);  		
+	    printf("mknod\n");
+	    //mknod("/home/thiagoepdc/orbit-thiagoepdc/linc-2c8f-0-69f0eff3e2d5", 
 	    break;
           default:
 	    return -1;  	
 	}
     }
   return -1;
+}
+
+int
+main (int argc, const char* argv[])
+{
+  FILE* fp = fopen(argv[1], "r");
+  struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
+  int ret = load (rep_wld, fp);
+  replay (rep_wld);
+  if (ret < 0)
+    {
+	perror("Error loading trace\n");
+    }
+  return 0;
 }

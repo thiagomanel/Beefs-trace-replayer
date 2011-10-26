@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "../src/loader.h"
+//#include "../src/loader.h"
+#include "loader.h"
 #include "gtest/gtest.h"
 #include <stdlib.h>
 

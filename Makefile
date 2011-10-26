@@ -14,7 +14,7 @@
 
 # Points to the root of Google Test, relative to where this file is.
 # Remember to tweak this if you move this file.
-GTEST_DIR = /home/manel/code/gtest-1.6.0/
+GTEST_DIR = /local/thiagoepdc/Softs/gtest-1.6.0/
 
 # Where to find user code.
 USER_DIR = .
@@ -40,7 +40,7 @@ GTEST_HEADERS = $(GTEST_DIR)/include/gtest/*.h \
 all : $(TESTS) $(MAIN)
 
 clean :
-	rm -f $(TESTS) gtest.a gtest_main.a *.o
+	rm -f $(TESTS) $(MAIN) gtest.a gtest_main.a *.o
 
 # Builds gtest.a and gtest_main.a.
 
@@ -70,11 +70,11 @@ gtest_main.a : gtest-all.o gtest_main.o
 # gtest_main.a, depending on whether it defines its own main()
 # function.
 
-loader.o : $(USER_DIR)/src/loader.c $(USER_DIR)/src/loader.h $(GTEST_HEADERS)
+loader.o : $(USER_DIR)/src/loader.c $(USER_DIR)/include/replayer.h $(USER_DIR)/include/loader.h $(GTEST_HEADERS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/src/loader.c
 
 loader_unittest.o : $(USER_DIR)/tests/loader_unittest.cc \
-                     $(USER_DIR)/src/loader.h $(GTEST_HEADERS)
+                     $(GTEST_HEADERS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/tests/loader_unittest.cc
 
 loader_unittest : loader.o loader_unittest.o gtest_main.a

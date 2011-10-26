@@ -45,10 +45,6 @@ if __name__ == "__main__":
         (ok_call, ok_args, ok_rvalue) = match(expected_syscall, called_syscall)
 	if ok_call:
 	    matches.append([expected_syscall, called_syscall, ok_call, ok_args, ok_rvalue])
-#it will be good to print: 
-#exp_name actual name bool
-#exp_args actual args bool
-#exp_rvalue actual_rvalue bool
 
     if matches:
 	for match in matches:

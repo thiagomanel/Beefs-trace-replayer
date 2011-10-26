@@ -14,7 +14,7 @@
 
 # Points to the root of Google Test, relative to where this file is.
 # Remember to tweak this if you move this file.
-GTEST_DIR = /local/thiagoepdc/Softs/gtest-1.6.0/
+GTEST_DIR = /home/manel/code/gtest-1.6.0/
 
 # Where to find user code.
 USER_DIR = .
@@ -77,7 +77,7 @@ loader_unittest.o : $(USER_DIR)/tests/loader_unittest.cc \
                      $(USER_DIR)/src/loader.h $(GTEST_HEADERS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/tests/loader_unittest.cc
 
-loader_unittest : replayer.o loader.o loader_unittest.o gtest_main.a
+loader_unittest : loader.o loader_unittest.o gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
 
 replayer.o : $(USER_DIR)/src/replayer.c $(USER_DIR)/include/replayer.h $(GTEST_HEADERS)

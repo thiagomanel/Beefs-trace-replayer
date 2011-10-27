@@ -32,7 +32,10 @@ def retvalue(call):
 
 def parse_workload_line(workload_line):
     tokens = workload_line.split()
-    return (tokens[4], tokens[5:8], tokens[-1])
+    op = tokens[4]
+    if op == "mkdir":
+        pass#convert int to octal TODO
+    return (tokens[4], tokens[6:-1], tokens[-1])
 
 if __name__ == "__main__":
 

@@ -17,6 +17,7 @@
 #include <loader.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <sys/stat.h>
 
 int
 replay (replay_workload* rep_workload)
@@ -29,8 +30,12 @@ replay (replay_workload* rep_workload)
             //#include <sys/types.h>#include <sys/stat.h>#include <fcntl.h>#include <unistd.h>
 	    //int mknod(const char *pathname, mode_t mode, dev_t dev);  		
 	    printf("mknod\n");
-	    //mknod("/home/thiagoepdc/orbit-thiagoepdc/linc-2c8f-0-69f0eff3e2d5", 
 	    break;
+          case MKDIR_OP:
+	    //#include <sys/stat.h>#include <sys/types.h>
+	    //int mkdir(const char *pathname, mode_t mode);
+	    mkdir("/tmp/jdt-images", 511);
+            break;
           default:
 	    return -1;  	
 	}

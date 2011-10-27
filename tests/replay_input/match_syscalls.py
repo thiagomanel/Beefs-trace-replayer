@@ -33,25 +33,27 @@ def retvalue(call):
 def parse_workload_line(workload_line):
     tokens = workload_line.split()
     op = tokens[4]
+    args = tokens[6:-1]
     if op == "mkdir":
-        pass#convert int to octal TODO
-    return (tokens[4], tokens[6:-1], tokens[-1])
+	args[-1] = str(oct(int(args[-1])))
+    return (tokens[4], args, tokens[-1])
 
 if __name__ == "__main__":
-
 #FIXME: how to test timing and ordering ??
     replay_strace_output = open(sys.argv[1], 'r')
     replay_input = open(sys.argv[2], 'r')
-    expected_syscall = parse_workload_line(replay_input.readline()) #naive case, a single input call in a input file
-    matches = []
-    for called_syscall in replay_strace_output:
-        (ok_call, ok_args, ok_rvalue) = match(expected_syscall, called_syscall)
-	if ok_call:
-	    matches.append([expected_syscall, called_syscall, ok_call, ok_args, ok_rvalue])
 
-    if matches:
-	for match in matches:
-	    print match
-    else:
-	print "No matches for:", expected_syscall 
+    for replay_line in replay_input:
+        expected_syscall = parse_workload_line(replay_line) #naive case, a single input call in a input file
+    	matches = []
+	for called_syscall in replay_strace_output:
+       	    (ok_call, ok_args, ok_rvalue) = match(expected_syscall, called_syscall)
+	    if ok_call:
+	        matches.append([expected_syscall, called_syscall, ok_call, ok_args, ok_rvalue])
+
+	if matches:
+	    for match in matches:
+	        print match
+	else:
+	    print "No matches for:", expected_syscall 
 

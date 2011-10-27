@@ -77,7 +77,7 @@ load (replay_workload* replay_wld, FILE* input_file)
   int tmp;
   char* line;
   int loaded_commands = 0;
-  replay_wld->cmd = (replay_command*) malloc (sizeof (replay_command));
+  replay_wld->cmd = (replay_command*) malloc (2 * sizeof (replay_command));
 
   if(input_file == NULL)
     {
@@ -93,6 +93,7 @@ load (replay_workload* replay_wld, FILE* input_file)
       tmp = getline (&line, &line_len, input_file);
       if (tmp >= 0)
         {
+		printf("go parsing\n");
 	  tmp = parse_line (replay_wld->cmd, line);
 	  loaded_commands += 1;
 	}
@@ -108,6 +109,7 @@ int
 parse_line (replay_command* cmd, char* line)
 {
   cmd->caller = (caller*) malloc (sizeof (caller));
+  cmd->params = (parms*) malloc (2 * sizeof (parms));
 //ugly, eh !
   char* token = strtok (line, " ");
   cmd->caller->uid = atoi (token);
@@ -120,6 +122,9 @@ parse_line (replay_command* cmd, char* line)
   token = strtok (NULL, " ");
   op_t loaded_cmd = marker2operation (token);
   int exp_rvalue;
+
+  parms* parm;
+
   switch (loaded_cmd)
     {
       case OPEN_OP:
@@ -163,6 +168,9 @@ parse_line (replay_command* cmd, char* line)
         token = strtok (NULL, " ");//mode
         token = strtok (NULL, " ");
         exp_rvalue = atoi (token);
+	parm = cmd->params;
+	parm[0].arg.cprt_val = "/tmp/jdt-images";
+	parm[1].arg.i_val = 511;
 	break;
       case MKNOD_OP:
         token = strtok (NULL, " ");//timestamp

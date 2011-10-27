@@ -24,6 +24,7 @@ replay (replay_workload* rep_workload)
 {
   for (int i = 0; i < rep_workload->num_cmds; i++)
     {
+      parms* args = rep_workload->cmd[i].params;
       switch(rep_workload->cmd[i].command)
         {
 	  case MKNOD_OP:
@@ -32,9 +33,9 @@ replay (replay_workload* rep_workload)
 	    printf("mknod\n");
 	    break;
           case MKDIR_OP:
-	    //#include <sys/stat.h>#include <sys/types.h>
 	    //int mkdir(const char *pathname, mode_t mode);
-	    mkdir("/tmp/jdt-images", 511);
+	    printf("MKDIR\n");
+	    mkdir(args[0].arg.cprt_val, args[1].arg.i_val);
             break;
           default:
 	    return -1;  	

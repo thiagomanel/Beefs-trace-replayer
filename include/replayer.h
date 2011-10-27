@@ -62,14 +62,17 @@ struct replay_command {
 	struct parms* params;
 	int args[MAX_ARGS];
 	int expected_retval;
+
+	struct replay_command* next;
 };
 
 struct parms {
   union args {
     int i_val;
     long l_val;
-    char* char_prt_val;
-  };
+    char* cprt_val;
+  }arg;
+  //struct parms* next;
 };
 
 struct caller {

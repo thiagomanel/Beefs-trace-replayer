@@ -33,9 +33,11 @@ replay (replay_workload* rep_workload)
 	  //int mknod(const char *pathname, mode_t mode, dev_t dev);  		
 	  break;
           case MKDIR_OP:
-	  //int mkdir(const char *pathname, mode_t mode);
-	    mkdir(args[0].arg.cprt_val, args[1].arg.i_val);
+	    mkdir (args[0].arg.cprt_val, args[1].arg.i_val);//int mkdir(const char *pathname, mode_t mode);
           break;
+          case STAT_OP:
+	    struct stat sb;
+	    stat (args[0].arg.cprt_val, &sb);//int stat(const char *path, struct stat *buf);
           default:
 	    return -1;  	
 	}

@@ -185,7 +185,6 @@ parse_line (replay_command** cmd, char* line)
         token = strtok (NULL, " ");//fullpath
 	parm[0].arg.cprt_val = (char*) malloc (MAX_FILE_NAME * sizeof (char));
 	strcpy (parm[0].arg.cprt_val, token);
-	//"/tmp/jdt-images";
         token = strtok (NULL, " ");//mode
 	parm[1].arg.i_val = atoi(token);
         token = strtok (NULL, " ");
@@ -229,6 +228,9 @@ parse_line (replay_command** cmd, char* line)
       default://FIXME we need a case to NONE_OP, test it
         token = strtok (NULL, " ");//timestamp
         token = strtok (NULL, " ");//arg
+	parm = current_command->params;
+	parm[0].arg.cprt_val = (char*) malloc (MAX_FILE_NAME * sizeof (char));
+	strcpy (parm[0].arg.cprt_val, token);
         token = strtok (NULL, " ");
         exp_rvalue = atoi (token);
     }

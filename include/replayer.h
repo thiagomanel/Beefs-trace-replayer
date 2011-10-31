@@ -83,7 +83,7 @@ struct caller {
 };
 
 struct replay_workload {
-        struct replay_command* cmd;//FIXME think it should be a **
+        struct replay_command* cmd;
         unsigned int num_cmds;
         unsigned int current_cmd;
 };

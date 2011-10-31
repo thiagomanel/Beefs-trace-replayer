@@ -77,7 +77,7 @@ load (replay_workload* replay_wld, FILE* input_file)
   int tmp;
   char* line;
   int loaded_commands = 0;
-  replay_wld->cmd = (replay_command*) malloc (2 * sizeof (replay_command));
+  replay_wld->cmd = NULL;
 
   if(input_file == NULL)
     {
@@ -93,8 +93,7 @@ load (replay_workload* replay_wld, FILE* input_file)
       tmp = getline (&line, &line_len, input_file);
       if (tmp >= 0)
         {
-		printf("go parsing\n");
-	  tmp = parse_line (replay_wld->cmd, line);
+	  tmp = parse_line (&(replay_wld->cmd), line);
 	  loaded_commands += 1;
 	}
     }
@@ -106,17 +105,35 @@ load (replay_workload* replay_wld, FILE* input_file)
 #define UNKNOW_OP_ERROR -2
 
 int
-parse_line (replay_command* cmd, char* line)
+parse_line (replay_command** cmd, char* line)
 {
-  cmd->caller = (caller*) malloc (sizeof (caller));
-  cmd->params = (parms*) malloc (2 * sizeof (parms));
+  replay_command* current_command;
+  replay_command* new_command;
+  if ((*cmd) == NULL)
+    {
+      (*cmd) = (replay_command*) malloc (sizeof (replay_command));
+      current_command = (*cmd);
+    }
+  else 
+    {
+      current_command = (*cmd);
+      while (current_command->next != NULL)
+        {
+	  current_command = current_command->next;
+        }
+      new_command = (replay_command*) malloc (sizeof (replay_command));
+      current_command->next = new_command;
+      current_command = current_command->next;
+    }
+  current_command->caller = (caller*) malloc (sizeof (caller));
+  current_command->params = (parms*) malloc (2 * sizeof (parms));
 //ugly, eh !
   char* token = strtok (line, " ");
-  cmd->caller->uid = atoi (token);
+  current_command->caller->uid = atoi (token);
   token = strtok (NULL, " ");
-  cmd->caller->pid = atoi (token);
+  current_command->caller->pid = atoi (token);
   token = strtok (NULL, " ");
-  cmd->caller->tid = atoi (token);
+  current_command->caller->tid = atoi (token);
 
   token = strtok (NULL, " ");//exec_name
   token = strtok (NULL, " ");
@@ -168,7 +185,7 @@ parse_line (replay_command* cmd, char* line)
         token = strtok (NULL, " ");//mode
         token = strtok (NULL, " ");
         exp_rvalue = atoi (token);
-	parm = cmd->params;
+	parm = current_command->params;
 	parm[0].arg.cprt_val = "/tmp/jdt-images";
 	parm[1].arg.i_val = 511;
 	break;
@@ -213,8 +230,8 @@ parse_line (replay_command* cmd, char* line)
         token = strtok (NULL, " ");
         exp_rvalue = atoi (token);
     }
-  cmd->command = loaded_cmd;
-  cmd->expected_retval = exp_rvalue;
+  current_command->command = loaded_cmd;
+  current_command->expected_retval = exp_rvalue;
   return (loaded_cmd == NONE) ? UNKNOW_OP_ERROR : 0;
 //free something ?
 }

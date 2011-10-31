@@ -79,7 +79,7 @@ load (replay_workload* replay_wld, FILE* input_file)
   int loaded_commands = 0;
   replay_wld->cmd = NULL;
 
-  if(input_file == NULL)
+  if (input_file == NULL)
     {
       replay_wld->current_cmd = 0;
       replay_wld->num_cmds = 0;
@@ -180,14 +180,16 @@ parse_line (replay_command** cmd, char* line)
         exp_rvalue = atoi (token);
       break;
       case MKDIR_OP:
+	parm = current_command->params;
         token = strtok (NULL, " ");//timestamp
         token = strtok (NULL, " ");//fullpath
+	parm[0].arg.cprt_val = (char*) malloc (MAX_FILE_NAME * sizeof (char));
+	strcpy (parm[0].arg.cprt_val, token);
+	//"/tmp/jdt-images";
         token = strtok (NULL, " ");//mode
+	parm[1].arg.i_val = atoi(token);
         token = strtok (NULL, " ");
         exp_rvalue = atoi (token);
-	parm = current_command->params;
-	parm[0].arg.cprt_val = "/tmp/jdt-images";
-	parm[1].arg.i_val = 511;
 	break;
       case MKNOD_OP:
         token = strtok (NULL, " ");//timestamp

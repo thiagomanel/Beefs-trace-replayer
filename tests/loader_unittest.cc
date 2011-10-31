@@ -53,9 +53,7 @@ TEST(LoaderTest, LoadCloseCall) {
     EXPECT_EQ(0, rep_wld->current_cmd);
 
     struct replay_command* loaded_cmd = rep_wld->cmd;
-    printf("1\n");
     EXPECT_EQ(CLOSE_OP, loaded_cmd->command);
-    printf("2\n");
     EXPECT_EQ(0, loaded_cmd->expected_retval);
     struct caller* caller_id = loaded_cmd->caller;
     EXPECT_EQ(0, caller_id->uid);

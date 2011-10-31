@@ -15,6 +15,7 @@
 
 #define MAX_ARGS 5
 #define PROC_NAME_LEN 256 //FIXME TOO BIG. search for exec name in task structs
+#define MAX_FILE_NAME 256 //FIXME TOO BIG.
 
 typedef unsigned short op_t;
 

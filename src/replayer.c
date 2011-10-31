@@ -22,25 +22,25 @@
 int
 replay (replay_workload* rep_workload)
 {
-  for (int i = 0; i < rep_workload->num_cmds; i++)
+  replay_command* cmd = rep_workload->cmd;
+  while (cmd != NULL)
     {
-      parms* args = rep_workload->cmd[i].params;
-      switch(rep_workload->cmd[i].command)
+      parms* args = cmd->params;
+      switch(cmd->command)
         {
 	  case MKNOD_OP:
-            //#include <sys/types.h>#include <sys/stat.h>#include <fcntl.h>#include <unistd.h>
-	    //int mknod(const char *pathname, mode_t mode, dev_t dev);  		
-	    printf("mknod\n");
-	    break;
+          //#include <sys/types.h>#include <sys/stat.h>#include <fcntl.h>#include <unistd.h>
+	  //int mknod(const char *pathname, mode_t mode, dev_t dev);  		
+	  break;
           case MKDIR_OP:
-	    //int mkdir(const char *pathname, mode_t mode);
-	    printf("MKDIR\n");
+	  //int mkdir(const char *pathname, mode_t mode);
 	    mkdir(args[0].arg.cprt_val, args[1].arg.i_val);
-            break;
+          break;
           default:
 	    return -1;  	
 	}
-    }
+        cmd = cmd->next;
+    } 
   return -1;
 }
 

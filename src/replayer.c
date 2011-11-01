@@ -18,6 +18,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 int
 replay (replay_workload* rep_workload)
@@ -28,16 +31,15 @@ replay (replay_workload* rep_workload)
       parms* args = cmd->params;
       switch(cmd->command)
         {
-	  case MKNOD_OP:
-          //#include <sys/types.h>#include <sys/stat.h>#include <fcntl.h>#include <unistd.h>
-	  //int mknod(const char *pathname, mode_t mode, dev_t dev);  		
-	  break;
           case MKDIR_OP:
-	    mkdir (args[0].arg.cprt_val, args[1].arg.i_val);//int mkdir(const char *pathname, mode_t mode);
+	    mkdir (args[0].arg.cprt_val, args[1].arg.i_val);
           break;
           case STAT_OP:
 	    struct stat sb;
-	    stat (args[0].arg.cprt_val, &sb);//int stat(const char *path, struct stat *buf);
+	    stat (args[0].arg.cprt_val, &sb);
+	  case OPEN_OP:
+	    printf("open %s\n", args[0].arg.cprt_val);
+	    open (args[0].arg.cprt_val, args[1].arg.i_val, args[2].arg.i_val);
           default:
 	    return -1;  	
 	}

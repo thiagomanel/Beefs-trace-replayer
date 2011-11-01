@@ -180,11 +180,16 @@ parse_line (replay_command** cmd, char* line)
         break;
       case WRITE_OP:
       case READ_OP://TODO: write and read have the same token sequence than open
-  	current_command->params = (parms*) malloc (2 * sizeof (parms));//it should be done at each switch case
+  	current_command->params = (parms*) malloc (3 * sizeof (parms));//it should be done at each switch case
+	parm = current_command->params;
         token = strtok (NULL, " ");//timestamp
         token = strtok (NULL, " ");//fullpath
+	parm[0].arg.cprt_val = (char*) malloc (MAX_FILE_NAME * sizeof (char));
+	strcpy (parm[0].arg.cprt_val, token);
         token = strtok (NULL, " ");//fd
+	parm[1].arg.i_val = atoi(token);
         token = strtok (NULL, " ");//count
+	parm[2].arg.i_val = atoi(token);
         token = strtok (NULL, " ");
         exp_rvalue = atoi (token);
       break;

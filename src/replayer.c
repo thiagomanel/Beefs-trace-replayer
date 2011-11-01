@@ -21,6 +21,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 int
 replay (replay_workload* rep_workload)
@@ -40,6 +41,10 @@ replay (replay_workload* rep_workload)
 	    break;
 	  case OPEN_OP:
 	    open (args[0].arg.cprt_val, args[1].arg.i_val, args[2].arg.i_val);
+	    break;
+	  case READ_OP:
+            //char* buf = (char*) malloc (sizeof (char) *args[2].arg.i_val);
+//	    read(args[0].arg.cprt_val, buf, args[2].arg.i_val);
 	    break;
           default:
 	    return -1;  	

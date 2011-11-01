@@ -29,6 +29,7 @@ CXXFLAGS += -g -Wall -Wextra
 # created to the list.
 TESTS = loader_unittest
 MAIN = replayer
+UTIL = hashtbl
 
 # All Google Test headers.  Usually you shouldn't change this
 # definition.
@@ -37,10 +38,10 @@ GTEST_HEADERS = $(GTEST_DIR)/include/gtest/*.h \
 
 # House-keeping build targets.
 
-all : $(TESTS) $(MAIN)
+all : $(TESTS) $(MAIN) $(UTIL)
 
 clean :
-	rm -f $(TESTS) $(MAIN) gtest.a gtest_main.a *.o
+	rm -f $(TESTS) $(MAIN) $(UTIL) gtest.a gtest_main.a *.o
 
 # Builds gtest.a and gtest_main.a.
 
@@ -85,3 +86,17 @@ replayer.o : $(USER_DIR)/src/replayer.c $(USER_DIR)/include/replayer.h $(GTEST_H
 
 replayer : replayer.o loader.o
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
+
+#hashtbl.o: $(USER_DIR)/src/hashtbl.c $(USER_DIR)/include/hashtbl.h
+#	cc -I$(USER_DIR)/include -o hashtbl.o -Wall -pedantic -g -c $(USER_DIR)/src/hashtbl.c
+#hashtbl: hashtbl.o
+#	cc -I$(USER_DIR)/include -o hashtbl -Wall -pedantic -g hashtbl.o
+
+hashtbl: hashtbl.o main.o
+	cc -I$(USER_DIR)/include -o hashtbl -Wall -pedantic -g hashtbl.o main.o
+
+hashtbl.o: $(USER_DIR)/src/hashtbl.c $(USER_DIR)/include/hashtbl.h
+	cc -I$(USER_DIR)/include -o hashtbl.o -Wall -pedantic -g -c $(USER_DIR)/src/hashtbl.c
+
+main.o: $(USER_DIR)/src/main.c $(USER_DIR)/include/hashtbl.h
+	cc -I$(USER_DIR)/include -o main.o -Wall -pedantic -g -c $(USER_DIR)/src/main.c

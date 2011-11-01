@@ -807,7 +807,7 @@ TEST(LoaderTest, LoadStatAndOpens) {
     EXPECT_EQ(0, caller_id->uid);
     EXPECT_EQ(1163, caller_id->pid);
     EXPECT_EQ(1163, caller_id->tid);
-//FIXME args
+
     loaded_cmd = loaded_cmd->next;	
     EXPECT_EQ(OPEN_OP, loaded_cmd->command);
     EXPECT_EQ(7, loaded_cmd->expected_retval);

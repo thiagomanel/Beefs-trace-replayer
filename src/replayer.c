@@ -37,9 +37,10 @@ replay (replay_workload* rep_workload)
           case STAT_OP:
 	    struct stat sb;
 	    stat (args[0].arg.cprt_val, &sb);
+	    break;
 	  case OPEN_OP:
-	    printf("open %s\n", args[0].arg.cprt_val);
 	    open (args[0].arg.cprt_val, args[1].arg.i_val, args[2].arg.i_val);
+	    break;
           default:
 	    return -1;  	
 	}

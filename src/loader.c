@@ -89,7 +89,7 @@ load (replay_workload* replay_wld, FILE* input_file)
   while (! feof (input_file))
     {
       line = NULL;
-      line_len = 0; 		
+      line_len = 0;
       tmp = getline (&line, &line_len, input_file);
       if (tmp >= 0)
         {
@@ -103,6 +103,15 @@ load (replay_workload* replay_wld, FILE* input_file)
 }
 
 #define UNKNOW_OP_ERROR -2
+void
+fill_replay_command(replay_command* cmd)
+{
+  cmd->command = NULL;
+  cmd->caller = NULL;
+  cmd->params = NULL;
+  cmd->expected_retval = -666;//:O
+  cmd->next = NULL;
+}
 
 int
 parse_line (replay_command** cmd, char* line)
@@ -112,6 +121,7 @@ parse_line (replay_command** cmd, char* line)
   if ((*cmd) == NULL)
     {
       (*cmd) = (replay_command*) malloc (sizeof (replay_command));
+      fill_replay_command ((*cmd));
       current_command = (*cmd);
     }
   else 
@@ -122,12 +132,13 @@ parse_line (replay_command** cmd, char* line)
 	  current_command = current_command->next;
         }
       new_command = (replay_command*) malloc (sizeof (replay_command));
+      fill_replay_command (new_command);
       current_command->next = new_command;
       current_command = current_command->next;
     }
+
   current_command->caller = (caller*) malloc (sizeof (caller));
-  current_command->params = (parms*) malloc (3 * sizeof (parms));//it should be done at each switch case
-//ugly, eh !
+  //ugly, eh !
   char* token = strtok (line, " ");
   current_command->caller->uid = atoi (token);
   token = strtok (NULL, " ");
@@ -145,11 +156,11 @@ parse_line (replay_command** cmd, char* line)
   switch (loaded_cmd)
     {
       case OPEN_OP:
+  	current_command->params = (parms*) malloc (3 * sizeof (parms));//it should be done at each switch case
 	parm = current_command->params;
         token = strtok (NULL, " ");//timestamp
         token = strtok (NULL, " ");//fullpath
 	parm[0].arg.cprt_val = (char*) malloc (MAX_FILE_NAME * sizeof (char));
-	printf("loader open %s\n", token);
 	strcpy (parm[0].arg.cprt_val, token);
         token = strtok (NULL, " ");//flag
 	parm[1].arg.i_val = atoi(token);
@@ -160,6 +171,7 @@ parse_line (replay_command** cmd, char* line)
       break;
       case DUP2_OP:
       case DUP3_OP:
+  	current_command->params = (parms*) malloc (2 * sizeof (parms));//it should be done at each switch case
         token = strtok (NULL, " ");//timestamp
         token = strtok (NULL, " ");//oldfd
         token = strtok (NULL, " ");//new_fd
@@ -168,6 +180,7 @@ parse_line (replay_command** cmd, char* line)
         break;
       case WRITE_OP:
       case READ_OP://TODO: write and read have the same token sequence than open
+  	current_command->params = (parms*) malloc (2 * sizeof (parms));//it should be done at each switch case
         token = strtok (NULL, " ");//timestamp
         token = strtok (NULL, " ");//fullpath
         token = strtok (NULL, " ");//fd
@@ -176,6 +189,7 @@ parse_line (replay_command** cmd, char* line)
         exp_rvalue = atoi (token);
       break;
       case LLSEEK_OP://TODO: write and read have the same token sequence than open
+  	current_command->params = (parms*) malloc (2 * sizeof (parms));//it should be done at each switch case
         token = strtok (NULL, " ");//timestamp
         token = strtok (NULL, " ");//fullpath
         token = strtok (NULL, " ");//fd
@@ -186,6 +200,7 @@ parse_line (replay_command** cmd, char* line)
         exp_rvalue = atoi (token);
       break;
       case MKDIR_OP:
+  	current_command->params = (parms*) malloc (2 * sizeof (parms));//it should be done at each switch case
 	parm = current_command->params;
         token = strtok (NULL, " ");//timestamp
         token = strtok (NULL, " ");//fullpath
@@ -197,6 +212,7 @@ parse_line (replay_command** cmd, char* line)
         exp_rvalue = atoi (token);
 	break;
       case MKNOD_OP:
+  	current_command->params = (parms*) malloc (2 * sizeof (parms));//it should be done at each switch case
         token = strtok (NULL, " ");//timestamp
         token = strtok (NULL, " ");//fullpath
         token = strtok (NULL, " ");//mode
@@ -205,6 +221,7 @@ parse_line (replay_command** cmd, char* line)
         exp_rvalue = atoi (token);
 	break;
       case SYMLINK_OP:
+  	current_command->params = (parms*) malloc (2 * sizeof (parms));//it should be done at each switch case
         token = strtok (NULL, " ");//timestamp
         token = strtok (NULL, " ");//fullpath_old_name
         token = strtok (NULL, " ");//fullpath_new_name
@@ -217,12 +234,14 @@ parse_line (replay_command** cmd, char* line)
       case LISTXATTR_OP:
       case LREMOVEXATTR_OP:
       case LLISTXATTR_OP:
+  	current_command->params = (parms*) malloc (2 * sizeof (parms));//it should be done at each switch case
         token = strtok (NULL, " ");//timestamp
         token = strtok (NULL, " ");//fullpath
         token = strtok (NULL, " ");//
         exp_rvalue = atoi (token);
 	break;
       case LSETXATTR_OP:
+  	current_command->params = (parms*) malloc (2 * sizeof (parms));//it should be done at each switch case
         token = strtok (NULL, " ");//timestamp
         token = strtok (NULL, " ");//fullpath
         token = strtok (NULL, " ");//name
@@ -232,6 +251,7 @@ parse_line (replay_command** cmd, char* line)
         exp_rvalue = atoi (token);
         break;
       default://FIXME we need a case to NONE_OP, test it
+  	current_command->params = (parms*) malloc (2 * sizeof (parms));//it should be done at each switch case
         token = strtok (NULL, " ");//timestamp
         token = strtok (NULL, " ");//arg
 	parm = current_command->params;

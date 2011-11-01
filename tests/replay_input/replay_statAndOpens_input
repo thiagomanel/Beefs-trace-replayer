@@ -1,0 +1,3 @@
+0 1163 1163 (cron) stat 1317750601526436-18178 /var/spool/cron/crontabs 0
+0 2097 2097 (udisks-daemon) open 1318539063003892-2505 /tmp/foo 34816 0 7
+0 2097 2097 (udisks-daemon) open 1318539063003892-2505 /tmp/foo2 34816 0 7

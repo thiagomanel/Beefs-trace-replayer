@@ -782,3 +782,48 @@ TEST(LoaderTest, LoadMany) {
 //FIXME: ARGS
     fclose(input_f);
 }
+
+/** 
+* we faced a bug when replaying a stat followed by two open, open file names
+* repeat stat parameters
+*/
+
+TEST(LoaderTest, LoadStatAndOpens) {
+    //syscall.stat
+//0 1163 1163 (cron) stat 1317750601526436-18178 /var/spool/cron/crontabs 0
+//0 2097 2097 (udisks-daemon) open 1318539063003892-2505 /tmp/foo 34816 0 7
+//0 2097 2097 (udisks-daemon) open 1318539063003892-2505 /tmp/foo2 34816 0 7
+    struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
+    FILE * input_f = fopen("tests/input_data/statAndOpens_input", "r");
+    int ret = load(rep_wld, input_f);
+    EXPECT_EQ(3, rep_wld->num_cmds);
+    EXPECT_EQ(0, ret);
+    EXPECT_EQ(0, rep_wld->current_cmd);
+
+    struct replay_command* loaded_cmd = rep_wld->cmd;
+    EXPECT_EQ(STAT_OP, loaded_cmd->command);
+    EXPECT_EQ(0, loaded_cmd->expected_retval);
+    struct caller* caller_id = loaded_cmd->caller;
+    EXPECT_EQ(0, caller_id->uid);
+    EXPECT_EQ(1163, caller_id->pid);
+    EXPECT_EQ(1163, caller_id->tid);
+//FIXME args
+    loaded_cmd = loaded_cmd->next;	
+    EXPECT_EQ(OPEN_OP, loaded_cmd->command);
+    EXPECT_EQ(7, loaded_cmd->expected_retval);
+    caller_id = loaded_cmd->caller;
+    EXPECT_EQ(0, caller_id->uid);
+    EXPECT_EQ(2097, caller_id->pid);
+    EXPECT_EQ(2097, caller_id->tid);
+    EXPECT_TRUE(strcmp("/tmp/foo", loaded_cmd->params[0].arg.cprt_val) == 0);
+
+    loaded_cmd = loaded_cmd->next;	
+    EXPECT_EQ(OPEN_OP, loaded_cmd->command);
+    EXPECT_EQ(7, loaded_cmd->expected_retval);
+    caller_id = loaded_cmd->caller;
+    EXPECT_EQ(0, caller_id->uid);
+    EXPECT_EQ(2097, caller_id->pid);
+    EXPECT_EQ(2097, caller_id->tid);
+    EXPECT_TRUE(strcmp("/tmp/foo2", loaded_cmd->params[0].arg.cprt_val) == 0);
+    fclose(input_f);
+}

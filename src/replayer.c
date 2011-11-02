@@ -22,10 +22,19 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <hashtbl.h>
 
 int
 replay (replay_workload* rep_workload)
 {
+  HASHTBL *hashtbl;
+
+  if ( ! (hashtbl = hashtbl_create (16, NULL)))//Take care of this size FIXME
+    {
+      fprintf (stderr, "ERROR: hashtbl_create() failed\n");
+      exit (EXIT_FAILURE);
+    }
+
   replay_command* cmd = rep_workload->cmd;
   while (cmd != NULL)
     {
@@ -40,11 +49,17 @@ replay (replay_workload* rep_workload)
 	    stat (args[0].arg.cprt_val, &sb);
 	    break;
 	  case OPEN_OP:
-	    open (args[0].arg.cprt_val, args[1].arg.i_val, args[2].arg.i_val);
+	    {
+	      int op_fd = open (args[0].arg.cprt_val, args[1].arg.i_val, args[2].arg.i_val);
+              hashtbl_insert (hashtbl, args[0].arg.cprt_val, (void*) &op_fd);//It should removed at close FIXME:
+	    }
 	    break;
 	  case READ_OP:
-            //char* buf = (char*) malloc (sizeof (char) *args[2].arg.i_val);
-//	    read(args[0].arg.cprt_val, buf, args[2].arg.i_val);
+	    {
+              char* buf = (char*) malloc (sizeof (char) *args[2].arg.i_val);
+              int* fd = (int*) hashtbl_get (hashtbl, args[0].arg.cprt_val);
+	      read(*fd, buf, args[2].arg.i_val);
+	    }
 	    break;
           default:
 	    return -1;  	
@@ -60,6 +75,7 @@ main (int argc, const char* argv[])
   FILE* fp = fopen(argv[1], "r");
   struct replay_workload* rep_wld = (replay_workload*) malloc (sizeof (replay_workload));
   int ret = load (rep_wld, fp);
+
   replay (rep_wld);
   if (ret < 0)
     {

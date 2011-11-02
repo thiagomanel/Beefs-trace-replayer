@@ -14,7 +14,7 @@
 
 # Points to the root of Google Test, relative to where this file is.
 # Remember to tweak this if you move this file.
-GTEST_DIR = /local/thiagoepdc/Softs/gtest-1.6.0/
+GTEST_DIR = /home/manel/code/gtest-1.6.0/
 
 # Where to find user code.
 USER_DIR = .
@@ -29,7 +29,7 @@ CXXFLAGS += -g -Wall -Wextra
 # created to the list.
 TESTS = loader_unittest
 MAIN = replayer
-UTIL = hashtbl
+#UTIL = hashtbl
 
 # All Google Test headers.  Usually you shouldn't change this
 # definition.
@@ -38,7 +38,8 @@ GTEST_HEADERS = $(GTEST_DIR)/include/gtest/*.h \
 
 # House-keeping build targets.
 
-all : $(TESTS) $(MAIN) $(UTIL)
+#all : $(TESTS) $(MAIN) $(UTIL)
+all : $(TESTS) $(MAIN)
 
 clean :
 	rm -f $(TESTS) $(MAIN) $(UTIL) gtest.a gtest_main.a *.o
@@ -81,22 +82,11 @@ loader_unittest.o : $(USER_DIR)/tests/loader_unittest.cc \
 loader_unittest : loader.o loader_unittest.o gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
 
-replayer.o : $(USER_DIR)/src/replayer.c $(USER_DIR)/include/replayer.h $(GTEST_HEADERS)
+replayer.o : $(USER_DIR)/src/replayer.c $(USER_DIR)/include/replayer.h $(USER_DIR)/include/hashtbl.h $(GTEST_HEADERS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/src/replayer.c
 
-replayer : replayer.o loader.o
+replayer : replayer.o loader.o hashtbl.o
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
 
-#hashtbl.o: $(USER_DIR)/src/hashtbl.c $(USER_DIR)/include/hashtbl.h
-#	cc -I$(USER_DIR)/include -o hashtbl.o -Wall -pedantic -g -c $(USER_DIR)/src/hashtbl.c
-#hashtbl: hashtbl.o
-#	cc -I$(USER_DIR)/include -o hashtbl -Wall -pedantic -g hashtbl.o
-
-hashtbl: hashtbl.o main.o
-	cc -I$(USER_DIR)/include -o hashtbl -Wall -pedantic -g hashtbl.o main.o
-
 hashtbl.o: $(USER_DIR)/src/hashtbl.c $(USER_DIR)/include/hashtbl.h
-	cc -I$(USER_DIR)/include -o hashtbl.o -Wall -pedantic -g -c $(USER_DIR)/src/hashtbl.c
-
-main.o: $(USER_DIR)/src/main.c $(USER_DIR)/include/hashtbl.h
-	cc -I$(USER_DIR)/include -o main.o -Wall -pedantic -g -c $(USER_DIR)/src/main.c
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/src/hashtbl.c

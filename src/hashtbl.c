@@ -24,7 +24,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Retrieved from: http://en.literateprograms.org/Hash_table_(C)?oldid=16749
 */
 
-#include "hashtbl.h"
+#include <hashtbl.h>
 
 #include <string.h>
 #include <stdio.h>
@@ -32,7 +32,7 @@ Retrieved from: http://en.literateprograms.org/Hash_table_(C)?oldid=16749
 static char *mystrdup(const char *s)
 {
 	char *b;
-	if(!(b=malloc(strlen(s)+1))) return NULL;
+	if(!(b=(char*)malloc(strlen(s)+1))) return NULL;
 	strcpy(b, s);
 	return b;
 }
@@ -53,9 +53,9 @@ HASHTBL *hashtbl_create(hash_size size, hash_size (*hashfunc)(const char *))
 {
 	HASHTBL *hashtbl;
 
-	if(!(hashtbl=malloc(sizeof(HASHTBL)))) return NULL;
+	if(!(hashtbl=(HASHTBL*)malloc(sizeof(HASHTBL)))) return NULL;
 
-	if(!(hashtbl->nodes=calloc(size, sizeof(struct hashnode_s*)))) {
+	if(!(hashtbl->nodes=(hashnode_s**)calloc(size, sizeof(struct hashnode_s*)))) {
 		free(hashtbl);
 		return NULL;
 	}
@@ -106,7 +106,7 @@ int hashtbl_insert(HASHTBL *hashtbl, const char *key, void *data)
 	}
 
 
-	if(!(node=malloc(sizeof(struct hashnode_s)))) return -1;
+	if(!(node=(hashnode_s*)malloc(sizeof(struct hashnode_s)))) return -1;
 	if(!(node->key=mystrdup(key))) {
 		free(node);
 		return -1;
@@ -167,7 +167,7 @@ int hashtbl_resize(HASHTBL *hashtbl, hash_size size)
 	newtbl.size=size;
 	newtbl.hashfunc=hashtbl->hashfunc;
 
-	if(!(newtbl.nodes=calloc(size, sizeof(struct hashnode_s*)))) return -1;
+	if(!(newtbl.nodes=(hashnode_s**)calloc(size, sizeof(struct hashnode_s*)))) return -1;
 
 	for(n=0; n<hashtbl->size; ++n) {
 		for(node=hashtbl->nodes[n]; node; node=next) {

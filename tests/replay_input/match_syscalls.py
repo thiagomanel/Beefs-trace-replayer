@@ -1,4 +1,5 @@
 import sys
+import getopt
 
 def match(exp_call, actual_call):
     return (match_call_name(exp_call[0], call_name(actual_call)), 
@@ -47,8 +48,12 @@ def parse_workload_line(workload_line):
 
 if __name__ == "__main__":
 #FIXME: how to test timing and ordering ??
-    replay_strace_output = open(sys.argv[1], 'r').readlines()
-    replay_input = open(sys.argv[2], 'r')
+    #python match_syscalls.py replay_strace_output replay_input -v
+    opts, args = getopt.getopt(sys.argv[1:], "-v")
+    
+    replay_strace_output = open(args[0], 'r').readlines()
+    replay_input = open(args[1], 'r')
+    verbose = ("-v", "") in opts
 
     for replay_line in replay_input:
         expected_syscall = parse_workload_line(replay_line) #naive case, a single input call in a input file
@@ -61,10 +66,11 @@ if __name__ == "__main__":
 	    complete_match = complete_match or ( sum([ok_call, ok_args, ok_rvalue]) == len([ok_call, ok_args, ok_rvalue]) )
 
 	print '[RUN]\texpected={expected}\tMATCH={match}'.format(expected=expected_syscall, match=complete_match)
-	print 'candidates'
-    	for candidate in candidate_matches:
-    	    print '\tactual\t{actual}'.format(actual=candidate[1].strip())
-	    print '\tcall_name\t{ok_name}'.format(ok_name=candidate[2])
-	    print '\targs\t{ok_args}'.format(ok_args=candidate[3])
-	    print '\trvalue\t{ok_rvalue}\n'.format(ok_rvalue=candidate[4])
+        if verbose:
+	    print 'candidates'
+     	    for candidate in candidate_matches:
+    	        print '\tactual\t{actual}'.format(actual=candidate[1].strip())
+	        print '\tcall_name\t{ok_name}'.format(ok_name=candidate[2])
+	        print '\targs\t{ok_args}'.format(ok_args=candidate[3])
+	        print '\trvalue\t{ok_rvalue}\n'.format(ok_rvalue=candidate[4])
 

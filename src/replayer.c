@@ -60,6 +60,12 @@ replay (replay_workload* rep_workload)
               int* fd = (int*) hashtbl_get (hashtbl, args[0].arg.cprt_val);
 	      read(*fd, buf, args[2].arg.i_val);
 	    }
+          case WRITE_OP:
+	    {
+              char* buf = (char*) malloc (sizeof (char) *args[2].arg.i_val);
+              int* fd = (int*) hashtbl_get (hashtbl, args[0].arg.cprt_val);
+	      write(*fd, buf, args[2].arg.i_val);
+	    }
 	    break;
           default:
 	    return -1;  	

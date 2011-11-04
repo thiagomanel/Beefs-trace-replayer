@@ -67,6 +67,10 @@ replay (replay_workload* rep_workload)
 	      write(*fd, buf, args[2].arg.i_val);
 	    }
 	    break;
+	  case CLOSE_OP:
+	    {
+	      
+	    }
           default:
 	    return -1;  	
 	}

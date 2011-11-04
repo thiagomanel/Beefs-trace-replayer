@@ -24,15 +24,20 @@
 #include <unistd.h>
 #include <hashtbl.h>
 
+#define PID_MAX 32768
+static int[PID_MAX][PID_MAX] pids;
+
+fill_pids(int* pid_line)
+  {
+    for (int i = 0; i <= PID_MAX
+  }
+
 int
 replay (replay_workload* rep_workload)
 {
-  HASHTBL *hashtbl;
-
-  if ( ! (hashtbl = hashtbl_create (16, NULL)))//Take care of this size FIXME
+  for (int = 0 ; i <= PID_MAX ; i++)
     {
-      fprintf (stderr, "ERROR: hashtbl_create() failed\n");
-      exit (EXIT_FAILURE);
+	pids[0] = NULL;
     }
 
   replay_command* cmd = rep_workload->cmd;
@@ -51,6 +56,9 @@ replay (replay_workload* rep_workload)
 	  case OPEN_OP:
 	    {
 	      int op_fd = open (args[0].arg.cprt_val, args[1].arg.i_val, args[2].arg.i_val);
+ 	      int pid_from_trace = cmd->caller->pid;
+	      for 
+              pids[pid_from_trace] = 
               hashtbl_insert (hashtbl, args[0].arg.cprt_val, (void*) &op_fd);//It should removed at close FIXME:
 	    }
 	    break;
@@ -69,7 +77,8 @@ replay (replay_workload* rep_workload)
 	    break;
 	  case CLOSE_OP:
 	    {
-	      
+              int* fd = (int*) hashtbl_get (hashtbl, args[0].arg.cprt_val);
+	      close();
 	    }
           default:
 	    return -1;  	

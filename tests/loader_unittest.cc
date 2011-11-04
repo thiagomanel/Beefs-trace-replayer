@@ -59,6 +59,8 @@ TEST(LoaderTest, LoadCloseCall) {
     EXPECT_EQ(0, caller_id->uid);
     EXPECT_EQ(2097, caller_id->pid);
     EXPECT_EQ(2097, caller_id->tid);
+//args
+    EXPECT_EQ(7, loaded_cmd->params[0].arg.i_val);
     fclose(input_f);
 }
 

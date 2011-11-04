@@ -255,8 +255,17 @@ parse_line (replay_command** cmd, char* line)
         token = strtok (NULL, " ");//
         exp_rvalue = atoi (token);
         break;
+      case CLOSE_OP:
+  	current_command->params = (parms*) malloc ( sizeof (parms));//it should be done at each switch case
+        token = strtok (NULL, " ");//timestamp
+        token = strtok (NULL, " ");
+	parm = current_command->params;
+        parm[0].arg.i_val = atoi (token);//fd
+        token = strtok (NULL, " ");
+        exp_rvalue = atoi (token);
+        break;
       default://FIXME we need a case to NONE_OP, test it
-  	current_command->params = (parms*) malloc (2 * sizeof (parms));//it should be done at each switch case
+  	current_command->params = (parms*) malloc ( sizeof (parms));//it should be done at each switch case
         token = strtok (NULL, " ");//timestamp
         token = strtok (NULL, " ");//arg
 	parm = current_command->params;

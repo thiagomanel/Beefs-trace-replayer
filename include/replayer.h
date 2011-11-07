@@ -57,39 +57,37 @@ typedef unsigned short op_t;
 
 //TODO: timestamps
 //TODO: actual returned value
+typedef struct _caller {
+	int uid;
+	int pid;
+	int tid;
+} Caller;
+
+typedef struct _parms {
+  union args {
+    int i_val;
+    long l_val;
+    char* cprt_val;
+  } arg;
+} Parms;
+
 struct replay_command {
 	op_t command;
-	struct caller* caller;
-	struct parms* params;
+	Caller* caller;
+	Parms* params;
 	int args[MAX_ARGS];
 	int expected_retval;
 
 	struct replay_command* next;
 };
 
-struct parms {
-  union args {
-    int i_val;
-    long l_val;
-    char* cprt_val;
-  }arg;
-  //struct parms* next;
-};
-
-struct caller {
-	unsigned int uid;
-	unsigned int pid;
-	unsigned int tid;
-//	char exec_name[PROC_NAME_LEN];
-};
-
-struct replay_workload {
+typedef struct replay_workload {
         struct replay_command* cmd;
         unsigned int num_cmds;
         unsigned int current_cmd;
-};
+} Replay_workload;
 
 int
-replay (replay_workload* rep_workload);
+replay (Replay_workload* rep_workload);
 
 #endif /* _REPLAYER_H */

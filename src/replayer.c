@@ -22,23 +22,26 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <hashtbl.h>
+#include <string.h>
 
 #define PID_MAX 32768
-static int[PID_MAX][PID_MAX] pids;
 
-fill_pids(int* pid_line)
-  {
-    for (int i = 0; i <= PID_MAX
-  }
+void
+alloc_fd_array (int* pid_entry)
+{
+  pid_entry = (int*) malloc (PID_MAX * sizeof (int));
+  memset (pid_entry, -1, PID_MAX * sizeof (int));
+}
 
 int
 replay (replay_workload* rep_workload)
 {
-  for (int = 0 ; i <= PID_MAX ; i++)
-    {
-	pids[0] = NULL;
-    }
+  /**
+  * pids[pid_from_trace] = fd_pairs[] = {fd_pair_0, fd_pair_1, ...,fd_pair_n}
+  * fd_pairs[fd_from_trace] = fd_from_replay
+  */
+  int *pids [PID_MAX];
+  memset (pids, 0, PID_MAX * sizeof (int*));//size arg is correct ??
 
   replay_command* cmd = rep_workload->cmd;
   while (cmd != NULL)
@@ -55,31 +58,56 @@ replay (replay_workload* rep_workload)
 	    break;
 	  case OPEN_OP:
 	    {
-	      int op_fd = open (args[0].arg.cprt_val, args[1].arg.i_val, args[2].arg.i_val);
+	      int fd_from_replay = open (args[0].arg.cprt_val, args[1].arg.i_val, args[2].arg.i_val);
  	      int pid_from_trace = cmd->caller->pid;
-	      for 
-              pids[pid_from_trace] = 
-              hashtbl_insert (hashtbl, args[0].arg.cprt_val, (void*) &op_fd);//It should removed at close FIXME:
+
+	      if (!pids[pid_from_trace])
+                {
+		  //FIXME it is a way too big. maybe pre-process trace to uncover the biggest possible value
+		  pids[pid_from_trace] = (int*) malloc ( PID_MAX * sizeof (int));
+		  alloc_fd_array (pids[pid_from_trace]);
+                }
+	      int fd_from_trace = cmd->expected_retval;
+	      int* fds = pids[pid_from_trace];
+	      *(fds+fd_from_trace) = fd_from_replay;
 	    }
 	    break;
 	  case READ_OP:
 	    {
-              char* buf = (char*) malloc (sizeof (char) *args[2].arg.i_val);
-              int* fd = (int*) hashtbl_get (hashtbl, args[0].arg.cprt_val);
-	      read(*fd, buf, args[2].arg.i_val);
+	      int fd_from_trace = args[1].arg.i_val;
+	      int read_count = args[2].arg.i_val;
+
+ 	      int pid_from_trace = cmd->caller->pid;
+	      int* fds = pids[pid_from_trace];
+	      int replayed_fd = *(fds+fd_from_trace);
+
+              char* buf = (char*) malloc (sizeof (char) * read_count);//FIXME should be share a big bufer to avoid malloc_ing time wasting ?
+	      read(replayed_fd, buf, read_count);
 	    }
+	    break;
           case WRITE_OP:
 	    {
-              char* buf = (char*) malloc (sizeof (char) *args[2].arg.i_val);
-              int* fd = (int*) hashtbl_get (hashtbl, args[0].arg.cprt_val);
-	      write(*fd, buf, args[2].arg.i_val);
+	      int fd_from_trace = args[1].arg.i_val;
+	      int write_count = args[2].arg.i_val;
+
+ 	      int pid_from_trace = cmd->caller->pid;
+	      int* fds = pids[pid_from_trace];
+	      int replayed_fd = *(fds+fd_from_trace);
+
+              char* buf = (char*) malloc (sizeof (char) * write_count);//FIXME should be share a big bufer to avoid malloc_ing time wasting ?
+	      write(replayed_fd, buf, write_count);
 	    }
 	    break;
 	  case CLOSE_OP:
 	    {
-              int* fd = (int*) hashtbl_get (hashtbl, args[0].arg.cprt_val);
-	      close();
+	      int fd_from_trace = args[0].arg.i_val;
+
+ 	      int pid_from_trace = cmd->caller->pid;
+	      int* fds = pids[pid_from_trace];
+	      int replayed_fd = *(fds+fd_from_trace);
+	      close(replayed_fd);
 	    }
+	    break;
           default:
 	    return -1;  	
 	}

@@ -1,0 +1,9 @@
+1159 2364 32311 (eclipse) mkdir 2649-480 /tmp/jdt-images 511 0
+1159 2364 32311 (eclipse) mkdir 2650-200 /tmp/jdt-images2 509 0
+0 1163 1163 (cron) stat 6436-18178 /var/spool/cron/crontabs 0
+0 2097 2097 (udisks-daemon) open 6892-2505 /tmp/foo 34816 0 7
+0 2097 2097 (snmpd) read 7564-329 /tmp/foo 7 3072 2971
+0 2097 2097 (udisks-daemon) open 8999-2505 /tmp/foo2 32834 0 8
+0 2097 2097 (xprintidle) write 9000-131 /tmp/foo2 8 17 17
+0 2097 2097 (udisks-daemon) close 10403-37 7 0
+0 2097 2097 (udisks-daemon) close 10640-37 8 0

@@ -24,6 +24,10 @@ def return_line(line):
     w_timestamp.insert(4, "return") #adding "return" token before proper call name
     return w_timestamp
 
+def line_with_id(line, id):
+    line.append(str(id))
+    return line
+
 def timestamp(formatted_line):
     if formatted_line[4] == "return":
     	return long(formatted_line[5+1])
@@ -33,11 +37,13 @@ def timestamp(formatted_line):
 def format_input(input_file, output_file):
 #collision
     intermediate = {}
+    trace_line_id = 1
     for in_line in input_file:
 	entry_l = entry_line(in_line)
 	return_l = return_line(in_line)
-	intermediate[timestamp(entry_l)] = entry_l
-	intermediate[timestamp(return_l)] = return_l
+	intermediate[timestamp(entry_l)] = line_with_id(entry_l, trace_line_id)
+	intermediate[timestamp(return_l)] = line_with_id(return_l, trace_line_id)
+	trace_line_id = trace_line_id + 1
     for stamp in sorted(intermediate.iterkeys()):
 	output_file.write(" ".join(intermediate[stamp]) + "\n")
 

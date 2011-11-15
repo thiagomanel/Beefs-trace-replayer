@@ -1,18 +1,18 @@
-1159 2364 32311 (eclipse) mkdir 2649 /tmp/jdt-images 511 0
-1159 2364 32311 (eclipse) mkdir 2650 /tmp/jdt-images2 509 0
-1159 2364 32311 (eclipse) return mkdir 2850 /tmp/jdt-images2 509 0
-1159 2364 32311 (eclipse) return mkdir 3129 /tmp/jdt-images 511 0
-0 1163 1163 (cron) stat 6436 /var/spool/cron/crontabs 0
-0 2097 2097 (udisks-daemon) open 6892 /tmp/foo 34816 0 7
-0 2097 2097 (snmpd) read 7564 /tmp/foo 7 3072 2971
-0 2097 2097 (snmpd) return read 7893 /tmp/foo 7 3072 2971
-0 2097 2097 (udisks-daemon) open 8999 /tmp/foo2 32834 0 8
-0 2097 2097 (xprintidle) write 9000 /tmp/foo2 8 17 17
-0 2097 2097 (xprintidle) return write 9131 /tmp/foo2 8 17 17
-0 2097 2097 (udisks-daemon) return open 9397 /tmp/foo 34816 0 7
-0 2097 2097 (udisks-daemon) close 10403 7 0
-0 2097 2097 (udisks-daemon) return close 10440 7 0
-0 2097 2097 (udisks-daemon) close 10640 8 0
-0 2097 2097 (udisks-daemon) return close 10677 8 0
-0 2097 2097 (udisks-daemon) return open 11504 /tmp/foo2 32834 0 8
-0 1163 1163 (cron) return stat 24614 /var/spool/cron/crontabs 0
+1159 2364 32311 (eclipse) mkdir 2649 /tmp/jdt-images 511 0 1
+1159 2364 32311 (eclipse) mkdir 2650 /tmp/jdt-images2 509 0 2
+1159 2364 32311 (eclipse) return mkdir 2850 /tmp/jdt-images2 509 0 2
+1159 2364 32311 (eclipse) return mkdir 3129 /tmp/jdt-images 511 0 1
+0 1163 1163 (cron) stat 6436 /var/spool/cron/crontabs 0 3
+0 2097 2097 (udisks-daemon) open 6892 /tmp/foo 34816 0 7 4
+0 2097 2097 (snmpd) read 7564 /tmp/foo 7 3072 2971 5
+0 2097 2097 (snmpd) return read 7893 /tmp/foo 7 3072 2971 5
+0 2097 2097 (udisks-daemon) open 8999 /tmp/foo2 32834 0 8 6
+0 2097 2097 (xprintidle) write 9000 /tmp/foo2 8 17 17 7
+0 2097 2097 (xprintidle) return write 9131 /tmp/foo2 8 17 17 7
+0 2097 2097 (udisks-daemon) return open 9397 /tmp/foo 34816 0 7 4
+0 2097 2097 (udisks-daemon) close 10403 7 0 8
+0 2097 2097 (udisks-daemon) return close 10440 7 0 8
+0 2097 2097 (udisks-daemon) close 10640 8 0 9
+0 2097 2097 (udisks-daemon) return close 10677 8 0 9
+0 2097 2097 (udisks-daemon) return open 11504 /tmp/foo2 32834 0 8 6
+0 1163 1163 (cron) return stat 24614 /var/spool/cron/crontabs 0 3

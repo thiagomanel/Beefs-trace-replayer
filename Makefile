@@ -14,7 +14,7 @@
 
 # Points to the root of Google Test, relative to where this file is.
 # Remember to tweak this if you move this file.
-GTEST_DIR = /home/manel/code/gtest-1.6.0/
+GTEST_DIR = /local/thiagoepdc/Softs/gtest-1.6.0/
 
 # Where to find user code.
 USER_DIR = .
@@ -29,6 +29,7 @@ CXXFLAGS += -g -Wall -Wextra
 # created to the list.
 TESTS = loader_unittest
 MAIN = replayer
+UTIL = pthread_test
 
 # All Google Test headers.  Usually you shouldn't change this
 # definition.
@@ -37,11 +38,10 @@ GTEST_HEADERS = $(GTEST_DIR)/include/gtest/*.h \
 
 # House-keeping build targets.
 
-#all : $(TESTS) $(MAIN) $(UTIL)
-all : $(TESTS) $(MAIN)
+all : $(TESTS) $(MAIN) $(UTIL)
 
 clean :
-	rm -f $(TESTS) $(MAIN) $(UTIL) gtest.a gtest_main.a *.o
+	rm -f $(TESTS) $(MAIN) $(UTIL) $(TESTS) gtest.a gtest_main.a *.o
 
 # Builds gtest.a and gtest_main.a.
 
@@ -86,3 +86,6 @@ replayer.o : $(USER_DIR)/src/replayer.c $(USER_DIR)/include/replayer.h $(GTEST_H
 
 replayer : replayer.o loader.o
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
+
+pthread_test : $(USER_DIR)/src/pthread_test.c
+	gcc -lpthread $(USER_DIR)/src/pthread_test.c -o pthread_test

@@ -25,7 +25,7 @@ Website: richiejp.wordpress.com email: richiejp@gmail.com*/
 #include <stdlib.h>
 #include <stdio.h>
 #include <pthread.h>
-
+#include <semaphore.h>
 void* producer(void*);
 void* consumer(void*);
 

@@ -23,12 +23,125 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
+#include </usr/include/semaphore.h>
 
 #define PID_MAX 32768
+#define BUFF_SIZE   20
+
+int N_ITEMS;
 
 void alloc_fd_array(int* pid_entry) {
 	pid_entry = (int*) malloc(PID_MAX * sizeof(int));
 	memset(pid_entry, -1, PID_MAX * sizeof(int));
+}
+
+typedef struct {
+
+	int produced_queue[BUFF_SIZE];
+	int produced_empty;
+	int produced_full;
+
+	struct replay_command* consumed_queue[BUFF_SIZE];
+	int consumed_empty;
+	int consumed_full;
+
+	int produced_count;
+
+	sem_t sem_produced_full;
+	sem_t sem_produced_empty;
+
+	sem_t sem_consumed_full;
+	sem_t sem_consumed_empty;
+
+	sem_t mutex;
+
+} sbuffs_t;
+
+sbuffs_t shared;
+
+struct replay_command* _pred(struct replay_command* command) {
+	return NULL;
+}
+
+struct replay_command* _succ(struct replay_command* command) {
+	return NULL;
+}
+
+int has_commands_to_produce(int count) {
+	return 0;
+}
+
+void _del(struct replay_command* collection, struct replay_command* element) { }
+
+void _add(struct replay_command* collection, struct replay_command* element) { }
+
+int _contains(struct replay_command* collection, struct replay_command* element) {
+	return 0;
+}
+
+int command_was_produced(struct replay_command* command) {
+	return 0;
+}
+
+int children_were_dispatched(struct replay_command* command) {
+	return 0;
+}
+
+/**
+ * Produce commands to be dispatched. Dispatching evolves according to a
+ * dispatch frontier. Commands come into the frontier after they have
+ * been consumed (dispatched) and they left the frontier when all of their children
+ * come to frontier. A fake command acts as workflow's root to boostrap the frontier.
+ */
+void produce() {
+
+	int produce_count, i = 0;
+	struct replay_command* frontier;
+	struct replay_command* current_frontier_cmd;
+
+	while (has_commands_to_produce(produce_count)) {
+
+		//FIXME: acquire lock
+		current_frontier_cmd = frontier;
+
+		while (current_frontier_cmd != NULL) {
+
+			/* dispatch children that was not dispatch yet*/
+			struct replay_command* children = _succ(current_frontier_cmd);
+			while (children != NULL) {
+				if (! command_was_produced(children)) {
+
+					//1. produce
+					//2. mark
+					//3. increment count
+
+					children = children.next;
+				}
+			}
+			current_frontier_cmd = current_frontier_cmd.next;
+		}
+
+		//FIXME release lock
+		//FIXME sleep ?? is it a good idea
+		//FIXME acquire locks
+
+		struct replay_command* consumed;
+		struct replay_command* parent;
+
+		/* new items come to the frontier after they have been consumed (dispatched)  */
+		for (i = 0; i < shared.consumed_empty; i++)
+			consumed = shared.consumed_queue[i];
+			parent = _pred(consumed);
+			/* items left the frontier if its children were consumed (dispatched) */
+			while (parent != NULL) {
+				if ( children_were_dispatched(parent)) {
+					_del(frontier, parent);
+				}
+			}
+			if (! _contains(frontier, consumed)) {
+				_add(frontier, consumed);
+			}
+	}
 }
 
 int replay(Replay_workload* rep_workload) {

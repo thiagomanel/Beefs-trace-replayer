@@ -78,6 +78,9 @@ struct replay_command {
 	int args[MAX_ARGS];
 	int expected_retval;
 
+	struct replay_command* children;
+	struct replay_command* parents;
+
 	struct replay_command* next;
 };
 

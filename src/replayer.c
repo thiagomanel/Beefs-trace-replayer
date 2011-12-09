@@ -30,22 +30,23 @@
 
 int N_ITEMS;
 
-void alloc_fd_array(int* pid_entry) {
-	pid_entry = (int*) malloc(PID_MAX * sizeof(int));
-	memset(pid_entry, -1, PID_MAX * sizeof(int));
+void alloc_fd_array (int* pid_entry) {
+	pid_entry = (int*) malloc (PID_MAX * sizeof(int));
+	memset (pid_entry, -1, PID_MAX * sizeof(int));
 }
 
-typedef struct {
+typedef struct _sbuffs_t {
 
-	int produced_queue[BUFF_SIZE];
-	int produced_empty;
-	int produced_full;
+	unsigned int produced_queue[BUFF_SIZE];
+	unsigned int produced_empty;
+	unsigned int produced_full;
 
 	struct replay_command* consumed_queue[BUFF_SIZE];
-	int consumed_empty;
-	int consumed_full;
+	unsigned int consumed_empty;
+	unsigned int consumed_full;
 
-	int produced_count;
+	unsigned int produced_count;
+	const unsigned int total_commands;
 
 	sem_t sem_produced_full;
 	sem_t sem_produced_empty;
@@ -57,49 +58,49 @@ typedef struct {
 
 } sbuffs_t;
 
-sbuffs_t shared;
+typedef struct _producible_command {
 
-struct replay_command* _pred(struct replay_command* command) {
-	return NULL;
+	struct replay_command* command;
+	unsigned int produced;
+	unsigned int consumed;
+} producible_command;
+
+int has_commands_to_produce (int count, sbuffs_t* shared) {
+	return shared->total_commands - count;
 }
 
-struct replay_command* _succ(struct replay_command* command) {
-	return NULL;
-}
+void _del (struct replay_command* collection, struct replay_command* element) { }
 
-int has_commands_to_produce(int count) {
+void _add (struct replay_command* collection, struct replay_command* element) { }
+
+int _contains (struct replay_command* collection, struct replay_command* element) {
 	return 0;
 }
 
-void _del(struct replay_command* collection, struct replay_command* element) { }
-
-void _add(struct replay_command* collection, struct replay_command* element) { }
-
-int _contains(struct replay_command* collection, struct replay_command* element) {
+int command_was_produced (struct replay_command* command) {
 	return 0;
 }
 
-int command_was_produced(struct replay_command* command) {
-	return 0;
-}
-
-int children_were_dispatched(struct replay_command* command) {
+int children_were_dispatched (struct replay_command* command) {
 	return 0;
 }
 
 /**
  * Produce commands to be dispatched. Dispatching evolves according to a
- * dispatch frontier. Commands come into the frontier after they have
+ * dispatch frontier. Commands enter the frontier after they have
  * been consumed (dispatched) and they left the frontier when all of their children
  * come to frontier. A fake command acts as workflow's root to boostrap the frontier.
  */
-void produce() {
+void produce () {
 
-	int produce_count, i = 0;
+	unsigned int i;
+	int produce_count;
+
 	struct replay_command* frontier;
 	struct replay_command* current_frontier_cmd;
+	sbuffs_t* shared = (sbuffs_t*) malloc( sizeof(sbuffs_t));
 
-	while (has_commands_to_produce(produce_count)) {
+	while (has_commands_to_produce (produce_count, shared)) {
 
 		//FIXME: acquire lock
 		current_frontier_cmd = frontier;
@@ -107,15 +108,15 @@ void produce() {
 		while (current_frontier_cmd != NULL) {
 
 			/* dispatch children that was not dispatch yet*/
-			struct replay_command* children = _succ(current_frontier_cmd);
+			struct replay_command* children = current_frontier_cmd->children;
 			while (children != NULL) {
-				if (! command_was_produced(children)) {
+				if (! command_was_produced (children)) {
 
 					//1. produce
 					//2. mark
 					//3. increment count
 
-					children = children.next;
+					children = children->children;
 				}
 			}
 			current_frontier_cmd = current_frontier_cmd.next;
@@ -131,20 +132,20 @@ void produce() {
 		/* new items come to the frontier after they have been consumed (dispatched)  */
 		for (i = 0; i < shared.consumed_empty; i++)
 			consumed = shared.consumed_queue[i];
-			parent = _pred(consumed);
+			parent = consumed->parents;
 			/* items left the frontier if its children were consumed (dispatched) */
 			while (parent != NULL) {
-				if ( children_were_dispatched(parent)) {
+				if ( children_were_dispatched (parent)) {
 					_del(frontier, parent);
 				}
 			}
-			if (! _contains(frontier, consumed)) {
-				_add(frontier, consumed);
+			if (! _contains (frontier, consumed)) {
+				_add (frontier, consumed);
 			}
 	}
 }
 
-int replay(Replay_workload* rep_workload) {
+int replay (Replay_workload* rep_workload) {
 	/**
 	 * pids[pid_from_trace] = fd_pairs[] = {fd_pair_0, fd_pair_1, ...,fd_pair_n}
 	 * fd_pairs[fd_from_trace] = fd_from_replay
@@ -220,7 +221,7 @@ int replay(Replay_workload* rep_workload) {
 	return -1;
 }
 
-int main(int argc, const char* argv[]) {
+int main (int argc, const char* argv[]) {
 	FILE* fp = fopen(argv[1], "r");
 	Replay_workload* rep_wld = (Replay_workload*) malloc(
 			sizeof(Replay_workload));

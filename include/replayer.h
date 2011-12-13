@@ -72,6 +72,12 @@ typedef struct _parms {
 } Parms;
 
 struct replay_command {
+
+	//FIXME we can use a hash-like algorithm to put/remove commands from
+	//the dispatch frontier. however, iterating seems ok too (few elements in the frontier ? so, trading
+	//memory by computing
+	unsigned int id;
+
 	op_t command;
 	Caller* caller;
 	Parms* params;
@@ -79,9 +85,13 @@ struct replay_command {
 	int expected_retval;
 
 	struct replay_command* children;
-	struct replay_command* parents;
+	unsigned int n_children;
 
-	struct replay_command* next;
+	struct replay_command* parents;
+	unsigned int n_parents;
+
+	unsigned int produced;
+	unsigned int consumed;
 };
 
 typedef struct replay_workload {

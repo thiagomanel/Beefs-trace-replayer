@@ -30,12 +30,20 @@
 
 int N_ITEMS;
 
+struct dispatchable_command {
+
+	struct replay_command* command;
+	struct dispatchable_command* next;
+};
+
 void alloc_fd_array (int* pid_entry) {
 	pid_entry = (int*) malloc (PID_MAX * sizeof(int));
 	memset (pid_entry, -1, PID_MAX * sizeof(int));
 }
 
 typedef struct _sbuffs_t {
+
+	unsigned int produced_count;
 
 	unsigned int produced_queue[BUFF_SIZE];
 	unsigned int produced_empty;
@@ -48,6 +56,8 @@ typedef struct _sbuffs_t {
 	unsigned int produced_count;
 	const unsigned int total_commands;
 
+	struct dispatchable_command* frontier;
+
 	sem_t sem_produced_full;
 	sem_t sem_produced_empty;
 
@@ -58,18 +68,19 @@ typedef struct _sbuffs_t {
 
 } sbuffs_t;
 
-typedef struct _producible_command {
-
-	struct replay_command* command;
-	unsigned int produced;
-	unsigned int consumed;
-} producible_command;
-
-int has_commands_to_produce (int count, sbuffs_t* shared) {
-	return shared->total_commands - count;
+int has_commands_to_produce (sbuffs_t* shared) {
+	return shared->total_commands - shared->produced_count;
 }
 
-void _del (struct replay_command* collection, struct replay_command* element) { }
+void _del (struct dispatchable_command* collection, struct replay_command* element) {
+
+	while (collection != NULL) {
+		struct replay_command* cmd = collection->command;
+		if (cmd->id == element->id) {
+
+		}
+	}
+}
 
 void _add (struct replay_command* collection, struct replay_command* element) { }
 
@@ -77,12 +88,36 @@ int _contains (struct replay_command* collection, struct replay_command* element
 	return 0;
 }
 
-int command_was_produced (struct replay_command* command) {
-	return 0;
+/**
+ * It checks if all replay_command from commands array were produced
+ */
+int produced (struct replay_command* commands, int n_commands) {
+
+	int i;
+	int dispatched;
+
+	for (i = 0; i < n_commands; i++) {
+		struct replay_command* cmd = commands[ i * sizeof (struct replay_command)];
+		dispatched += cmd->consumed;
+	}
+
+	return dispatched;
 }
 
-int children_were_dispatched (struct replay_command* command) {
-	return 0;
+/**
+ * It checks if all replay_command from commands array were dispatched
+ */
+int consumed (struct replay_command* commands, int n_commands) {
+
+	int i;
+	int dispatched;
+
+	for (i = 0; i < n_commands; i++) {
+		struct replay_command* cmd = commands[ i * sizeof (struct replay_command)];
+		dispatched += cmd->consumed;
+	}
+
+	return dispatched;
 }
 
 /**
@@ -94,32 +129,29 @@ int children_were_dispatched (struct replay_command* command) {
 void produce () {
 
 	unsigned int i;
-	int produce_count;
 
-	struct replay_command* frontier;
-	struct replay_command* current_frontier_cmd;
+	struct dispatchable_command current_d_cmd;
+	struct replay_command* current_r_cmd;
+
 	sbuffs_t* shared = (sbuffs_t*) malloc( sizeof(sbuffs_t));
 
-	while (has_commands_to_produce (produce_count, shared)) {
+	while (has_commands_to_produce (shared)) {
 
 		//FIXME: acquire lock
-		current_frontier_cmd = frontier;
 
-		while (current_frontier_cmd != NULL) {
-
-			/* dispatch children that was not dispatch yet*/
-			struct replay_command* children = current_frontier_cmd->children;
+		while (current_d_cmd != NULL) {
+			/* dispatch children that was not dispatched yet*/
+			current_r_cmd = current_d_cmd->command;
+			struct replay_command* children = current_r_cmd->children;
 			while (children != NULL) {
-				if (! command_was_produced (children)) {
-
+				if (! produced (children, current_r_cmd->n_children)) {
 					//1. produce
 					//2. mark
 					//3. increment count
-
 					children = children->children;
 				}
 			}
-			current_frontier_cmd = current_frontier_cmd.next;
+			current_d_cmd = current_d_cmd->next;
 		}
 
 		//FIXME release lock
@@ -130,13 +162,13 @@ void produce () {
 		struct replay_command* parent;
 
 		/* new items come to the frontier after they have been consumed (dispatched)  */
-		for (i = 0; i < shared.consumed_empty; i++)
-			consumed = shared.consumed_queue[i];
-			parent = consumed->parents;
+		for (i = 0; i < shared->consumed_empty; i++)
+			consumed = shared->consumed_queue[i];
 			/* items left the frontier if its children were consumed (dispatched) */
+			parent = consumed->parents;
 			while (parent != NULL) {
-				if ( children_were_dispatched (parent)) {
-					_del(frontier, parent);
+				if ( consumed (parent->children, parent->n_children)) {
+					_del(shared->frontier, parent);
 				}
 			}
 			if (! _contains (frontier, consumed)) {
@@ -188,7 +220,8 @@ int replay (Replay_workload* rep_workload) {
 			int* fds = pids[pid_from_trace];
 			int replayed_fd = *(fds + fd_from_trace);
 
-			char* buf = (char*) malloc(sizeof(char) * read_count); //FIXME should be share a big bufer to avoid malloc_ing time wasting ?
+			//FIXME should be share a big bufer to avoid malloc_ing time wasting ?
+			char* buf = (char*) malloc(sizeof(char) * read_count);
 			read(replayed_fd, buf, read_count);
 		}
 			break;
@@ -200,7 +233,8 @@ int replay (Replay_workload* rep_workload) {
 			int* fds = pids[pid_from_trace];
 			int replayed_fd = *(fds + fd_from_trace);
 
-			char* buf = (char*) malloc(sizeof(char) * write_count); //FIXME should be share a big bufer to avoid malloc_ing time wasting ?
+			//FIXME should be share a big bufer to avoid malloc_ing time wasting ?
+			char* buf = (char*) malloc(sizeof(char) * write_count);
 			write(replayed_fd, buf, write_count);
 		}
 			break;

@@ -84,6 +84,8 @@ struct replay_command {
 	int args[MAX_ARGS];
 	int expected_retval;
 
+	struct replay_command* next;//FIXME deprecated. to be removed
+
 	struct replay_command* children;
 	unsigned int n_children;
 

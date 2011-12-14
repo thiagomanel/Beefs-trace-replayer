@@ -43,8 +43,6 @@ void alloc_fd_array (int* pid_entry) {
 
 typedef struct _sbuffs_t {
 
-	unsigned int produced_count;
-
 	unsigned int produced_queue[BUFF_SIZE];
 	unsigned int produced_empty;
 	unsigned int produced_full;
@@ -99,9 +97,10 @@ _add (struct dispatchable_command* current, struct replay_command* to_add) {
 
 	tmp->next =
 			(struct dispatchable_command*) malloc (sizeof (struct dispatchable_command));
+	tmp->next->command = to_add;
 }
 
-int _contains (struct replay_command* current, struct replay_command* tocheck) {
+int _contains (struct dispatchable_command* current, struct replay_command* tocheck) {
 
 	int contains = 0;
 	struct dispatchable_command* tmp = current;
@@ -124,8 +123,8 @@ int produced (struct replay_command* commands, int n_commands) {
 	int dispatched;
 
 	for (i = 0; i < n_commands; i++) {
-		struct replay_command* cmd = commands[ i * sizeof (struct replay_command)];
-		dispatched += cmd->consumed;
+		struct replay_command cmd = *(commands + (i * sizeof (struct replay_command)));
+		dispatched += cmd.consumed;
 	}
 
 	return dispatched;
@@ -134,14 +133,14 @@ int produced (struct replay_command* commands, int n_commands) {
 /**
  * It checks if all replay_command from commands array were dispatched
  */
-int consumed (struct replay_command* commands, int n_commands) {
+int _consumed (struct replay_command* commands, int n_commands) {
 
 	int i;
 	int dispatched;
 
 	for (i = 0; i < n_commands; i++) {
-		struct replay_command* cmd = commands[ i * sizeof (struct replay_command)];
-		dispatched += cmd->consumed;
+		struct replay_command cmd = *(commands + (i * sizeof (struct replay_command)));
+		dispatched += cmd.consumed;
 	}
 
 	return dispatched;
@@ -157,7 +156,7 @@ void produce () {
 
 	unsigned int i;
 
-	struct dispatchable_command current_d_cmd;
+	struct dispatchable_command* current_d_cmd;
 	struct replay_command* current_r_cmd;
 
 	sbuffs_t* shared = (sbuffs_t*) malloc( sizeof(sbuffs_t));
@@ -194,12 +193,12 @@ void produce () {
 			/* items left the frontier if its children were consumed (dispatched) */
 			parent = consumed->parents;
 			while (parent != NULL) {
-				if ( consumed (parent->children, parent->n_children)) {
+				if ( _consumed (parent->children, parent->n_children)) {
 					_del(shared->frontier, parent);
 				}
 			}
-			if (! _contains (frontier, consumed)) {
-				_add (frontier, consumed);
+			if (! _contains (shared->frontier, consumed)) {
+				_add (shared->frontier, consumed);
 			}
 	}
 }
@@ -277,7 +276,7 @@ int replay (Replay_workload* rep_workload) {
 		default:
 			return -1;
 		}
-		cmd = cmd->next;
+//		cmd = cmd->next;
 	}
 	return -1;
 }

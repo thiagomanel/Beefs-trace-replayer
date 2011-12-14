@@ -97,11 +97,22 @@ _add (struct dispatchable_command* current, struct replay_command* to_add) {
 		tmp = tmp->next;
 	}
 
-	tmp->next = (struct dispatchable_command*) malloc (sizeof(struct dispatchable_command));
+	tmp->next =
+			(struct dispatchable_command*) malloc (sizeof (struct dispatchable_command));
 }
 
-int _contains (struct replay_command* collection, struct replay_command* element) {
-	return 0;
+int _contains (struct replay_command* current, struct replay_command* tocheck) {
+
+	int contains = 0;
+	struct dispatchable_command* tmp = current;
+
+	while (tmp != NULL) {
+		if (tmp->command->id == tocheck->id) {
+			break;
+		}
+		tmp = tmp->next;
+	}
+	return contains;
 }
 
 /**

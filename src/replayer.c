@@ -89,7 +89,16 @@ _del (struct dispatchable_command* current, struct replay_command* to_remove) {
 	return current;
 }
 
-void _add (struct replay_command* collection, struct replay_command* element) { }
+void
+_add (struct dispatchable_command* current, struct replay_command* to_add) {
+
+	struct dispatchable_command* tmp = current;
+	while (tmp->next != NULL) {
+		tmp = tmp->next;
+	}
+
+	tmp->next = (struct dispatchable_command*) malloc (sizeof(struct dispatchable_command));
+}
 
 int _contains (struct replay_command* collection, struct replay_command* element) {
 	return 0;

@@ -72,14 +72,21 @@ int has_commands_to_produce (sbuffs_t* shared) {
 	return shared->total_commands - shared->produced_count;
 }
 
-void _del (struct dispatchable_command* collection, struct replay_command* element) {
+struct dispatchable_command*
+_del (struct dispatchable_command* current, struct replay_command* to_remove) {
 
-	while (collection != NULL) {
-		struct replay_command* cmd = collection->command;
-		if (cmd->id == element->id) {
-
-		}
+	if (current == NULL) {
+		return NULL;
 	}
+
+	if (current->command->id == to_remove->id) {
+		struct dispatchable_command *next = current->next;
+		//free(currP);
+		return next;
+	}
+
+	current->next = _del(current->next, to_remove);
+	return current;
 }
 
 void _add (struct replay_command* collection, struct replay_command* element) { }

@@ -43,15 +43,15 @@ void alloc_fd_array (int* pid_entry) {
 
 typedef struct _sbuffs_t {
 
-	unsigned int produced_queue[BUFF_SIZE];
-	unsigned int produced_empty;
+	struct replay_command* produced_queue[BUFF_SIZE];
 	unsigned int produced_full;
 
 	struct replay_command* consumed_queue[BUFF_SIZE];
-	unsigned int consumed_empty;
 	unsigned int consumed_full;
 
 	unsigned int produced_count;
+	unsigned int consumed_count;
+
 	const unsigned int total_commands;
 
 	struct dispatchable_command* frontier;
@@ -66,8 +66,18 @@ typedef struct _sbuffs_t {
 
 } sbuffs_t;
 
-int has_commands_to_produce (sbuffs_t* shared) {
-	return shared->total_commands - shared->produced_count;
+sbuffs_t* shared_buff = (sbuffs_t*) malloc( sizeof(sbuffs_t));
+
+int all_produced (sbuffs_t* shared) {
+	return (shared->produced_count >= shared->total_commands);
+}
+
+int all_consumed (sbuffs_t* shared) {
+	return (shared->consumed_count >= shared->total_commands);
+}
+
+int hasCommandAvailableToDispatch (sbuffs_t* shared) {
+	return shared->consumed_full > 0;
 }
 
 struct dispatchable_command*
@@ -159,12 +169,8 @@ void produce () {
 	struct dispatchable_command* current_d_cmd;
 	struct replay_command* current_r_cmd;
 
-	sbuffs_t* shared = (sbuffs_t*) malloc( sizeof(sbuffs_t));
-
-	while (has_commands_to_produce (shared)) {
-
+	while ( ! all_produced (shared_buff)) {
 		//FIXME: acquire lock
-
 		while (current_d_cmd != NULL) {
 			/* dispatch children that was not dispatched yet*/
 			current_r_cmd = current_d_cmd->command;
@@ -179,27 +185,57 @@ void produce () {
 			}
 			current_d_cmd = current_d_cmd->next;
 		}
-
 		//FIXME release lock
 		//FIXME sleep ?? is it a good idea
 		//FIXME acquire locks
-
 		struct replay_command* consumed;
 		struct replay_command* parent;
 
 		/* new items come to the frontier after they have been consumed (dispatched)  */
-		for (i = 0; i < shared->consumed_empty; i++)
-			consumed = shared->consumed_queue[i];
+		for (i = 0; i <= shared_buff->consumed_full; i++)
+			consumed = shared_buff->consumed_queue[i];
 			/* items left the frontier if its children were consumed (dispatched) */
 			parent = consumed->parents;
 			while (parent != NULL) {
 				if ( _consumed (parent->children, parent->n_children)) {
-					_del(shared->frontier, parent);
+					_del(shared_buff->frontier, parent);
 				}
 			}
-			if (! _contains (shared->frontier, consumed)) {
-				_add (shared->frontier, consumed);
+			if (! _contains (shared_buff->frontier, consumed)) {
+				_add (shared_buff->frontier, consumed);
 			}
+	}
+}
+
+void do_consume(struct replay_command* cmd) {
+
+}
+
+void consume () {
+
+	unsigned int i;
+	//FIXME I will add locks after code the algorithm (don't trust tips concerning locks below)
+	while ( ! all_consumed (shared_buff)) {
+		/*
+		 * 1.take a command C from produced queue
+		 * 2.dispatch C
+		 * 3.add C to consumed queue
+		*/
+		//acquire lock to shared
+			if ( hasCommandAvailableToDispatch (shared_buff)) {
+
+				struct replay_command* cmd
+					= shared_buff->produced_queue[shared_buff->produced_full];
+				--shared_buff->produced_full;
+
+				do_consume(cmd);
+
+				//acquire lock to consumed queue (beware of this nested acquire)
+					shared_buff->consumed_queue[++shared_buff->consumed_full] = cmd;
+				//release lock to consumed queue
+
+			}
+		//release lock to shared
 	}
 }
 

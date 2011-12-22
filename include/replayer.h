@@ -55,6 +55,11 @@ typedef unsigned short op_t;
 #define FLISTXATTR_OP (FSETXATTR_OP + 1)
 #define LSETXATTR_OP (FLISTXATTR_OP + 1)
 
+//int
+//blau(void) {
+//return 0;
+//}
+
 //TODO: timestamps
 //TODO: actual returned value
 typedef struct _caller {
@@ -74,8 +79,8 @@ typedef struct _parms {
 struct replay_command {
 
 	//FIXME we can use a hash-like algorithm to put/remove commands from
-	//the dispatch frontier. however, iterating seems ok too (few elements in the frontier ? so, trading
-	//memory by computing
+	//the dispatch frontier. however, iterating seems ok too
+	//(few elements in the frontier ? so, trading memory by computing
 	unsigned int id;
 
 	op_t command;
@@ -85,24 +90,42 @@ struct replay_command {
 	int expected_retval;
 
 	struct replay_command* next;//FIXME deprecated. to be removed
+};
 
-	struct replay_command* children;
+typedef struct workflow_element {
+
+	struct replay_command* command;
+
+	struct workflow_element* children;
 	unsigned int n_children;
 
-	struct replay_command* parents;
+	struct workflow_element* parents;
 	unsigned int n_parents;
 
 	unsigned int produced;
 	unsigned int consumed;
-};
+
+} Workflow_element;
 
 typedef struct replay_workload {
-        struct replay_command* cmd;
-        unsigned int num_cmds;
-        unsigned int current_cmd;
+	struct replay_command* cmd;
+	unsigned int num_cmds;
+	unsigned int current_cmd;
 } Replay_workload;
 
+/**
+ * Replay result.
+ * TODO: begin and end of each replayed call
+ * TODO: actual return value
+ */
+typedef struct replay_result {
+	int replayed_commands;
+} Replay_result;
+
+void
+fill_replay_command (struct replay_command* cmd);
+
 int
-replay (Replay_workload* rep_workload);
+replay (Replay_workload* rep_workload, Replay_result* result);
 
 #endif /* _REPLAYER_H */

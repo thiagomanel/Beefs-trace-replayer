@@ -28,8 +28,7 @@ CXXFLAGS += -g -Wall -Wextra
 # All tests produced by this Makefile.  Remember to add new tests you
 # created to the list.
 TESTS = loader_unittest
-MAIN = replayer
-UTIL = pthread_test
+MAIN = beefs_replayer
 
 # All Google Test headers.  Usually you shouldn't change this
 # definition.
@@ -38,10 +37,11 @@ GTEST_HEADERS = $(GTEST_DIR)/include/gtest/*.h \
 
 # House-keeping build targets.
 
-all : $(TESTS) $(MAIN) $(UTIL)
+all : $(TESTS) $(MAIN)
+#all : $(MAIN)
 
 clean :
-	rm -f $(TESTS) $(MAIN) $(UTIL) $(TESTS) gtest.a gtest_main.a *.o
+	rm -f $(TESTS) $(MAIN) $(TESTS) gtest.a gtest_main.a *.o
 
 # Builds gtest.a and gtest_main.a.
 
@@ -71,21 +71,21 @@ gtest_main.a : gtest-all.o gtest_main.o
 # gtest_main.a, depending on whether it defines its own main()
 # function.
 
-loader.o : $(USER_DIR)/src/loader.c $(USER_DIR)/include/replayer.h $(USER_DIR)/include/loader.h $(GTEST_HEADERS)
+loader.o : $(USER_DIR)/src/loader.c $(USER_DIR)/src/replayer.c $(USER_DIR)/include/replayer.h $(USER_DIR)/include/loader.h $(GTEST_HEADERS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/src/loader.c
+
+replayer.o : $(USER_DIR)/src/loader.c $(USER_DIR)/src/replayer.c $(USER_DIR)/include/replayer.h $(USER_DIR)/include/loader.h $(GTEST_HEADERS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/src/replayer.c
+
+beefs_replayer.o : $(USER_DIR)/src/loader.c $(USER_DIR)/src/replayer.c $(USER_DIR)/include/replayer.h $(USER_DIR)/include/loader.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/src/beefs_replayer.c
+	
+beefs_replayer : loader.o replayer.o beefs_replayer.o
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
 
 loader_unittest.o : $(USER_DIR)/tests/loader_unittest.cc \
                      $(GTEST_HEADERS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/tests/loader_unittest.cc
 
-loader_unittest : loader.o loader_unittest.o gtest_main.a
+loader_unittest : loader.o replayer.o loader_unittest.o gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
-
-replayer.o : $(USER_DIR)/src/replayer.c $(USER_DIR)/include/replayer.h $(GTEST_HEADERS)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/src/replayer.c
-
-replayer : replayer.o loader.o
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
-
-pthread_test : $(USER_DIR)/src/pthread_test.c
-	gcc -lpthread $(USER_DIR)/src/pthread_test.c -o pthread_test

@@ -15,6 +15,7 @@
  */
 //#include "../src/loader.h"
 #include "loader.h"
+#include "replayer.h"
 #include "gtest/gtest.h"
 #include <stdlib.h>
 
@@ -828,4 +829,28 @@ TEST(LoaderTest, LoadStatAndOpens) {
     EXPECT_EQ(2097, caller_id->tid);
     EXPECT_TRUE(strcmp("/tmp/foo2", loaded_cmd->params[0].arg.cprt_val) == 0);
     fclose(input_f);
+}
+
+TEST(ReplayTest, SingleOperationReplay) {
+
+	Replay_workload* rep_wld
+		= (Replay_workload*) malloc (sizeof (Replay_workload));
+
+	rep_wld->cmd
+		= (struct replay_command*) malloc(sizeof(struct replay_command));
+
+	fill_replay_command((rep_wld->cmd));
+
+	rep_wld->cmd->params = (Parms*) malloc(3 * sizeof(Parms));
+	Parms* parm;
+	parm = rep_wld->cmd->params;
+	parm[0].arg.cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
+	strcpy(parm[0].arg.cprt_val, "fileToOpen");
+	parm[1].arg.i_val = 34816;//flag
+	parm[2].arg.i_val = 0; //mode
+
+	Replay_result* actual_result = (Replay_result*) malloc( sizeof (Replay_result));
+	replay(rep_wld, actual_result);
+
+	EXPECT_EQ(1, actual_result->replayed_commands);
 }

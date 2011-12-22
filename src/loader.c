@@ -13,11 +13,11 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+#include "loader.h"
+#include "replayer.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <loader.h>
-#include <replayer.h>
 
 static struct lookuptab {
 	char *string;
@@ -97,7 +97,7 @@ int load(Replay_workload* replay_wld, FILE* input_file) {
 }
 
 #define UNKNOW_OP_ERROR -2
-void fill_replay_command(struct replay_command* cmd) {
+void fill_replay_command (struct replay_command* cmd) {
 	cmd->command = NULL;
 	cmd->caller = NULL;
 	cmd->params = NULL;

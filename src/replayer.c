@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <replayer.h>
-#include <loader.h>
+#include "replayer.h"
+#include "loader.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/stat.h>
@@ -31,7 +31,7 @@
 int N_ITEMS;
 
 struct dispatchable_command {
-
+	struct workflow_element* w_element;
 	struct replay_command* command;
 	struct dispatchable_command* next;
 };
@@ -43,10 +43,10 @@ void alloc_fd_array (int* pid_entry) {
 
 typedef struct _sbuffs_t {
 
-	struct replay_command* produced_queue[BUFF_SIZE];
+	Workflow_element* produced_queue[BUFF_SIZE];
 	unsigned int produced_full;
 
-	struct replay_command* consumed_queue[BUFF_SIZE];
+	Workflow_element* consumed_queue[BUFF_SIZE];
 	unsigned int consumed_full;
 
 	unsigned int produced_count;
@@ -81,13 +81,13 @@ int hasCommandAvailableToDispatch (sbuffs_t* shared) {
 }
 
 struct dispatchable_command*
-_del (struct dispatchable_command* current, struct replay_command* to_remove) {
+_del (struct dispatchable_command* current, Workflow_element* to_remove) {
 
 	if (current == NULL) {
 		return NULL;
 	}
 
-	if (current->command->id == to_remove->id) {
+	if (current->w_element->command->id == to_remove->command->id) {
 		struct dispatchable_command *next = current->next;
 		//free(currP);
 		return next;
@@ -98,7 +98,7 @@ _del (struct dispatchable_command* current, struct replay_command* to_remove) {
 }
 
 void
-_add (struct dispatchable_command* current, struct replay_command* to_add) {
+_add (struct dispatchable_command* current, Workflow_element* to_add) {
 
 	struct dispatchable_command* tmp = current;
 	while (tmp->next != NULL) {
@@ -107,16 +107,16 @@ _add (struct dispatchable_command* current, struct replay_command* to_add) {
 
 	tmp->next =
 			(struct dispatchable_command*) malloc (sizeof (struct dispatchable_command));
-	tmp->next->command = to_add;
+	tmp->next->w_element = to_add;
 }
 
-int _contains (struct dispatchable_command* current, struct replay_command* tocheck) {
+int _contains (struct dispatchable_command* current, Workflow_element* tocheck) {
 
 	int contains = 0;
 	struct dispatchable_command* tmp = current;
 
 	while (tmp != NULL) {
-		if (tmp->command->id == tocheck->id) {
+		if (tmp->command->id == tocheck->command->id) {
 			break;
 		}
 		tmp = tmp->next;
@@ -127,33 +127,33 @@ int _contains (struct dispatchable_command* current, struct replay_command* toch
 /**
  * It checks if all replay_command from commands array were produced
  */
-int produced (struct replay_command* commands, int n_commands) {
+int produced (Workflow_element* elements, int n_commands) {
 
 	int i;
-	int dispatched;
+	int produced;
 
 	for (i = 0; i < n_commands; i++) {
-		struct replay_command cmd = *(commands + (i * sizeof (struct replay_command)));
-		dispatched += cmd.consumed;
+		Workflow_element element = *(elements + (i * sizeof (Workflow_element)));
+		produced += element.produced;
 	}
 
-	return dispatched;
+	return produced;
 }
 
 /**
  * It checks if all replay_command from commands array were dispatched
  */
-int _consumed (struct replay_command* commands, int n_commands) {
+int _consumed (Workflow_element* elements, int n_commands) {
 
 	int i;
-	int dispatched;
+	int consumed;
 
 	for (i = 0; i < n_commands; i++) {
-		struct replay_command cmd = *(commands + (i * sizeof (struct replay_command)));
-		dispatched += cmd.consumed;
+		Workflow_element element = *(elements + (i * sizeof (Workflow_element)));
+		consumed += element.consumed;
 	}
 
-	return dispatched;
+	return consumed;
 }
 
 /**
@@ -166,39 +166,40 @@ void produce () {
 
 	unsigned int i;
 
-	struct dispatchable_command* current_d_cmd;
-	struct replay_command* current_r_cmd;
+	struct dispatchable_command* current_dispatch_cmd;
+	struct replay_command* current_replay_cmd;
 
 	while ( ! all_produced (shared_buff)) {
 		//FIXME: acquire lock
-		while (current_d_cmd != NULL) {
-			/* dispatch children that was not dispatched yet*/
-			current_r_cmd = current_d_cmd->command;
-			struct replay_command* children = current_r_cmd->children;
+		while (current_dispatch_cmd != NULL) {
+			//dispatch children that was not dispatched yet
+			current_replay_cmd = current_dispatch_cmd->w_element->command;
+			Workflow_element* children = current_dispatch_cmd->w_element->children;
 			while (children != NULL) {
-				if (! produced (children, current_r_cmd->n_children)) {
+				if (! produced (children, current_dispatch_cmd->w_element->n_children)) {
 					//1. produce
 					//2. mark
 					//3. increment count
 					children = children->children;
 				}
 			}
-			current_d_cmd = current_d_cmd->next;
+			current_dispatch_cmd = current_dispatch_cmd->next;
 		}
 		//FIXME release lock
 		//FIXME sleep ?? is it a good idea
 		//FIXME acquire locks
-		struct replay_command* consumed;
-		struct replay_command* parent;
+		Workflow_element* consumed;
+		Workflow_element* parent;
 
-		/* new items come to the frontier after they have been consumed (dispatched)  */
+		//new items come to the frontier after they have been consumed (dispatched)
 		for (i = 0; i <= shared_buff->consumed_full; i++)
 			consumed = shared_buff->consumed_queue[i];
-			/* items left the frontier if its children were consumed (dispatched) */
 			parent = consumed->parents;
+
 			while (parent != NULL) {
+				//items left the frontier if its children were consumed (dispatched)
 				if ( _consumed (parent->children, parent->n_children)) {
-					_del(shared_buff->frontier, parent);
+					_del (shared_buff->frontier, parent);
 				}
 			}
 			if (! _contains (shared_buff->frontier, consumed)) {
@@ -207,7 +208,7 @@ void produce () {
 	}
 }
 
-void do_consume(struct replay_command* cmd) {
+void do_consume(Workflow_element* cmd) {
 
 }
 
@@ -224,7 +225,7 @@ void consume () {
 		//acquire lock to shared
 			if ( hasCommandAvailableToDispatch (shared_buff)) {
 
-				struct replay_command* cmd
+				Workflow_element* cmd
 					= shared_buff->produced_queue[shared_buff->produced_full];
 				--shared_buff->produced_full;
 
@@ -239,7 +240,7 @@ void consume () {
 	}
 }
 
-int replay (Replay_workload* rep_workload) {
+int replay (Replay_workload* rep_workload, Replay_result* result) {
 	/**
 	 * pids[pid_from_trace] = fd_pairs[] = {fd_pair_0, fd_pair_1, ...,fd_pair_n}
 	 * fd_pairs[fd_from_trace] = fd_from_replay
@@ -317,15 +318,3 @@ int replay (Replay_workload* rep_workload) {
 	return -1;
 }
 
-int main (int argc, const char* argv[]) {
-	FILE* fp = fopen(argv[1], "r");
-	Replay_workload* rep_wld = (Replay_workload*) malloc(
-			sizeof(Replay_workload));
-
-	int ret = load(rep_wld, fp);
-	if (ret < 0) {
-		perror("Error loading trace\n");
-	}
-	replay(rep_wld);
-	return 0;
-}

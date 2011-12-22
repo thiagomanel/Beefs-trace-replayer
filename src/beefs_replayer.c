@@ -26,15 +26,15 @@
 #include <stdio.h>
 
 int main (int argc, const char* argv[]) {
-	FILE* fp = fopen(argv[1], "r");
-	Replay_workload* rep_wld = (Replay_workload*) malloc(
-			sizeof(Replay_workload));
+	FILE* fp = fopen (argv[1], "r");
+	Replay_workload* rep_wld = (Replay_workload*) malloc (
+			sizeof (Replay_workload));
 
-	int ret = load(rep_wld, fp);
+	int ret = load (rep_wld, fp);
 	if (ret < 0) {
 		perror("Error loading trace\n");
 	}
 	Replay_result* actual_result = (Replay_result*) malloc( sizeof (Replay_result));
-	replay(rep_wld, actual_result);
+	replay (rep_wld, actual_result);
 	return 0;
 }

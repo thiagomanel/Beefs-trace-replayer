@@ -23,6 +23,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
+#include <pthread.h>
 #include </usr/include/semaphore.h>
 
 #define PID_MAX 32768
@@ -52,7 +53,7 @@ typedef struct _sbuffs_t {
 	unsigned int produced_count;
 	unsigned int consumed_count;
 
-	const unsigned int total_commands;
+	unsigned int total_commands;
 
 	struct dispatchable_command* frontier;
 
@@ -162,7 +163,8 @@ int _consumed (Workflow_element* elements, int n_commands) {
  * been consumed (dispatched) and they left the frontier when all of their children
  * come to frontier. A fake command acts as workflow's root to boostrap the frontier.
  */
-void produce () {
+void
+*produce (void *arg) {
 
 	unsigned int i;
 
@@ -212,10 +214,12 @@ void do_consume(Workflow_element* cmd) {
 
 }
 
-void consume () {
+void
+*consume (void *arg) {
 
 	unsigned int i;
-	//FIXME I will add locks after code the algorithm (don't trust tips concerning locks below)
+	//FIXME I will add locks after code the algorithm
+	//(don't trust tips concerning locks below)
 	while ( ! all_consumed (shared_buff)) {
 		/*
 		 * 1.take a command C from produced queue
@@ -240,7 +244,36 @@ void consume () {
 	}
 }
 
-int replay (Replay_workload* rep_workload, Replay_result* result) {
+void
+fill_shared_buffer (Replay_workload* workload, sbuffs_t* shared) {
+
+	shared->produced_count = 0;
+	shared->consumed_count = 0;
+
+	shared->total_commands = workload->num_cmds;
+	shared->frontier = (struct dispatchable_command*)
+			malloc ( sizeof (struct dispatchable_command));
+
+	//create mutexes and sems FIXME:
+}
+
+int
+replay (Replay_workload* rep_workload, Replay_result* result) {
+
+	fill_shared_buffer(rep_workload, shared_buff);
+	//create produters/consumers
+
+	pthread_t consumer, producer;
+	//create shared buffer
+
+	pthread_create (&consumer, NULL, produce, 0);
+	pthread_create (&producer, NULL, consume, 0);
+	//have fun
+
+	return -1;
+}
+
+int old_replay (Replay_workload* rep_workload, Replay_result* result) {
 	/**
 	 * pids[pid_from_trace] = fd_pairs[] = {fd_pair_0, fd_pair_1, ...,fd_pair_n}
 	 * fd_pairs[fd_from_trace] = fd_from_replay

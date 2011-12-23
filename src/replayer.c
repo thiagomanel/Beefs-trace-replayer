@@ -91,7 +91,7 @@ _del (struct dispatchable_command* current, Workflow_element* to_remove) {
 
 	if (current->w_element->command->id == to_remove->command->id) {
 		struct dispatchable_command *next = current->next;
-		//free(currP);
+		//free(currP);TODO:
 		return next;
 	}
 

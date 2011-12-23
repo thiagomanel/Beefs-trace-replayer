@@ -81,6 +81,7 @@ int hasCommandAvailableToDispatch (sbuffs_t* shared) {
 	return shared->consumed_full > 0;
 }
 
+//FIXME we can move this list method do an util list code outside replayer
 struct dispatchable_command*
 _del (struct dispatchable_command* current, Workflow_element* to_remove) {
 
@@ -252,7 +253,10 @@ fill_shared_buffer (Replay_workload* workload, sbuffs_t* shared) {
 
 	shared->total_commands = workload->num_cmds;
 	shared->frontier = (struct dispatchable_command*)
-			malloc ( sizeof (struct dispatchable_command));
+			malloc (sizeof (struct dispatchable_command));
+
+	_add (shared->frontier, workload->element);//It bootstraps the frontier
+
 
 	//create mutexes and sems FIXME:
 }

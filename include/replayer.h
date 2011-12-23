@@ -55,10 +55,6 @@ typedef unsigned short op_t;
 #define FLISTXATTR_OP (FSETXATTR_OP + 1)
 #define LSETXATTR_OP (FLISTXATTR_OP + 1)
 
-//int
-//blau(void) {
-//return 0;
-//}
 
 //TODO: timestamps
 //TODO: actual returned value
@@ -108,6 +104,7 @@ typedef struct workflow_element {
 } Workflow_element;
 
 typedef struct replay_workload {
+	Workflow_element* element;
 	struct replay_command* cmd;
 	unsigned int num_cmds;
 	unsigned int current_cmd;

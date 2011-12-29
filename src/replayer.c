@@ -31,9 +31,8 @@
 
 int N_ITEMS;
 
-struct dispatchable_command {
+struct dispatchable_command {//we can use a generic list instead of this struct
 	struct workflow_element* w_element;
-	struct replay_command* command;
 	struct dispatchable_command* next;
 };
 
@@ -45,10 +44,10 @@ void alloc_fd_array (int* pid_entry) {
 typedef struct _sbuffs_t {
 
 	Workflow_element* produced_queue[BUFF_SIZE];
-	unsigned int produced_full;
+	int last_produced;
 
 	Workflow_element* consumed_queue[BUFF_SIZE];
-	unsigned int consumed_full;
+	int last_consumed;
 
 	unsigned int produced_count;
 	unsigned int consumed_count;
@@ -78,7 +77,7 @@ int all_consumed (sbuffs_t* shared) {
 }
 
 int hasCommandAvailableToDispatch (sbuffs_t* shared) {
-	return shared->consumed_full > 0;
+	return shared->last_consumed > 0;
 }
 
 //FIXME we can move this list method do an util list code outside replayer
@@ -118,7 +117,7 @@ int _contains (struct dispatchable_command* current, Workflow_element* tocheck) 
 	struct dispatchable_command* tmp = current;
 
 	while (tmp != NULL) {
-		if (tmp->command->id == tocheck->command->id) {
+		if (tmp->w_element->command->id == tocheck->command->id) {
 			break;
 		}
 		tmp = tmp->next;
@@ -126,20 +125,9 @@ int _contains (struct dispatchable_command* current, Workflow_element* tocheck) 
 	return contains;
 }
 
-/**
- * It checks if all replay_command from commands array were produced
- */
-int produced (Workflow_element* elements, int n_commands) {
-
-	int i;
-	int produced;
-
-	for (i = 0; i < n_commands; i++) {
-		Workflow_element element = *(elements + (i * sizeof (Workflow_element)));
-		produced += element.produced;
-	}
-
-	return produced;
+int
+produced (Workflow_element* element) {
+	return element->produced;
 }
 
 /**
@@ -158,6 +146,11 @@ int _consumed (Workflow_element* elements, int n_commands) {
 	return consumed;
 }
 
+void
+mark_produced (Workflow_element* element) {
+	element->produced = 1;
+}
+
 /**
  * Produce commands to be dispatched. Dispatching evolves according to a
  * dispatch frontier. Commands enter the frontier after they have
@@ -167,23 +160,30 @@ int _consumed (Workflow_element* elements, int n_commands) {
 void
 *produce (void *arg) {
 
-	unsigned int i;
+	int i;
 
 	struct dispatchable_command* current_dispatch_cmd;
-	struct replay_command* current_replay_cmd;
 
 	while ( ! all_produced (shared_buff)) {
 		//FIXME: acquire lock
+		current_dispatch_cmd = shared_buff->frontier;
+
 		while (current_dispatch_cmd != NULL) {
 			//dispatch children that was not dispatched yet
-			current_replay_cmd = current_dispatch_cmd->w_element->command;
 			Workflow_element* children = current_dispatch_cmd->w_element->children;
-			while (children != NULL) {
-				if (! produced (children, current_dispatch_cmd->w_element->n_children)) {
-					//1. produce
-					//2. mark
-					//3. increment count
-					children = children->children;
+			if (children != NULL) {
+				int e;
+				for (e = 0; e < children->n_children; e++) {
+					Workflow_element child = *(children + (i * sizeof (Workflow_element)));
+					if (! produced (&child)) {
+						//1. produce
+						shared_buff->consumed_queue[++shared_buff->last_produced]
+													= &child;
+						//2. mark
+						mark_produced (&child);
+						//3. increment count
+						++shared_buff->produced_count;
+					}
 				}
 			}
 			current_dispatch_cmd = current_dispatch_cmd->next;
@@ -195,7 +195,7 @@ void
 		Workflow_element* parent;
 
 		//new items come to the frontier after they have been consumed (dispatched)
-		for (i = 0; i <= shared_buff->consumed_full; i++)
+		for (i = 0; i <= shared_buff->last_consumed; i++) {
 			consumed = shared_buff->consumed_queue[i];
 			parent = consumed->parents;
 
@@ -208,6 +208,8 @@ void
 			if (! _contains (shared_buff->frontier, consumed)) {
 				_add (shared_buff->frontier, consumed);
 			}
+		}
+
 	}
 }
 
@@ -231,13 +233,13 @@ void
 			if ( hasCommandAvailableToDispatch (shared_buff)) {
 
 				Workflow_element* cmd
-					= shared_buff->produced_queue[shared_buff->produced_full];
-				--shared_buff->produced_full;
+					= shared_buff->produced_queue[shared_buff->last_produced];
+				--shared_buff->last_produced;
 
 				do_consume(cmd);
 
 				//acquire lock to consumed queue (beware of this nested acquire)
-					shared_buff->consumed_queue[++shared_buff->consumed_full] = cmd;
+					shared_buff->consumed_queue[++shared_buff->last_consumed] = cmd;
 				//release lock to consumed queue
 
 			}
@@ -251,12 +253,23 @@ fill_shared_buffer (Replay_workload* workload, sbuffs_t* shared) {
 	shared->produced_count = 0;
 	shared->consumed_count = 0;
 
+	shared->last_consumed = -1;
+	shared->last_produced = -1;
+
 	shared->total_commands = workload->num_cmds;
 	shared->frontier = (struct dispatchable_command*)
 			malloc (sizeof (struct dispatchable_command));
 
+	shared->frontier->w_element = NULL;
+	shared->frontier->next = NULL;
+
+	printf("shared w_element %p \n", shared->frontier->w_element);
+	printf("shared next %p \n", shared->frontier->next);
+
 	_add (shared->frontier, workload->element);//It bootstraps the frontier
 
+	printf("shared w_element %p \n", shared->frontier->w_element);
+	printf("shared next %p \n", shared->frontier->next);
 
 	//create mutexes and sems FIXME:
 }
@@ -264,16 +277,13 @@ fill_shared_buffer (Replay_workload* workload, sbuffs_t* shared) {
 int
 replay (Replay_workload* rep_workload, Replay_result* result) {
 
-	fill_shared_buffer(rep_workload, shared_buff);
-	//create produters/consumers
+	fill_shared_buffer (rep_workload, shared_buff);
 
 	pthread_t consumer, producer;
-	//create shared buffer
-
 	pthread_create (&consumer, NULL, produce, 0);
-	pthread_create (&producer, NULL, consume, 0);
-	//have fun
+//	pthread_create (&producer, NULL, consume, 0);
 
+	result->produced_commands = shared_buff->produced_count;
 	return -1;
 }
 
@@ -354,4 +364,3 @@ int old_replay (Replay_workload* rep_workload, Replay_result* result) {
 	}
 	return -1;
 }
-

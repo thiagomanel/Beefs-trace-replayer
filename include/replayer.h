@@ -98,8 +98,8 @@ typedef struct workflow_element {
 	struct workflow_element* parents;
 	unsigned int n_parents;
 
-	unsigned int produced;
-	unsigned int consumed;
+	int produced;
+	int consumed;
 
 } Workflow_element;
 
@@ -117,6 +117,7 @@ typedef struct replay_workload {
  */
 typedef struct replay_result {
 	int replayed_commands;
+	int produced_commands;
 } Replay_result;
 
 void

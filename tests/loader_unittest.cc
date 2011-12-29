@@ -862,15 +862,11 @@ TEST(ReplayTest, SingleOperationReplay) {
 	parm[1].arg.i_val = 34816;//flag
 	parm[2].arg.i_val = 0; //mode
 
-	printf ("params filled\n");
-
 	Replay_result* actual_result = (Replay_result*) malloc (sizeof (Replay_result));
 	actual_result->replayed_commands = 0;
 	actual_result->produced_commands = 0;
 
-	printf ("going to replay\n");
 	replay (rep_wld, actual_result);
-	printf ("replayed\n");
 
 	EXPECT_EQ (1, actual_result->replayed_commands);
 	EXPECT_EQ (1, actual_result->produced_commands);

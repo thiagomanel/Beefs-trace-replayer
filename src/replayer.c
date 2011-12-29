@@ -260,16 +260,8 @@ fill_shared_buffer (Replay_workload* workload, sbuffs_t* shared) {
 	shared->frontier = (struct dispatchable_command*)
 			malloc (sizeof (struct dispatchable_command));
 
-	shared->frontier->w_element = NULL;
+	shared->frontier->w_element = workload->element;
 	shared->frontier->next = NULL;
-
-	printf("shared w_element %p \n", shared->frontier->w_element);
-	printf("shared next %p \n", shared->frontier->next);
-
-	_add (shared->frontier, workload->element);//It bootstraps the frontier
-
-	printf("shared w_element %p \n", shared->frontier->w_element);
-	printf("shared next %p \n", shared->frontier->next);
 
 	//create mutexes and sems FIXME:
 }

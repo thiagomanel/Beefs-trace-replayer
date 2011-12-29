@@ -81,8 +81,8 @@ int hasCommandAvailableToDispatch (sbuffs_t* shared) {
 }
 
 //FIXME we can move this list method do an util list code outside replayer
-struct dispatchable_command*
-_del (struct dispatchable_command* current, Workflow_element* to_remove) {
+struct dispatchable_command* _del (struct dispatchable_command* current,
+		Workflow_element* to_remove) {
 
 	if (current == NULL) {
 		return NULL;
@@ -98,8 +98,7 @@ _del (struct dispatchable_command* current, Workflow_element* to_remove) {
 	return current;
 }
 
-void
-_add (struct dispatchable_command* current, Workflow_element* to_add) {
+void _add (struct dispatchable_command* current, Workflow_element* to_add) {
 
 	struct dispatchable_command* tmp = current;
 	while (tmp->next != NULL) {
@@ -125,8 +124,7 @@ int _contains (struct dispatchable_command* current, Workflow_element* tocheck) 
 	return contains;
 }
 
-int
-produced (Workflow_element* element) {
+int produced (Workflow_element* element) {
 	return element->produced;
 }
 
@@ -146,8 +144,7 @@ int _consumed (Workflow_element* elements, int n_commands) {
 	return consumed;
 }
 
-void
-mark_produced (Workflow_element* element) {
+void mark_produced (Workflow_element* element) {
 	element->produced = 1;
 }
 
@@ -157,8 +154,7 @@ mark_produced (Workflow_element* element) {
  * been consumed (dispatched) and they left the frontier when all of their children
  * come to frontier. A fake command acts as workflow's root to boostrap the frontier.
  */
-void
-*produce (void *arg) {
+void *produce (void *arg) {
 
 	int i;
 
@@ -217,8 +213,7 @@ void do_consume(Workflow_element* cmd) {
 
 }
 
-void
-*consume (void *arg) {
+void *consume (void *arg) {
 
 	unsigned int i;
 	//FIXME I will add locks after code the algorithm
@@ -247,8 +242,32 @@ void
 	}
 }
 
-void
-fill_shared_buffer (Replay_workload* workload, sbuffs_t* shared) {
+void fill_workflow_root (Workflow_element* root, Workflow_element* children,
+		int n_children) {
+
+	root->n_children = n_children;
+	root->children = children;
+
+	root->parents = 0;
+	root->parents = NULL;
+
+	root->produced = 0;//fake should use 1 or 0 ?TODO:
+	root->consumed = 0;
+
+	//root becomes children's parent
+	int i;
+	for (i = 0; i < n_children ; i++) {
+		Workflow_element child = *(children + (i * sizeof (Workflow_element)));
+		child.n_parents = 1;
+		child.parents = root;
+	}
+
+	//we need a fake command here FIXME
+	root->command
+			= (struct replay_command*) malloc( sizeof (struct replay_command));
+}
+
+void fill_shared_buffer (Replay_workload* workload, sbuffs_t* shared) {
 
 	shared->produced_count = 0;
 	shared->consumed_count = 0;
@@ -257,17 +276,23 @@ fill_shared_buffer (Replay_workload* workload, sbuffs_t* shared) {
 	shared->last_produced = -1;
 
 	shared->total_commands = workload->num_cmds;
+
 	shared->frontier = (struct dispatchable_command*)
 			malloc (sizeof (struct dispatchable_command));
 
-	shared->frontier->w_element = workload->element;
+	//we need to create the fake root here.
+	Workflow_element* root =
+			(Workflow_element*) malloc (sizeof (Workflow_element));
+
+	fill_workflow_root(root, workload->element, 1);
+
+	shared->frontier->w_element = root;
 	shared->frontier->next = NULL;
 
 	//create mutexes and sems FIXME:
 }
 
-int
-replay (Replay_workload* rep_workload, Replay_result* result) {
+int replay (Replay_workload* rep_workload, Replay_result* result) {
 
 	fill_shared_buffer (rep_workload, shared_buff);
 

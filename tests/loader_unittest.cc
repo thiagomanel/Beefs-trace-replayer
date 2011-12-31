@@ -866,7 +866,9 @@ TEST(ReplayTest, SingleOperationReplay) {
 	actual_result->replayed_commands = 0;
 	actual_result->produced_commands = 0;
 
+	printf("going to replay\n");
 	replay (rep_wld, actual_result);
+	printf("replayed\n");
 
 	EXPECT_EQ (1, actual_result->replayed_commands);
 	EXPECT_EQ (1, actual_result->produced_commands);

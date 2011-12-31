@@ -31,9 +31,9 @@
 
 int N_ITEMS;
 
-struct dispatchable_command {//we can use a generic list instead of this struct
+struct frontier {//we can use a generic list instead of this struct
 	struct workflow_element* w_element;
-	struct dispatchable_command* next;
+	struct frontier* next;
 };
 
 void alloc_fd_array (int* pid_entry) {
@@ -52,9 +52,9 @@ typedef struct _sbuffs_t {
 	unsigned int produced_count;
 	unsigned int consumed_count;
 
-	unsigned int total_commands;
+	unsigned int total_commands;//TODO: should include the fake command into the account ?
 
-	struct dispatchable_command* frontier;
+	struct frontier* frontier;
 
 	sem_t sem_produced_full;
 	sem_t sem_produced_empty;
@@ -62,7 +62,7 @@ typedef struct _sbuffs_t {
 	sem_t sem_consumed_full;
 	sem_t sem_consumed_empty;
 
-	sem_t mutex;
+	sem_t* mutex;
 
 } sbuffs_t;
 
@@ -76,12 +76,12 @@ int all_consumed (sbuffs_t* shared) {
 	return (shared->consumed_count >= shared->total_commands);
 }
 
-int hasCommandAvailableToDispatch (sbuffs_t* shared) {
-	return shared->last_consumed > 0;
+int has_commands_to_consume (sbuffs_t* shared) {
+	return shared->last_produced >= 0;
 }
 
 //FIXME we can move this list method do an util list code outside replayer
-struct dispatchable_command* _del (struct dispatchable_command* current,
+struct frontier* _del (struct frontier* current,
 		Workflow_element* to_remove) {
 
 	if (current == NULL) {
@@ -89,7 +89,7 @@ struct dispatchable_command* _del (struct dispatchable_command* current,
 	}
 
 	if (current->w_element->command->id == to_remove->command->id) {
-		struct dispatchable_command *next = current->next;
+		struct frontier *next = current->next;
 		//free(currP);TODO:
 		return next;
 	}
@@ -98,22 +98,22 @@ struct dispatchable_command* _del (struct dispatchable_command* current,
 	return current;
 }
 
-void _add (struct dispatchable_command* current, Workflow_element* to_add) {
+void _add (struct frontier* current, Workflow_element* to_add) {
 
-	struct dispatchable_command* tmp = current;
+	struct frontier* tmp = current;
 	while (tmp->next != NULL) {
 		tmp = tmp->next;
 	}
 
 	tmp->next =
-			(struct dispatchable_command*) malloc (sizeof (struct dispatchable_command));
+			(struct frontier*) malloc (sizeof (struct frontier));
 	tmp->next->w_element = to_add;
 }
 
-int _contains (struct dispatchable_command* current, Workflow_element* tocheck) {
+int _contains (struct frontier* current, Workflow_element* tocheck) {
 
 	int contains = 0;
-	struct dispatchable_command* tmp = current;
+	struct frontier* tmp = current;
 
 	while (tmp != NULL) {
 		if (tmp->w_element->command->id == tocheck->command->id) {
@@ -158,54 +158,59 @@ void *produce (void *arg) {
 
 	int i;
 
-	struct dispatchable_command* current_dispatch_cmd;
+	struct frontier* current_frontier;
+	Workflow_element* current_element;
 
 	while ( ! all_produced (shared_buff)) {
-		//FIXME: acquire lock
-		current_dispatch_cmd = shared_buff->frontier;
-
-		while (current_dispatch_cmd != NULL) {
-			//dispatch children that was not dispatched yet
-			Workflow_element* children = current_dispatch_cmd->w_element->children;
-			if (children != NULL) {
-				int e;
-				for (e = 0; e < children->n_children; e++) {
-					Workflow_element child = *(children + (i * sizeof (Workflow_element)));
-					if (! produced (&child)) {
-						//1. produce
-						shared_buff->consumed_queue[++shared_buff->last_produced]
-													= &child;
-						//2. mark
-						mark_produced (&child);
-						//3. increment count
-						++shared_buff->produced_count;
+		sem_wait(shared_buff->mutex);
+			current_frontier = shared_buff->frontier;
+			while (current_frontier != NULL) {
+				//dispatch children that was not dispatched yet
+				current_element = current_frontier->w_element;
+				Workflow_element* children = current_element->children;
+				if (children != NULL) {
+					int e;
+					for (e = 0; e < current_element->n_children; e++) {
+						Workflow_element child = *(children + (e * sizeof (Workflow_element)));
+						if (! produced (&child)) {
+							//1. produce
+							shared_buff->produced_queue[++shared_buff->last_produced]
+														= &child;
+							//2. mark
+							mark_produced (&child);
+							//3. increment count
+							++shared_buff->produced_count;
+						}
 					}
 				}
+				current_frontier = current_frontier->next;
 			}
-			current_dispatch_cmd = current_dispatch_cmd->next;
-		}
+
+		sem_post(shared_buff->mutex);
+
 		//FIXME release lock
 		//FIXME sleep ?? is it a good idea
 		//FIXME acquire locks
-		Workflow_element* consumed;
-		Workflow_element* parent;
+		sem_wait(shared_buff->mutex);
+			Workflow_element* consumed;
+			Workflow_element* parent;
 
-		//new items come to the frontier after they have been consumed (dispatched)
-		for (i = 0; i <= shared_buff->last_consumed; i++) {
-			consumed = shared_buff->consumed_queue[i];
-			parent = consumed->parents;
+			//new items come to the frontier after they have been consumed (dispatched)
+			for (i = 0; i <= shared_buff->last_consumed; i++) {
+				consumed = shared_buff->consumed_queue[i];
+				parent = consumed->parents;
 
-			while (parent != NULL) {
-				//items left the frontier if its children were consumed (dispatched)
-				if ( _consumed (parent->children, parent->n_children)) {
-					_del (shared_buff->frontier, parent);
+				while (parent != NULL) {
+					//items left the frontier if its children were consumed (dispatched)
+					if ( _consumed (parent->children, parent->n_children)) {
+						_del (shared_buff->frontier, parent);
+					}
+				}
+				if (! _contains (shared_buff->frontier, consumed)) {
+					_add (shared_buff->frontier, consumed);
 				}
 			}
-			if (! _contains (shared_buff->frontier, consumed)) {
-				_add (shared_buff->frontier, consumed);
-			}
-		}
-
+		sem_post(shared_buff->mutex);
 	}
 }
 
@@ -215,7 +220,6 @@ void do_consume(Workflow_element* cmd) {
 
 void *consume (void *arg) {
 
-	unsigned int i;
 	//FIXME I will add locks after code the algorithm
 	//(don't trust tips concerning locks below)
 	while ( ! all_consumed (shared_buff)) {
@@ -224,9 +228,9 @@ void *consume (void *arg) {
 		 * 2.dispatch C
 		 * 3.add C to consumed queue
 		*/
-		//acquire lock to shared
-			if ( hasCommandAvailableToDispatch (shared_buff)) {
-
+		sem_wait(shared_buff->mutex);
+			if ( has_commands_to_consume (shared_buff)) {
+				printf("has cmd available to dispatch\n");
 				Workflow_element* cmd
 					= shared_buff->produced_queue[shared_buff->last_produced];
 				--shared_buff->last_produced;
@@ -238,8 +242,17 @@ void *consume (void *arg) {
 				//release lock to consumed queue
 
 			}
-		//release lock to shared
+		sem_wait(shared_buff->mutex);
 	}
+}
+
+void fill_fake_replay_command(struct replay_command* cmd) {
+	cmd->command = NONE;
+	cmd->caller = NULL;
+	cmd->params = NULL;
+	cmd->expected_retval = -666; //:O
+	cmd->next = NULL;
+	cmd->id = 666;
 }
 
 void fill_workflow_root (Workflow_element* root, Workflow_element* children,
@@ -248,11 +261,11 @@ void fill_workflow_root (Workflow_element* root, Workflow_element* children,
 	root->n_children = n_children;
 	root->children = children;
 
-	root->parents = 0;
+	root->n_parents = 0;
 	root->parents = NULL;
 
-	root->produced = 0;//fake should use 1 or 0 ?TODO:
-	root->consumed = 0;
+	root->produced = 1;
+	root->consumed = 1;
 
 	//root becomes children's parent
 	int i;
@@ -262,12 +275,14 @@ void fill_workflow_root (Workflow_element* root, Workflow_element* children,
 		child.parents = root;
 	}
 
-	//we need a fake command here FIXME
 	root->command
 			= (struct replay_command*) malloc( sizeof (struct replay_command));
+	fill_fake_replay_command(root->command);
 }
 
 void fill_shared_buffer (Replay_workload* workload, sbuffs_t* shared) {
+
+	shared->mutex = (sem_t*) malloc (sizeof (sem_t));
 
 	shared->produced_count = 0;
 	shared->consumed_count = 0;
@@ -277,8 +292,8 @@ void fill_shared_buffer (Replay_workload* workload, sbuffs_t* shared) {
 
 	shared->total_commands = workload->num_cmds;
 
-	shared->frontier = (struct dispatchable_command*)
-			malloc (sizeof (struct dispatchable_command));
+	shared->frontier = (struct frontier*)
+			malloc (sizeof (struct frontier));
 
 	//we need to create the fake root here.
 	Workflow_element* root =
@@ -288,17 +303,16 @@ void fill_shared_buffer (Replay_workload* workload, sbuffs_t* shared) {
 
 	shared->frontier->w_element = root;
 	shared->frontier->next = NULL;
-
-	//create mutexes and sems FIXME:
 }
 
 int replay (Replay_workload* rep_workload, Replay_result* result) {
 
 	fill_shared_buffer (rep_workload, shared_buff);
+	sem_init(shared_buff->mutex, 0, 1);
 
 	pthread_t consumer, producer;
-	pthread_create (&consumer, NULL, produce, 0);
-//	pthread_create (&producer, NULL, consume, 0);
+	pthread_create (&producer, NULL, produce, 0);
+	pthread_create (&consumer, NULL, consume, 0);
 
 	result->produced_commands = shared_buff->produced_count;
 	return -1;

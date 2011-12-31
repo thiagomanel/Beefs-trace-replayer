@@ -93,7 +93,7 @@ typedef struct workflow_element {
 	struct replay_command* command;
 
 	struct workflow_element* children;
-	unsigned int n_children;
+	int n_children;
 
 	struct workflow_element* parents;
 	unsigned int n_parents;

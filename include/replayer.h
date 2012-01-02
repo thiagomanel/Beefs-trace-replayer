@@ -77,7 +77,7 @@ struct replay_command {
 	//FIXME we can use a hash-like algorithm to put/remove commands from
 	//the dispatch frontier. however, iterating seems ok too
 	//(few elements in the frontier ? so, trading memory by computing
-	unsigned int id;
+	int id;
 
 	op_t command;
 	Caller* caller;
@@ -96,7 +96,7 @@ typedef struct workflow_element {
 	int n_children;
 
 	struct workflow_element* parents;
-	unsigned int n_parents;
+	int n_parents;
 
 	int produced;
 	int consumed;

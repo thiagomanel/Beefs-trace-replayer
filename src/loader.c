@@ -18,6 +18,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 static struct lookuptab {
 	char *string;
@@ -98,11 +99,15 @@ int load(Replay_workload* replay_wld, FILE* input_file) {
 
 #define UNKNOW_OP_ERROR -2
 void fill_replay_command (struct replay_command* cmd) {
+
+	srand ( time(NULL) );
+
 	cmd->command = NULL;
 	cmd->caller = NULL;
 	cmd->params = NULL;
 	cmd->expected_retval = -666; //:O
 	cmd->next = NULL;
+	cmd->id = rand();
 }
 
 int parse_line(struct replay_command** cmd, char* line) {

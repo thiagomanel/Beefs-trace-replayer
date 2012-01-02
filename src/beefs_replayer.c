@@ -24,8 +24,12 @@
 #include "loader.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <pthread.h>
+#include </usr/include/semaphore.h>
 
 int main (int argc, const char* argv[]) {
+	/**
 	FILE* fp = fopen (argv[1], "r");
 	Replay_workload* rep_wld = (Replay_workload*) malloc (
 			sizeof (Replay_workload));
@@ -36,5 +40,40 @@ int main (int argc, const char* argv[]) {
 	}
 	Replay_result* actual_result = (Replay_result*) malloc( sizeof (Replay_result));
 	replay (rep_wld, actual_result);
-	return 0;
+	return 0;*/
+
+	Replay_workload* rep_wld
+			= (Replay_workload*) malloc (sizeof (Replay_workload));
+
+	//filling workload_element (TODO: it may be moved from this test to code)
+	rep_wld->element = (Workflow_element*) malloc (sizeof (Workflow_element));
+	rep_wld->element->n_children = 0;
+	rep_wld->element->children = NULL;
+
+	rep_wld->element->n_parents = 0;
+	rep_wld->element->parents = NULL;
+
+	rep_wld->element->produced = 0;
+	rep_wld->element->consumed = 0;
+
+	rep_wld->element->command
+		= (struct replay_command*) malloc( sizeof (struct replay_command));
+
+	fill_replay_command (rep_wld->element->command);
+	//end workload_element filling
+
+	rep_wld->element->command->params = (Parms*) malloc (3 * sizeof (Parms));
+
+	Parms* parm;
+	parm = rep_wld->element->command->params;
+	parm[0].arg.cprt_val = (char*) malloc (MAX_FILE_NAME * sizeof (char));
+	strcpy (parm[0].arg.cprt_val, "fileToOpen");
+	parm[1].arg.i_val = 34816;//flag
+	parm[2].arg.i_val = 0; //mode
+
+	Replay_result* actual_result = (Replay_result*) malloc (sizeof (Replay_result));
+	actual_result->replayed_commands = 0;
+	actual_result->produced_commands = 0;
+
+	replay (rep_wld, actual_result);
 }

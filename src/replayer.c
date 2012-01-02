@@ -148,11 +148,21 @@ void mark_produced (Workflow_element* element) {
 	element->produced = 1;
 }
 
+void do_produce(Workflow_element* el_to_produce) {
+
+	//1. produce
+	shared_buff->produced_queue[++shared_buff->last_produced] = el_to_produce;
+	//2. mark
+	mark_produced (el_to_produce);
+	//3. increment count
+	++shared_buff->produced_count;
+}
+
 /**
  * Produce commands to be dispatched. Dispatching evolves according to a
  * dispatch frontier. Commands enter the frontier after they have
  * been consumed (dispatched) and they left the frontier when all of their children
- * come to frontier. A fake command acts as workflow's root to boostrap the frontier.
+ * come to frontier. A fake command acts as workflow's root to bootstrap the frontier.
  */
 void *produce (void *arg) {
 
@@ -161,6 +171,8 @@ void *produce (void *arg) {
 	struct frontier* current_frontier;
 	Workflow_element* current_element;
 
+	//It seems the second part of this algorithm cannot be nested in this while
+	//it is allowed to run even when all commands were produced
 	while ( ! all_produced (shared_buff)) {
 		sem_wait(shared_buff->mutex);
 			current_frontier = shared_buff->frontier;
@@ -168,29 +180,24 @@ void *produce (void *arg) {
 				//dispatch children that was not dispatched yet
 				current_element = current_frontier->w_element;
 				Workflow_element* children = current_element->children;
+
 				if (children != NULL) {
 					int e;
 					for (e = 0; e < current_element->n_children; e++) {
-						Workflow_element child = *(children + (e * sizeof (Workflow_element)));
-						if (! produced (&child)) {
-							//1. produce
-							shared_buff->produced_queue[++shared_buff->last_produced]
-														= &child;
-							//2. mark
-							mark_produced (&child);
-							//3. increment count
-							++shared_buff->produced_count;
+						Workflow_element* child = (children + (e * sizeof (Workflow_element*)));
+						if (! produced (child)) {
+							do_produce(child);
 						}
 					}
 				}
+
 				current_frontier = current_frontier->next;
 			}
 
 		sem_post(shared_buff->mutex);
 
-		//FIXME release lock
-		//FIXME sleep ?? is it a good idea
-		//FIXME acquire locks
+		//FIXME sleep ?? is it a good idea ?
+		/**
 		sem_wait(shared_buff->mutex);
 			Workflow_element* consumed;
 			Workflow_element* parent;
@@ -210,7 +217,7 @@ void *produce (void *arg) {
 					_add (shared_buff->frontier, consumed);
 				}
 			}
-		sem_post(shared_buff->mutex);
+		sem_post(shared_buff->mutex);*/
 	}
 }
 
@@ -230,17 +237,13 @@ void *consume (void *arg) {
 		*/
 		sem_wait(shared_buff->mutex);
 			if ( has_commands_to_consume (shared_buff)) {
-				printf("has cmd available to dispatch\n");
 				Workflow_element* cmd
 					= shared_buff->produced_queue[shared_buff->last_produced];
 				--shared_buff->last_produced;
-
 				do_consume(cmd);
-
 				//acquire lock to consumed queue (beware of this nested acquire)
 					shared_buff->consumed_queue[++shared_buff->last_consumed] = cmd;
 				//release lock to consumed queue
-
 			}
 		sem_wait(shared_buff->mutex);
 	}
@@ -292,8 +295,7 @@ void fill_shared_buffer (Replay_workload* workload, sbuffs_t* shared) {
 
 	shared->total_commands = workload->num_cmds;
 
-	shared->frontier = (struct frontier*)
-			malloc (sizeof (struct frontier));
+	shared->frontier = (struct frontier*) malloc (sizeof (struct frontier));
 
 	//we need to create the fake root here.
 	Workflow_element* root =
@@ -312,7 +314,7 @@ int replay (Replay_workload* rep_workload, Replay_result* result) {
 
 	pthread_t consumer, producer;
 	pthread_create (&producer, NULL, produce, 0);
-	pthread_create (&consumer, NULL, consume, 0);
+	//pthread_create (&consumer, NULL, consume, 0);
 
 	result->produced_commands = shared_buff->produced_count;
 	return -1;

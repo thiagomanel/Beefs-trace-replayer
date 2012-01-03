@@ -149,7 +149,6 @@ void mark_produced (Workflow_element* element) {
 }
 
 void do_produce(Workflow_element* el_to_produce) {
-
 	//1. produce
 	shared_buff->produced_queue[++shared_buff->last_produced] = el_to_produce;
 	//2. mark
@@ -196,6 +195,8 @@ void *produce (void *arg) {
 
 		sem_post(shared_buff->mutex);
 
+		sleep(1);
+
 		//FIXME sleep ?? is it a good idea ?
 		/**
 		sem_wait(shared_buff->mutex);
@@ -222,7 +223,7 @@ void *produce (void *arg) {
 }
 
 void do_consume(Workflow_element* cmd) {
-
+	++shared_buff->consumed_count;
 }
 
 void *consume (void *arg) {
@@ -245,7 +246,7 @@ void *consume (void *arg) {
 					shared_buff->consumed_queue[++shared_buff->last_consumed] = cmd;
 				//release lock to consumed queue
 			}
-		sem_wait(shared_buff->mutex);
+		sem_post(shared_buff->mutex);
 	}
 }
 
@@ -273,9 +274,9 @@ void fill_workflow_root (Workflow_element* root, Workflow_element* children,
 	//root becomes children's parent
 	int i;
 	for (i = 0; i < n_children ; i++) {
-		Workflow_element child = *(children + (i * sizeof (Workflow_element)));
-		child.n_parents = 1;
-		child.parents = root;
+		Workflow_element *child = (children + (i * sizeof (Workflow_element*)));
+		child->n_parents = 1;
+		child->parents = root;
 	}
 
 	root->command
@@ -314,9 +315,13 @@ int replay (Replay_workload* rep_workload, Replay_result* result) {
 
 	pthread_t consumer, producer;
 	pthread_create (&producer, NULL, produce, 0);
-	//pthread_create (&consumer, NULL, consume, 0);
+	pthread_create (&consumer, NULL, consume, 0);
+
+	pthread_join(consumer, NULL);
+	pthread_join(producer, NULL);
 
 	result->produced_commands = shared_buff->produced_count;
+	result->replayed_commands = shared_buff->consumed_count;
 	return -1;
 }
 

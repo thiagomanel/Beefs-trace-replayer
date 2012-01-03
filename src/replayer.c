@@ -25,6 +25,7 @@
 #include <string.h>
 #include <pthread.h>
 #include </usr/include/semaphore.h>
+#include <assert.h>
 
 #define PID_MAX 32768
 #define BUFF_SIZE   20
@@ -223,6 +224,7 @@ void *produce (void *arg) {
 }
 
 void do_consume(Workflow_element* cmd) {
+	printf("cmd=%d \n", cmd->command->command);
 	++shared_buff->consumed_count;
 }
 
@@ -261,6 +263,10 @@ void fill_fake_replay_command(struct replay_command* cmd) {
 
 void fill_workflow_root (Workflow_element* root, Workflow_element* children,
 		int n_children) {
+
+	assert (root != NULL);
+	assert (children != NULL);
+	assert (n_children >= 0);
 
 	root->n_children = n_children;
 	root->children = children;
@@ -309,6 +315,15 @@ void fill_shared_buffer (Replay_workload* workload, sbuffs_t* shared) {
 }
 
 int replay (Replay_workload* rep_workload, Replay_result* result) {
+
+	assert (rep_workload != NULL);
+	assert (result != NULL);
+
+	assert (rep_workload->num_cmds >= 0);
+
+	if (rep_workload->num_cmds > 0) {
+		assert (rep_workload->element != NULL);
+	}
 
 	fill_shared_buffer (rep_workload, shared_buff);
 	sem_init(shared_buff->mutex, 0, 1);

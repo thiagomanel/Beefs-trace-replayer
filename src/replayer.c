@@ -223,8 +223,25 @@ void *produce (void *arg) {
 	}
 }
 
-void do_consume(Workflow_element* cmd) {
-	printf("cmd=%d \n", cmd->command->command);
+int do_replay (struct replay_command* cmd) {
+
+	assert (cmd != NULL);
+
+	Parms* args = cmd->params;
+
+	switch (cmd->command) {
+		case MKDIR_OP: {
+			mkdir(args[0].arg.cprt_val, args[1].arg.i_val);
+		}
+		break;
+		default:
+			return -1;
+	}
+	return 0;
+}
+
+void do_consume(Workflow_element* element) {
+	do_replay(element->command);
 	++shared_buff->consumed_count;
 }
 

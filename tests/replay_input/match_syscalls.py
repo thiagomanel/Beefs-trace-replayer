@@ -37,6 +37,7 @@ class Matcher:
                )
 
     def __parse__(self, replay_input_line):#naive case, a single input call in a input file
+	print replay_input_line
         tokens = replay_input_line.split()
         op = tokens[4]
         args = tokens[6:-1]
@@ -98,8 +99,8 @@ if __name__ == "__main__":
         result = matcher.match(replay_line, not verbose)
 	for (expected_call, actual_call, ok_call, ok_args, ok_rvalue) in result:
 	    print '[RUN]\texpected={expected}\tactual={actual}'.format(expected=expected_call, actual=actual_call)
-  	    print '\tactual\t{actual}'.format(actual=candidate[1].strip())
-	    print '\tcall_name\t{ok_name}'.format(ok_name=candidate[2])
-	    print '\targs\t{ok_args}'.format(ok_args=candidate[3])
-	    print '\trvalue\t{ok_rvalue}\n'.format(ok_rvalue=candidate[4])
+  	    print '\tactual\t{actual}'.format(actual=actual_call.strip())
+	    print '\tcall_name\t{ok_name}'.format(ok_name=ok_call)
+	    print '\targs\t{ok_args}'.format(ok_args=ok_args)
+	    print '\trvalue\t{ok_rvalue}\n'.format(ok_rvalue=ok_rvalue)
 

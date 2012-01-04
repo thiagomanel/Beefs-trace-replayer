@@ -19,7 +19,7 @@ class Matcher:
                                      called_syscall,
                                      ok_call, ok_args, ok_rvalue]
                                     )
-            else:
+            elif ok_call:
                 partial_matches.append([expected_syscall,
                                         called_syscall,
                                         ok_call, ok_args, ok_rvalue]
@@ -28,7 +28,7 @@ class Matcher:
         if exclude_partial_matches:
             return full_matches
         else:
-            full_matches + partial_matches
+            return full_matches + partial_matches
 
     def __match__(self, exp_call, actual_call):
         return (self.__match_call_name__(exp_call[0], self.__call_name__(actual_call)), 
@@ -40,10 +40,11 @@ class Matcher:
         tokens = replay_input_line.split()
         op = tokens[4]
         args = tokens[6:-1]
+        return_value = tokens[-1]
         if op == "mkdir":
 	    args[-1] = str(oct(int(args[-1])))
     
-        return (tokens[4], args, tokens[-1])
+        return (op, args, return_value)
 
     def __match_call_name__(self, exp_call_name, actual_call_name):
         return exp_call_name == actual_call_name

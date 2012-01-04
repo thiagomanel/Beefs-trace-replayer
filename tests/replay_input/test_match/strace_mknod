@@ -1,0 +1,76 @@
+execve("/bin/mknod", ["mknod", "/tmp/foo", "p"], [/* 15 vars */]) = 0
+brk(0)                                  = 0x865d000
+access("/etc/ld.so.nohwcap", F_OK)      = -1 ENOENT (No such file or directory)
+mmap2(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xb7811000
+access("/etc/ld.so.preload", R_OK)      = -1 ENOENT (No such file or directory)
+open("/etc/ld.so.cache", O_RDONLY)      = 3
+fstat64(3, {st_mode=S_IFREG|0644, st_size=107930, ...}) = 0
+mmap2(NULL, 107930, PROT_READ, MAP_PRIVATE, 3, 0) = 0xb77f6000
+close(3)                                = 0
+access("/etc/ld.so.nohwcap", F_OK)      = -1 ENOENT (No such file or directory)
+open("/lib/libselinux.so.1", O_RDONLY)  = 3
+read(3, "\177ELF\1\1\1\0\0\0\0\0\0\0\0\0\3\0\3\0\1\0\0\0@G\0\0004\0\0\0"..., 512) = 512
+fstat64(3, {st_mode=S_IFREG|0644, st_size=104148, ...}) = 0
+mmap2(NULL, 109432, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0xb77db000
+mmap2(0xb77f4000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x18) = 0xb77f4000
+close(3)                                = 0
+access("/etc/ld.so.nohwcap", F_OK)      = -1 ENOENT (No such file or directory)
+open("/lib/tls/i686/cmov/libc.so.6", O_RDONLY) = 3
+read(3, "\177ELF\1\1\1\0\0\0\0\0\0\0\0\0\3\0\3\0\1\0\0\0000m\1\0004\0\0\0"..., 512) = 512
+fstat64(3, {st_mode=S_IFREG|0755, st_size=1405508, ...}) = 0
+mmap2(NULL, 1415592, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0xb7681000
+mprotect(0xb77d4000, 4096, PROT_NONE)   = 0
+mmap2(0xb77d5000, 12288, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x153) = 0xb77d5000
+mmap2(0xb77d8000, 10664, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xb77d8000
+close(3)                                = 0
+access("/etc/ld.so.nohwcap", F_OK)      = -1 ENOENT (No such file or directory)
+open("/lib/tls/i686/cmov/libdl.so.2", O_RDONLY) = 3
+read(3, "\177ELF\1\1\1\0\0\0\0\0\0\0\0\0\3\0\3\0\1\0\0\0@\n\0\0004\0\0\0"..., 512) = 512
+fstat64(3, {st_mode=S_IFREG|0644, st_size=9736, ...}) = 0
+mmap2(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xb7680000
+mmap2(NULL, 12408, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0xb767c000
+mmap2(0xb767e000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1) = 0xb767e000
+close(3)                                = 0
+mmap2(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xb767b000
+set_thread_area({entry_number:-1 -> 6, base_addr:0xb767b720, limit:1048575, seg_32bit:1, contents:0, read_exec_only:0, limit_in_pages:1, seg_not_present:0, useable:1}) = 0
+mprotect(0xb767e000, 4096, PROT_READ)   = 0
+mprotect(0xb77d5000, 8192, PROT_READ)   = 0
+mprotect(0xb77f4000, 4096, PROT_READ)   = 0
+mprotect(0x8050000, 4096, PROT_READ)    = 0
+mprotect(0xb782f000, 4096, PROT_READ)   = 0
+munmap(0xb77f6000, 107930)              = 0
+statfs64("/selinux", 84, {f_type="EXT2_SUPER_MAGIC", f_bsize=4096, f_blocks=4807069, f_bfree=2152966, f_bavail=1908779, f_files=1221600, f_ffree=813214, f_fsid={337902303, -106049212}, f_namelen=255, f_frsize=4096}) = 0
+brk(0)                                  = 0x865d000
+brk(0x867e000)                          = 0x867e000
+open("/proc/filesystems", O_RDONLY|O_LARGEFILE) = 3
+fstat64(3, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+mmap2(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xb7810000
+read(3, "nodev\tsysfs\nnodev\trootfs\nnodev\tb"..., 1024) = 367
+read(3, "", 1024)                       = 0
+close(3)                                = 0
+munmap(0xb7810000, 4096)                = 0
+open("/usr/lib/locale/locale-archive", O_RDONLY|O_LARGEFILE) = -1 ENOENT (No such file or directory)
+open("/usr/share/locale/locale.alias", O_RDONLY) = 3
+fstat64(3, {st_mode=S_IFREG|0644, st_size=2570, ...}) = 0
+mmap2(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xb7810000
+read(3, "# Locale name alias data base.\n#"..., 4096) = 2570
+read(3, "", 4096)                       = 0
+close(3)                                = 0
+munmap(0xb7810000, 4096)                = 0
+open("/usr/lib/locale/pt_BR.utf8/LC_IDENTIFICATION", O_RDONLY) = -1 ENOENT (No such file or directory)
+open("/usr/lib/locale/pt_BR/LC_IDENTIFICATION", O_RDONLY) = -1 ENOENT (No such file or directory)
+open("/usr/lib/locale/pt.utf8/LC_IDENTIFICATION", O_RDONLY) = -1 ENOENT (No such file or directory)
+open("/usr/lib/locale/pt/LC_IDENTIFICATION", O_RDONLY) = -1 ENOENT (No such file or directory)
+open("/usr/share/locale-langpack/pt_BR.utf8/LC_IDENTIFICATION", O_RDONLY) = -1 ENOENT (No such file or directory)
+open("/usr/share/locale-langpack/pt_BR/LC_IDENTIFICATION", O_RDONLY) = -1 ENOENT (No such file or directory)
+open("/usr/share/locale-langpack/pt.utf8/LC_IDENTIFICATION", O_RDONLY) = -1 ENOENT (No such file or directory)
+open("/usr/share/locale-langpack/pt/LC_IDENTIFICATION", O_RDONLY) = -1 ENOENT (No such file or directory)
+mknod("/tmp/foo", S_IFIFO|0666)         = -1 EEXIST (File exists)
+write(2, "mknod: ", 7mknod: )                  = 7
+write(2, "`/tmp/foo'", 10`/tmp/foo')              = 10
+write(2, ": File exists", 13: File exists)           = 13
+write(2, "\n", 1
+)                       = 1
+close(1)                                = 0
+close(2)                                = 0
+exit_group(1)                           = ?

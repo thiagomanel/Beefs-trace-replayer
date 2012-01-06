@@ -129,17 +129,16 @@ void parse_caller (Caller* caller, char* token) {
 
 	caller = (Caller*) malloc(sizeof(Caller));
 
-	printf("parse_caller %s\n", token);
 	caller->uid = atoi(token);
 	token = strtok(NULL, " ");
-	printf("parse_caller %s\n", token);
 	caller->pid = atoi(token);
 	token = strtok(NULL, " ");
-	printf("parse_caller %s\n", token);
 	caller->tid = atoi(token);
 }
 
-void parse_parms (Parms* parm, op_t cmd_type,  char* token) {
+Parms* alloc_and_parse_parms (op_t cmd_type,  char* token) {
+
+	Parms* parm = NULL;
 
 	switch (cmd_type) {
 	case OPEN_OP:
@@ -159,7 +158,6 @@ void parse_parms (Parms* parm, op_t cmd_type,  char* token) {
 		token = strtok(NULL, " "); //timestamp
 		token = strtok(NULL, " "); //oldfd
 		token = strtok(NULL, " "); //new_fd
-		token = strtok(NULL, " ");
 		break;
 	case WRITE_OP:
 	case READ_OP: //TODO: write and read have the same token sequence than open
@@ -172,7 +170,6 @@ void parse_parms (Parms* parm, op_t cmd_type,  char* token) {
 		parm[1].arg.i_val = atoi(token);
 		token = strtok(NULL, " "); //count
 		parm[2].arg.i_val = atoi(token);
-		token = strtok(NULL, " ");
 		break;
 	case LLSEEK_OP: //TODO: write and read have the same token sequence than open
 		parm = (Parms*) malloc(2 * sizeof(Parms)); //it should be done at each switch case
@@ -182,7 +179,6 @@ void parse_parms (Parms* parm, op_t cmd_type,  char* token) {
 		token = strtok(NULL, " "); //offset_high
 		token = strtok(NULL, " "); //offset_low
 		token = strtok(NULL, " "); //whence_str
-		token = strtok(NULL, " ");
 		break;
 	case MKDIR_OP:
 		parm = (Parms*) malloc(2 * sizeof(Parms)); //it should be done at each switch case
@@ -192,7 +188,6 @@ void parse_parms (Parms* parm, op_t cmd_type,  char* token) {
 		strcpy(parm[0].arg.cprt_val, token);
 		token = strtok(NULL, " "); //mode
 		parm[1].arg.i_val = atoi(token);
-		token = strtok(NULL, " ");
 		break;
 	case MKNOD_OP:
 		parm = (Parms*) malloc(2 * sizeof(Parms)); //it should be done at each switch case
@@ -200,14 +195,12 @@ void parse_parms (Parms* parm, op_t cmd_type,  char* token) {
 		token = strtok(NULL, " "); //fullpath
 		token = strtok(NULL, " "); //mode
 		token = strtok(NULL, " "); //dev
-		token = strtok(NULL, " "); //
 		break;
 	case SYMLINK_OP:
 		parm = (Parms*) malloc(2 * sizeof(Parms)); //it should be done at each switch case
 		token = strtok(NULL, " "); //timestamp
 		token = strtok(NULL, " "); //fullpath_old_name
 		token = strtok(NULL, " "); //fullpath_new_name
-		token = strtok(NULL, " "); //
 		break;
 	case GETXATTR_OP:
 	case REMOVEXATTR_OP:
@@ -218,7 +211,6 @@ void parse_parms (Parms* parm, op_t cmd_type,  char* token) {
 		parm = (Parms*) malloc(2 * sizeof(Parms)); //it should be done at each switch case
 		token = strtok(NULL, " "); //timestamp
 		token = strtok(NULL, " "); //fullpath
-		token = strtok(NULL, " "); //
 		break;
 	case LSETXATTR_OP:
 		parm = (Parms*) malloc(2 * sizeof(Parms)); //it should be done at each switch case
@@ -227,14 +219,12 @@ void parse_parms (Parms* parm, op_t cmd_type,  char* token) {
 		token = strtok(NULL, " "); //name
 		token = strtok(NULL, " "); //value
 		token = strtok(NULL, " "); //flag
-		token = strtok(NULL, " "); //
 		break;
 	case CLOSE_OP:
 		parm = (Parms*) malloc(sizeof(Parms)); //it should be done at each switch case
 		token = strtok(NULL, " "); //timestamp
 		token = strtok(NULL, " ");
 		parm[0].arg.i_val = atoi(token); //fd
-		token = strtok(NULL, " ");
 		break;
 	default: //FIXME we need a case to NONE_OP, test it
 		parm = (Parms*) malloc(sizeof(Parms)); //it should be done at each switch case
@@ -242,9 +232,10 @@ void parse_parms (Parms* parm, op_t cmd_type,  char* token) {
 		token = strtok(NULL, " "); //arg
 		parm[0].arg.cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
 		strcpy(parm[0].arg.cprt_val, token);
-		token = strtok(NULL, " ");
 		break;
 	}
+
+	return parm;
 }
 
 int parse_element (Workflow_element* element, char* line) {
@@ -283,7 +274,8 @@ int parse_element (Workflow_element* element, char* line) {
 	}
 
 	struct replay_command*
-		current_command = (struct replay_command*) malloc (sizeof (struct replay_command));
+		current_command = (struct replay_command*)
+			malloc (sizeof (struct replay_command));
 	fill_replay_command (current_command);
 
 	current_command->caller = (Caller*) malloc(sizeof(Caller));
@@ -295,7 +287,7 @@ int parse_element (Workflow_element* element, char* line) {
 	op_t loaded_cmd = marker2operation (token);
 	current_command->command = loaded_cmd;
 
-//	parse_parms (current_command->params, loaded_cmd, token);
+	current_command->params = alloc_and_parse_parms (loaded_cmd, token);
 
 	token = strtok (NULL, " ");
 	current_command->expected_retval = atoi (token);
@@ -471,8 +463,6 @@ int parse_line(struct replay_command** cmd, char* line) {
 
 int load2(Replay_workload* replay_wld, FILE* input_file) {
 
-	printf("aha\n");
-
 	unsigned int line_len = 0;
 	int tmp;
 	char* line = NULL;
@@ -497,7 +487,6 @@ int load2(Replay_workload* replay_wld, FILE* input_file) {
 		line = NULL;
 		line_len = 0;
 		tmp = getline (&line, &line_len, input_file);
-		printf("line %s\n", line);
 
 		if (tmp >= 0) {
 			Workflow_element* tmp_element

@@ -899,7 +899,6 @@ TEST(LoaderTest, ParseWorkflowElement) {
     struct replay_command* loaded_cmd = element->command;
 
     EXPECT_EQ(MKDIR_OP, loaded_cmd->command);
-    EXPECT_EQ(0, loaded_cmd->expected_retval);
     Caller* caller_id = loaded_cmd->caller;
 
     EXPECT_EQ(1159, caller_id->uid);
@@ -907,9 +906,10 @@ TEST(LoaderTest, ParseWorkflowElement) {
     EXPECT_EQ(32311, caller_id->tid);
 
 	Parms* parm = element->command->params;
-	EXPECT_TRUE(strcmp("/tmp/jdt-images-1", parm[0].arg.cprt_val) == 0);
 	EXPECT_EQ(511, parm[1].arg.i_val);
+	EXPECT_TRUE(strcmp("/tmp/jdt-images-1", parm[0].arg.cprt_val) == 0);
 
+    EXPECT_EQ(0, loaded_cmd->expected_retval);
 //2 1 1 1 3 1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /tmp/jdt-images-2 511 0
 }
 

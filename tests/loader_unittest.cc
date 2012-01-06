@@ -19,7 +19,6 @@
 #include "gtest/gtest.h"
 #include <stdlib.h>
 
-
 TEST(LoaderTest, EmptyInputFile) {
     Replay_workload rep_wld;
     FILE * input_f = fopen("tests/input_data/empty_input", "r");
@@ -874,3 +873,77 @@ TEST(ReplayTest, SingleOperationReplay) {
 	EXPECT_EQ (1, actual_result->replayed_commands);
 	EXPECT_EQ (1, actual_result->produced_commands);
 }
+
+TEST(LoaderTest, ParseWorkflowElement) {
+			//uid pid tid exec_name mkdir begin-elapsed fulpath mode return
+//1 0 - 1 2 1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /tmp/jdt-images-1 511 0
+
+	char line[] = "1 0 - 1 2 1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /tmp/jdt-images-1 511 0";
+	Workflow_element* element = alloc_workflow_element();
+	EXPECT_EQ(0, element->consumed);
+	EXPECT_EQ(0, element->produced);
+
+	parse_element (element, line);
+
+    EXPECT_EQ(1, element->id);
+
+    EXPECT_EQ(0, element->n_children);
+
+    EXPECT_EQ(1, element->n_parents);
+    int child_id = element->parents_ids[element->n_parents - 1];
+    EXPECT_EQ(2, child_id);
+
+    EXPECT_EQ(0, element->consumed);
+    EXPECT_EQ(0, element->produced);
+
+    struct replay_command* loaded_cmd = element->command;
+
+    EXPECT_EQ(MKDIR_OP, loaded_cmd->command);
+    EXPECT_EQ(0, loaded_cmd->expected_retval);
+    Caller* caller_id = loaded_cmd->caller;
+
+    EXPECT_EQ(1159, caller_id->uid);
+    EXPECT_EQ(2364, caller_id->pid);
+    EXPECT_EQ(32311, caller_id->tid);
+
+	Parms* parm = element->command->params;
+	EXPECT_TRUE(strcmp("/tmp/jdt-images-1", parm[0].arg.cprt_val) == 0);
+	EXPECT_EQ(511, parm[1].arg.i_val);
+
+//2 1 1 1 3 1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /tmp/jdt-images-2 511 0
+}
+
+TEST(LoaderTest, LoadWorkflow) {
+			//uid pid tid exec_name mkdir begin-elapsed fulpath mode return
+//1 1 - 1 2 1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /tmp/jdt-images-1 511 0
+//2 1 1 1 3 1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /tmp/jdt-images-2 511 0
+    Replay_workload* rep_wld = (Replay_workload*) malloc (sizeof (Replay_workload));
+    FILE * input_f = fopen("tests/replay_input/workflow_samples/workflow_2_sequencial_command_mkdir", "r");
+    int ret = load2(rep_wld, input_f);
+
+    EXPECT_EQ(0, ret);
+    EXPECT_EQ(2, rep_wld->num_cmds);
+    EXPECT_EQ(0, rep_wld->current_cmd);
+
+    /**
+    struct replay_command* command;
+    int n_children;
+    int children_id[];//we are going to hash w_elements
+    int n_parents;
+    int parents_id[];//we are going to hash w_elements
+   	int produced;
+   	int consumed;
+   	int id;
+
+    Workflow_element* w_element = rep_wld->element;
+    struct replay_command* loaded_cmd = w_element->command;
+
+    EXPECT_EQ(MKDIR_OP, loaded_cmd->command);
+    EXPECT_EQ(0, loaded_cmd->expected_retval);
+    Caller* caller_id = loaded_cmd->caller;
+    EXPECT_EQ(1159, caller_id->uid);
+    EXPECT_EQ(2364, caller_id->pid);
+    EXPECT_EQ(32311, caller_id->tid);*/
+    fclose(input_f);
+}
+

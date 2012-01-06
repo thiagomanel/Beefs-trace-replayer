@@ -25,8 +25,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <pthread.h>
-#include </usr/include/semaphore.h>
 
 int main (int argc, const char* argv[]) {
 
@@ -34,7 +32,7 @@ int main (int argc, const char* argv[]) {
 	Replay_workload* rep_wld = (Replay_workload*) malloc (
 			sizeof (Replay_workload));
 
-	int ret = load (rep_wld, fp);
+	int ret = load2 (rep_wld, fp);
 	if (ret < 0) {
 		perror("Error loading trace\n");
 	}
@@ -43,18 +41,9 @@ int main (int argc, const char* argv[]) {
 	Replay_workload* boxed_rep_wld = (Replay_workload*) malloc (
 				sizeof (Replay_workload));
 
-	boxed_rep_wld->element = (Workflow_element*) malloc (sizeof (Workflow_element));
-	boxed_rep_wld->element->n_children = 0;
-	boxed_rep_wld->element->children = NULL;
-
-	boxed_rep_wld->element->n_parents = 0;
-	boxed_rep_wld->element->parents = NULL;
-
-	boxed_rep_wld->element->produced = 0;
-	boxed_rep_wld->element->consumed = 0;
-	boxed_rep_wld->num_cmds = 1;
-
+	boxed_rep_wld->element = alloc_workflow_element();
 	boxed_rep_wld->element->command = rep_wld->cmd;
+	boxed_rep_wld->num_cmds = 1;
 
 	Replay_result* actual_result = (Replay_result*) malloc (sizeof (Replay_result));
 	actual_result->replayed_commands = 0;

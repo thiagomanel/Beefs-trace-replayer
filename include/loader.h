@@ -16,15 +16,15 @@
 #ifndef _LOADER_H
 #define _LOADER_H
 
-//#include "replayer.h"
+#include "replayer.h"
 #include <stdio.h>
 
-int
-parse_line (struct replay_command** cmd, char* line);
+int parse_line (struct replay_command** cmd, char* line);
 
-int
-load (struct replay_workload* replay_wld, FILE* input_file);
+int parse_element (Workflow_element* element, char* line);
 
+int load (struct replay_workload* replay_wld, FILE* input_file);
 
-	 
+int load2 (struct replay_workload* replay_wld, FILE* input_file);
+
 #endif /* _LOADER_H */

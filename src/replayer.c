@@ -29,8 +29,66 @@
 
 #define PID_MAX 32768
 #define BUFF_SIZE   20
+#define ROOT_ID 0
+#define DEBUG 1
 
 int N_ITEMS;
+
+Replay_workload* workload;
+
+//TODO: do we need both two methods below
+Workflow_element* alloc_workflow_element () {
+	Workflow_element* element = (Workflow_element*) malloc (sizeof (Workflow_element));
+	fill_workflow_element (element);
+	return element;
+}
+
+void fill_workflow_element (Workflow_element* element) {
+	element->n_children = 0;
+	element->children = NULL;
+	element->children_ids = NULL;
+
+	element->n_parents = 0;
+	element->parents = NULL;
+	element->parents_ids = NULL;
+
+	element->produced = 0;
+	element->consumed = 0;
+
+	element->command = NULL;
+}
+
+Workflow_element* element (Replay_workload* workload, int element_id) {
+	return (workload->element + (element_id * sizeof (Workflow_element)));
+}
+
+int is_child (Workflow_element* parent, Workflow_element* child) {
+
+}
+
+/**
+ * Increase array size by one element and add value_to_append to last position
+ */
+void append(int* array, int array_size, int value_to_append) {
+	realloc (array, array_size + 1);
+	array[array_size] = value_to_append;
+}
+
+//this function is used once, so I would not like to have it in header. I also
+//think resizing arrays smells bad, it necessary to insert the bootstrap element.
+void add_child (Replay_workload* workload, Workflow_element* parent,
+		Workflow_element* child) {
+
+	//assuming that is A is child of B, B is parent of A. So, everybody should
+	//modify child/parent arrays using the available functions, never directly
+	if (! is_child (parent, child)) {
+		append (parent->children_ids, parent->n_children, child->id);
+		parent->n_children++;
+
+		append (child->parents_ids, child->n_parents, parent->id);
+		child->n_parents++;
+	}
+}
 
 struct frontier {//we can use a generic list instead of this struct
 	struct workflow_element* w_element;
@@ -150,6 +208,9 @@ void mark_produced (Workflow_element* element) {
 }
 
 void do_produce(Workflow_element* el_to_produce) {
+
+	if (DEBUG) printf("do_produce element_id=%d\n", el_to_produce);
+
 	//1. produce
 	shared_buff->produced_queue[++shared_buff->last_produced] = el_to_produce;
 	//2. mark
@@ -168,30 +229,26 @@ void *produce (void *arg) {
 
 	int i;
 
-	struct frontier* current_frontier;
-	Workflow_element* current_element;
+	struct frontier* frontier;
+	Workflow_element* w_element;
 
 	//It seems the second part of this algorithm cannot be nested in this while
 	//it is allowed to run even when all commands were produced
 	while ( ! all_produced (shared_buff)) {
 		sem_wait(shared_buff->mutex);
-			current_frontier = shared_buff->frontier;
-			while (current_frontier != NULL) {
+			frontier = shared_buff->frontier;
+			while (frontier != NULL) {
 				//dispatch children that was not dispatched yet
-				current_element = current_frontier->w_element;
-				Workflow_element* children = current_element->children;
-
-				if (children != NULL) {
-					int e;
-					for (e = 0; e < current_element->n_children; e++) {
-						Workflow_element* child = (children + (e * sizeof (Workflow_element*)));
-						if (! produced (child)) {
-							do_produce(child);
-						}
+				w_element = frontier->w_element;
+				int e;
+				for (e = 0; e < w_element->n_children; e++) {
+					Workflow_element* child
+						= element(workload, w_element->children_ids[e]);
+					if (! produced (child)) {
+						do_produce(child);
 					}
 				}
-
-				current_frontier = current_frontier->next;
+				frontier = frontier->next;
 			}
 
 		sem_post(shared_buff->mutex);
@@ -269,7 +326,7 @@ void *consume (void *arg) {
 	}
 }
 
-void fill_fake_replay_command(struct replay_command* cmd) {
+void fill_fake_replay_command(struct replay_command* cmd) {//i think loader has something like that
 	cmd->command = NONE;
 	cmd->caller = NULL;
 	cmd->params = NULL;
@@ -278,18 +335,15 @@ void fill_fake_replay_command(struct replay_command* cmd) {
 	cmd->id = 666;
 }
 
-void fill_workflow_root (Workflow_element* root, Workflow_element* children,
-		int n_children) {
+void boostrap_workflow_root (Workflow_element* root,
+		int* children_id, int n_children) {
 
 	assert (root != NULL);
-	assert (children != NULL);
+	assert (children_id != NULL);
 	assert (n_children >= 0);
 
 	root->n_children = n_children;
-	root->children = children;
-
-	root->n_parents = 0;
-	root->parents = NULL;
+	memset (root->children_ids, 0, (root->n_children * sizeof (int)));
 
 	root->produced = 1;
 	root->consumed = 1;
@@ -297,14 +351,9 @@ void fill_workflow_root (Workflow_element* root, Workflow_element* children,
 	//root becomes children's parent
 	int i;
 	for (i = 0; i < n_children ; i++) {
-		Workflow_element *child = (children + (i * sizeof (Workflow_element*)));
-		child->n_parents = 1;
-		child->parents = root;
+		Workflow_element* child = element (workload, root->children_ids[i]);
+		add_child (workload, root, child);
 	}
-
-	root->command
-			= (struct replay_command*) malloc( sizeof (struct replay_command));
-	fill_fake_replay_command(root->command);
 }
 
 void fill_shared_buffer (Replay_workload* workload, sbuffs_t* shared) {
@@ -321,11 +370,17 @@ void fill_shared_buffer (Replay_workload* workload, sbuffs_t* shared) {
 
 	shared->frontier = (struct frontier*) malloc (sizeof (struct frontier));
 
-	//we need to create the fake root here.
-	Workflow_element* root =
-			(Workflow_element*) malloc (sizeof (Workflow_element));
+	//fake root
+	struct replay_command* root_cmd
+		= (struct replay_command*) malloc( sizeof (struct replay_command));
+	fill_fake_replay_command(root_cmd);
 
-	fill_workflow_root(root, workload->element, 1);
+	Workflow_element* root = alloc_workflow_element ();
+	root->command = root_cmd;
+	root->id = ROOT_ID;
+
+	int tmp_children[] = {workload->element->id};
+	boostrap_workflow_root (root, tmp_children, 1);
 
 	shared->frontier->w_element = root;
 	shared->frontier->next = NULL;
@@ -335,14 +390,15 @@ int replay (Replay_workload* rep_workload, Replay_result* result) {
 
 	assert (rep_workload != NULL);
 	assert (result != NULL);
-
 	assert (rep_workload->num_cmds >= 0);
 
 	if (rep_workload->num_cmds > 0) {
 		assert (rep_workload->element != NULL);
 	}
 
-	fill_shared_buffer (rep_workload, shared_buff);
+	workload = rep_workload;
+	fill_shared_buffer (workload, shared_buff);
+
 	sem_init(shared_buff->mutex, 0, 1);
 
 	pthread_t consumer, producer;

@@ -92,14 +92,17 @@ typedef struct workflow_element {
 
 	struct replay_command* command;
 
-	struct workflow_element* children;
+	struct workflow_element* children;//deprecated
 	int n_children;
+	int* children_ids;//we are going to hash w_elements
 
-	struct workflow_element* parents;
+	struct workflow_element* parents;//deprecated
 	int n_parents;
+	int* parents_ids;//we are going to hash w_elements
 
 	int produced;
 	int consumed;
+	int id;
 
 } Workflow_element;
 
@@ -109,6 +112,14 @@ typedef struct replay_workload {
 	unsigned int num_cmds;
 	unsigned int current_cmd;
 } Replay_workload;
+
+Workflow_element* alloc_workflow_element ();
+
+void fill_workflow_element (Workflow_element* element);
+
+Workflow_element* element (Replay_workload* workload, int element_id);
+
+int is_child (Workflow_element* parent, Workflow_element* child);
 
 /**
  * Replay result.
@@ -120,10 +131,8 @@ typedef struct replay_result {
 	int produced_commands;
 } Replay_result;
 
-void
-fill_replay_command (struct replay_command* cmd);
+void fill_replay_command (struct replay_command* cmd);
 
-int
-replay (Replay_workload* rep_workload, Replay_result* result);
+int replay (Replay_workload* rep_workload, Replay_result* result);
 
 #endif /* _REPLAYER_H */

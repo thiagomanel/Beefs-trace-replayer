@@ -72,7 +72,13 @@ Workflow_element* get_child (Replay_workload* workload, Workflow_element* parent
 }
 
 int is_child (Workflow_element* parent, Workflow_element* child) {
-
+	int i;
+	for (i = 0; i < parent->n_children; i++) {
+		if (parent->children_ids[i] == child->id) {
+			return 1;
+		}
+	}
+	return 0;
 }
 
 /**
@@ -87,10 +93,12 @@ void append(int* array, int array_size, int value_to_append) {
 //think resizing arrays smells bad, it necessary to insert the bootstrap element.
 void add_child (Replay_workload* workload, Workflow_element* parent,
 		Workflow_element* child) {
-
+	printf("adding child\n");
 	//assuming that is A is child of B, B is parent of A. So, everybody should
 	//modify child/parent arrays using the available functions, never directly
 	if (! is_child (parent, child)) {
+		printf("really adding child\n");
+
 		append (parent->children_ids, parent->n_children, child->id);
 		parent->n_children++;
 

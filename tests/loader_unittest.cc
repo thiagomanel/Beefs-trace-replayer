@@ -915,7 +915,7 @@ TEST(LoaderTest, ParseWorkflowElement) {
 
 TEST(LoaderTest, LoadWorkflow) {
 			//uid pid tid exec_name mkdir begin-elapsed fulpath mode return
-//1 1 - 1 2 1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /tmp/jdt-images-1 511 0
+//1 0 - 1 2 1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /tmp/jdt-images-1 511 0
 //2 1 1 1 3 1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /tmp/jdt-images-2 511 0
     Replay_workload* rep_wld = (Replay_workload*) malloc (sizeof (Replay_workload));
     FILE * input_f = fopen("tests/replay_input/workflow_samples/workflow_2_sequencial_command_mkdir", "r");
@@ -925,25 +925,27 @@ TEST(LoaderTest, LoadWorkflow) {
     EXPECT_EQ(3, rep_wld->num_cmds);//fake + 2 commands
     EXPECT_EQ(0, rep_wld->current_cmd);
 
-    /**
-    struct replay_command* command;
-    int n_children;
-    int children_id[];//we are going to hash w_elements
-    int n_parents;
-    int parents_id[];//we are going to hash w_elements
-   	int produced;
-   	int consumed;
-   	int id;
+    //bootstraper
+    Workflow_element* w_element = element(rep_wld, 0);
+    EXPECT_EQ(1, w_element->n_children);
+    EXPECT_EQ(0, w_element->n_parents);
+    int child_id = w_element->children_ids[0];
+    EXPECT_EQ(1, child_id);
 
-    Workflow_element* w_element = rep_wld->element;
-    struct replay_command* loaded_cmd = w_element->command;
+    w_element = element(rep_wld, 1);
+    EXPECT_EQ(1, w_element->n_children);
+    EXPECT_EQ(1, w_element->n_parents);
+    int parent_id = w_element->parents_ids[0];
+    EXPECT_EQ(0, parent_id);
+    child_id = w_element->children_ids[0];
+    EXPECT_EQ(2, child_id);
 
-    EXPECT_EQ(MKDIR_OP, loaded_cmd->command);
-    EXPECT_EQ(0, loaded_cmd->expected_retval);
-    Caller* caller_id = loaded_cmd->caller;
-    EXPECT_EQ(1159, caller_id->uid);
-    EXPECT_EQ(2364, caller_id->pid);
-    EXPECT_EQ(32311, caller_id->tid);*/
+    w_element = element(rep_wld, 2);
+    EXPECT_EQ(0, w_element->n_children);
+    EXPECT_EQ(1, w_element->n_parents);
+    parent_id = w_element->parents_ids[0];
+    EXPECT_EQ(1, parent_id);
+
+
     fclose(input_f);
 }
-

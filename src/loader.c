@@ -357,20 +357,21 @@ int load2(Replay_workload* replay_wld, FILE* input_file) {
 	tmp = getline (&line, &line_len, input_file);
 	int num_commands_to_load = atoi (line);
 	replay_wld->element_list
-		= (Workflow_element*) malloc (num_commands_to_load * sizeof (Workflow_element));
-
+		= (Workflow_element*) malloc ((num_commands_to_load + 1) * sizeof (Workflow_element));
 
 	//A fake element is the workflow root
 	struct replay_command* root_cmd
 			= (struct replay_command*) malloc( sizeof (struct replay_command));
 	fill_replay_command(root_cmd);
 
-	Workflow_element* root_element = alloc_workflow_element ();
+	//fake element is also element_list's head
+	Workflow_element* root_element = element(replay_wld, 0);
+	fill_workflow_element(root_element);
 	root_element->command = root_cmd;
 	root_element->id = ROOT_ID;
+	root_element->produced = 1;
+	root_element->consumed = 1;
 
-	//fake element is also element_list's head
-	replay_wld->element_list = root_element;
 	loaded_commands++;
 
 	while (! feof (input_file)) {
@@ -389,19 +390,14 @@ int load2(Replay_workload* replay_wld, FILE* input_file) {
 
 	//child that has no parents should become child of fake element
 	//For now, i'm attaching just the first child (2nd element in list)
-	root_element->n_children = 1;
-
 	Workflow_element* child = element(replay_wld, 1);
-	int children[] = {child->id};
-	root_element->children_ids = children;
-
-	root_element->produced = 1;
-	root_element->consumed = 1;
+	root_element->children_ids = (int*) malloc (sizeof (int));
 
 	//root_element becomes children's parent
 	add_child (replay_wld, root_element, child);
 
 	replay_wld->current_cmd = 0;
 	replay_wld->num_cmds = loaded_commands;
+
 	return 0;
 }

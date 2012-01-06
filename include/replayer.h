@@ -55,6 +55,8 @@ typedef unsigned short op_t;
 #define FLISTXATTR_OP (FSETXATTR_OP + 1)
 #define LSETXATTR_OP (FLISTXATTR_OP + 1)
 
+#define ROOT_ID 0
+
 
 //TODO: timestamps
 //TODO: actual returned value
@@ -107,7 +109,7 @@ typedef struct workflow_element {
 } Workflow_element;
 
 typedef struct replay_workload {
-	Workflow_element* element;
+	Workflow_element* element_list;
 	struct replay_command* cmd;
 	unsigned int num_cmds;
 	unsigned int current_cmd;
@@ -118,6 +120,9 @@ Workflow_element* alloc_workflow_element ();
 void fill_workflow_element (Workflow_element* element);
 
 Workflow_element* element (Replay_workload* workload, int element_id);
+
+void add_child (Replay_workload* workload, Workflow_element* parent,
+		Workflow_element* child);
 
 int is_child (Workflow_element* parent, Workflow_element* child);
 

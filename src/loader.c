@@ -110,7 +110,6 @@ void fill_replay_command (struct replay_command* cmd) {
 	cmd->id = rand();
 }
 
-
 int parse_workflow_element (Workflow_element* element, char* line) {
 
 }
@@ -330,133 +329,12 @@ int parse_line(struct replay_command** cmd, char* line) {
 	token = strtok(NULL, " "); //exec_name
 	token = strtok(NULL, " ");
 	op_t loaded_cmd = marker2operation(token);
-	int exp_rvalue;
-
-	Parms* parm;
-
-	switch (loaded_cmd) {
-	case OPEN_OP:
-		current_command->params = (Parms*) malloc(3 * sizeof(Parms)); //it should be done at each switch case
-		parm = current_command->params;
-		token = strtok(NULL, " "); //timestamp
-		token = strtok(NULL, " "); //fullpath
-		parm[0].arg.cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
-		strcpy(parm[0].arg.cprt_val, token);
-		token = strtok(NULL, " "); //flag
-		parm[1].arg.i_val = atoi(token);
-		token = strtok(NULL, " "); //mode
-		parm[2].arg.i_val = atoi(token);
-		token = strtok(NULL, " ");
-		exp_rvalue = atoi(token);
-		break;
-	case DUP2_OP:
-	case DUP3_OP:
-		current_command->params = (Parms*) malloc(2 * sizeof(Parms)); //it should be done at each switch case
-		token = strtok(NULL, " "); //timestamp
-		token = strtok(NULL, " "); //oldfd
-		token = strtok(NULL, " "); //new_fd
-		token = strtok(NULL, " ");
-		exp_rvalue = atoi(token);
-		break;
-	case WRITE_OP:
-	case READ_OP: //TODO: write and read have the same token sequence than open
-		current_command->params = (Parms*) malloc(3 * sizeof(Parms)); //it should be done at each switch case
-		parm = current_command->params;
-		token = strtok(NULL, " "); //timestamp
-		token = strtok(NULL, " "); //fullpath
-		parm[0].arg.cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
-		strcpy(parm[0].arg.cprt_val, token);
-		token = strtok(NULL, " "); //fd
-		parm[1].arg.i_val = atoi(token);
-		token = strtok(NULL, " "); //count
-		parm[2].arg.i_val = atoi(token);
-		token = strtok(NULL, " ");
-		exp_rvalue = atoi(token);
-		break;
-	case LLSEEK_OP: //TODO: write and read have the same token sequence than open
-		current_command->params = (Parms*) malloc(2 * sizeof(Parms)); //it should be done at each switch case
-		token = strtok(NULL, " "); //timestamp
-		token = strtok(NULL, " "); //fullpath
-		token = strtok(NULL, " "); //fd
-		token = strtok(NULL, " "); //offset_high
-		token = strtok(NULL, " "); //offset_low
-		token = strtok(NULL, " "); //whence_str
-		token = strtok(NULL, " ");
-		exp_rvalue = atoi(token);
-		break;
-	case MKDIR_OP:
-		current_command->params = (Parms*) malloc(2 * sizeof(Parms)); //it should be done at each switch case
-		parm = current_command->params;
-		token = strtok(NULL, " "); //timestamp
-		token = strtok(NULL, " "); //fullpath
-		parm[0].arg.cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
-		strcpy(parm[0].arg.cprt_val, token);
-		token = strtok(NULL, " "); //mode
-		parm[1].arg.i_val = atoi(token);
-		token = strtok(NULL, " ");
-		exp_rvalue = atoi(token);
-		break;
-	case MKNOD_OP:
-		current_command->params = (Parms*) malloc(2 * sizeof(Parms)); //it should be done at each switch case
-		token = strtok(NULL, " "); //timestamp
-		token = strtok(NULL, " "); //fullpath
-		token = strtok(NULL, " "); //mode
-		token = strtok(NULL, " "); //dev
-		token = strtok(NULL, " "); //
-		exp_rvalue = atoi(token);
-		break;
-	case SYMLINK_OP:
-		current_command->params = (Parms*) malloc(2 * sizeof(Parms)); //it should be done at each switch case
-		token = strtok(NULL, " "); //timestamp
-		token = strtok(NULL, " "); //fullpath_old_name
-		token = strtok(NULL, " "); //fullpath_new_name
-		token = strtok(NULL, " "); //
-		exp_rvalue = atoi(token);
-		break;
-	case GETXATTR_OP:
-	case REMOVEXATTR_OP:
-	case SETXATTR_OP:
-	case LISTXATTR_OP:
-	case LREMOVEXATTR_OP:
-	case LLISTXATTR_OP:
-		current_command->params = (Parms*) malloc(2 * sizeof(Parms)); //it should be done at each switch case
-		token = strtok(NULL, " "); //timestamp
-		token = strtok(NULL, " "); //fullpath
-		token = strtok(NULL, " "); //
-		exp_rvalue = atoi(token);
-		break;
-	case LSETXATTR_OP:
-		current_command->params = (Parms*) malloc(2 * sizeof(Parms)); //it should be done at each switch case
-		token = strtok(NULL, " "); //timestamp
-		token = strtok(NULL, " "); //fullpath
-		token = strtok(NULL, " "); //name
-		token = strtok(NULL, " "); //value
-		token = strtok(NULL, " "); //flag
-		token = strtok(NULL, " "); //
-		exp_rvalue = atoi(token);
-		break;
-	case CLOSE_OP:
-		current_command->params = (Parms*) malloc(sizeof(Parms)); //it should be done at each switch case
-		token = strtok(NULL, " "); //timestamp
-		token = strtok(NULL, " ");
-		parm = current_command->params;
-		parm[0].arg.i_val = atoi(token); //fd
-		token = strtok(NULL, " ");
-		exp_rvalue = atoi(token);
-		break;
-	default: //FIXME we need a case to NONE_OP, test it
-		current_command->params = (Parms*) malloc(sizeof(Parms)); //it should be done at each switch case
-		token = strtok(NULL, " "); //timestamp
-		token = strtok(NULL, " "); //arg
-		parm = current_command->params;
-		parm[0].arg.cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
-		strcpy(parm[0].arg.cprt_val, token);
-		token = strtok(NULL, " ");
-		exp_rvalue = atoi(token);
-		break;
-	}
 	current_command->command = loaded_cmd;
-	current_command->expected_retval = exp_rvalue;
+
+	current_command->params = alloc_and_parse_parms(loaded_cmd, token);
+	token = strtok(NULL, " ");
+	current_command->expected_retval = atoi(token);
+
 	return (loaded_cmd == NONE) ? UNKNOW_OP_ERROR : 0;
 //free something ?
 }
@@ -478,10 +356,22 @@ int load2(Replay_workload* replay_wld, FILE* input_file) {
 	//at least, one line -- the number of commands
 	tmp = getline (&line, &line_len, input_file);
 	int num_commands_to_load = atoi (line);
-	replay_wld->element
+	replay_wld->element_list
 		= (Workflow_element*) malloc (num_commands_to_load * sizeof (Workflow_element));
 
-	Workflow_element* element = replay_wld->element;
+
+	//A fake element is the workflow root
+	struct replay_command* root_cmd
+			= (struct replay_command*) malloc( sizeof (struct replay_command));
+	fill_replay_command(root_cmd);
+
+	Workflow_element* root_element = alloc_workflow_element ();
+	root_element->command = root_cmd;
+	root_element->id = ROOT_ID;
+
+	//fake element is also element_list's head
+	replay_wld->element_list = root_element;
+	loaded_commands++;
 
 	while (! feof (input_file)) {
 		line = NULL;
@@ -490,12 +380,26 @@ int load2(Replay_workload* replay_wld, FILE* input_file) {
 
 		if (tmp >= 0) {
 			Workflow_element* tmp_element
-				= (replay_wld->element + (loaded_commands * sizeof (Workflow_element)));
+				= (replay_wld->element_list + (loaded_commands * sizeof (Workflow_element)));
 			fill_workflow_element (tmp_element);
 			tmp = parse_element (tmp_element, line);
 			loaded_commands += 1;
 		}
 	}
+
+	//child that has no parents should become child of fake element
+	//For now, i'm attaching just the first child (2nd element in list)
+	root_element->n_children = 1;
+
+	Workflow_element* child = element(replay_wld, 1);
+	int children[] = {child->id};
+	root_element->children_ids = children;
+
+	root_element->produced = 1;
+	root_element->consumed = 1;
+
+	//root_element becomes children's parent
+	add_child (replay_wld, root_element, child);
 
 	replay_wld->current_cmd = 0;
 	replay_wld->num_cmds = loaded_commands;

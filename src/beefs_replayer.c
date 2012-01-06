@@ -41,8 +41,8 @@ int main (int argc, const char* argv[]) {
 	Replay_workload* boxed_rep_wld = (Replay_workload*) malloc (
 				sizeof (Replay_workload));
 
-	boxed_rep_wld->element = alloc_workflow_element();
-	boxed_rep_wld->element->command = rep_wld->cmd;
+	boxed_rep_wld->element_list = alloc_workflow_element();
+	boxed_rep_wld->element_list->command = rep_wld->cmd;
 	boxed_rep_wld->num_cmds = 1;
 
 	Replay_result* actual_result = (Replay_result*) malloc (sizeof (Replay_result));

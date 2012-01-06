@@ -836,27 +836,27 @@ TEST(ReplayTest, SingleOperationReplay) {
 		= (Replay_workload*) malloc (sizeof (Replay_workload));
 	
 	//filling workload_element (TODO: it may be moved from this test to code)
-	rep_wld->element = (Workflow_element*) malloc (sizeof (Workflow_element));
-	rep_wld->element->n_children = 0;
-	rep_wld->element->children = NULL;
+	rep_wld->element_list = (Workflow_element*) malloc (sizeof (Workflow_element));
+	rep_wld->element_list->n_children = 0;
+	rep_wld->element_list->children = NULL;
 
-	rep_wld->element->n_parents = 0;
-	rep_wld->element->parents = NULL;
+	rep_wld->element_list->n_parents = 0;
+	rep_wld->element_list->parents = NULL;
 
-	rep_wld->element->produced = 0;
-	rep_wld->element->consumed = 0;
+	rep_wld->element_list->produced = 0;
+	rep_wld->element_list->consumed = 0;
 	
 
-	rep_wld->element->command
+	rep_wld->element_list->command
 		= (struct replay_command*) malloc( sizeof (struct replay_command));
 
-	fill_replay_command (rep_wld->element->command);
+	fill_replay_command (rep_wld->element_list->command);
 	//end workload_element filling
 
-	rep_wld->element->command->params = (Parms*) malloc (3 * sizeof (Parms));
+	rep_wld->element_list->command->params = (Parms*) malloc (3 * sizeof (Parms));
 
 	Parms* parm;
-	parm = rep_wld->element->command->params;
+	parm = rep_wld->element_list->command->params;
 	parm[0].arg.cprt_val = (char*) malloc (MAX_FILE_NAME * sizeof (char));
 	strcpy (parm[0].arg.cprt_val, "fileToOpen");
 	parm[1].arg.i_val = 34816;//flag
@@ -922,7 +922,7 @@ TEST(LoaderTest, LoadWorkflow) {
     int ret = load2(rep_wld, input_f);
 
     EXPECT_EQ(0, ret);
-    EXPECT_EQ(2, rep_wld->num_cmds);
+    EXPECT_EQ(3, rep_wld->num_cmds);//fake + 2 commands
     EXPECT_EQ(0, rep_wld->current_cmd);
 
     /**

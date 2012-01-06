@@ -29,7 +29,6 @@
 
 #define PID_MAX 32768
 #define BUFF_SIZE   20
-#define ROOT_ID 0
 #define DEBUG 1
 
 int N_ITEMS;
@@ -58,8 +57,18 @@ void fill_workflow_element (Workflow_element* element) {
 	element->command = NULL;
 }
 
+
 Workflow_element* element (Replay_workload* workload, int element_id) {
-	return (workload->element + (element_id * sizeof (Workflow_element)));
+	if (DEBUG) printf("element element_id=%d\n", element_id);
+	return (workload->element_list + (element_id * sizeof (Workflow_element)));
+}
+
+
+Workflow_element* get_child (Replay_workload* workload, Workflow_element* parent,
+		int child_index) {
+
+	int child_id = *(parent->children_ids + (child_index * sizeof (int)));
+	return element(workload, child_id);
 }
 
 int is_child (Workflow_element* parent, Workflow_element* child) {
@@ -240,12 +249,12 @@ void *produce (void *arg) {
 			while (frontier != NULL) {
 				//dispatch children that was not dispatched yet
 				w_element = frontier->w_element;
-				int e;
-				for (e = 0; e < w_element->n_children; e++) {
-					Workflow_element* child
-						= element(workload, w_element->children_ids[e]);
+				int chl_index;
+				for (chl_index = 0; chl_index < w_element->n_children; chl_index++) {
+					Workflow_element*
+						child = get_child (workload, w_element, chl_index);
 					if (! produced (child)) {
-						do_produce(child);
+						do_produce (child);
 					}
 				}
 				frontier = frontier->next;
@@ -326,36 +335,6 @@ void *consume (void *arg) {
 	}
 }
 
-void fill_fake_replay_command(struct replay_command* cmd) {//i think loader has something like that
-	cmd->command = NONE;
-	cmd->caller = NULL;
-	cmd->params = NULL;
-	cmd->expected_retval = -666; //:O
-	cmd->next = NULL;
-	cmd->id = 666;
-}
-
-void boostrap_workflow_root (Workflow_element* root,
-		int* children_id, int n_children) {
-
-	assert (root != NULL);
-	assert (children_id != NULL);
-	assert (n_children >= 0);
-
-	root->n_children = n_children;
-	memset (root->children_ids, 0, (root->n_children * sizeof (int)));
-
-	root->produced = 1;
-	root->consumed = 1;
-
-	//root becomes children's parent
-	int i;
-	for (i = 0; i < n_children ; i++) {
-		Workflow_element* child = element (workload, root->children_ids[i]);
-		add_child (workload, root, child);
-	}
-}
-
 void fill_shared_buffer (Replay_workload* workload, sbuffs_t* shared) {
 
 	shared->mutex = (sem_t*) malloc (sizeof (sem_t));
@@ -370,19 +349,8 @@ void fill_shared_buffer (Replay_workload* workload, sbuffs_t* shared) {
 
 	shared->frontier = (struct frontier*) malloc (sizeof (struct frontier));
 
-	//fake root
-	struct replay_command* root_cmd
-		= (struct replay_command*) malloc( sizeof (struct replay_command));
-	fill_fake_replay_command(root_cmd);
-
-	Workflow_element* root = alloc_workflow_element ();
-	root->command = root_cmd;
-	root->id = ROOT_ID;
-
-	int tmp_children[] = {workload->element->id};
-	boostrap_workflow_root (root, tmp_children, 1);
-
-	shared->frontier->w_element = root;
+	//by construction, first element is the fake bootstrapper
+	shared->frontier->w_element = element(workload, ROOT_ID);
 	shared->frontier->next = NULL;
 }
 
@@ -393,7 +361,7 @@ int replay (Replay_workload* rep_workload, Replay_result* result) {
 	assert (rep_workload->num_cmds >= 0);
 
 	if (rep_workload->num_cmds > 0) {
-		assert (rep_workload->element != NULL);
+		assert (rep_workload->element_list != NULL);
 	}
 
 	workload = rep_workload;

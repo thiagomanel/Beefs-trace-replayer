@@ -97,11 +97,6 @@ int load(Replay_workload* replay_wld, FILE* input_file) {
 	return 0;
 }
 
-void print_w_element (Workflow_element* element) {
-	printf("w_element id=%d n_children=%d n_parent=%d\n",
-			element->id, element->n_children, element->n_parents);
-}
-
 #define UNKNOW_OP_ERROR -2
 void fill_replay_command (struct replay_command* cmd) {
 
@@ -368,11 +363,16 @@ void add_child (Replay_workload* workload, Workflow_element* parent,
 
 int load2(Replay_workload* replay_wld, FILE* input_file) {
 
-	unsigned int line_len = 0;
-	int tmp;
+	size_t read_bytes = 0;
+	size_t line_len = 0;
 	char* line = NULL;
-	int loaded_commands = 0;
+
+	int loaded_commands = 1;//first one is the fake bootstrap
+
+	replay_wld->num_cmds = 1;
+	replay_wld->current_cmd = -1;
 	replay_wld->cmd = NULL;
+	replay_wld->element_list = NULL;
 
 	if (input_file == NULL) {
 		replay_wld->current_cmd = 0;
@@ -380,16 +380,28 @@ int load2(Replay_workload* replay_wld, FILE* input_file) {
 		return NULL_FILE_OP_ERROR;
 	}
 
-	//at least, one line -- the number of commands
-	tmp = getline (&line, &line_len, input_file);
-	int num_commands_to_load = atoi (line);
-	replay_wld->element_list
-		= (Workflow_element*) malloc ((num_commands_to_load + 1) * sizeof (Workflow_element));
+	while ( (read_bytes = getline (&line, &line_len, input_file)) != -1 ) {
+
+		if (replay_wld->element_list == NULL){//first line is the number of commands
+			int num_commands_to_load = atoi (line);
+			replay_wld->element_list
+					= (Workflow_element*) malloc ((num_commands_to_load + 1) * sizeof (Workflow_element));
+		} else {
+			if (read_bytes >= 0) {
+				Workflow_element* tmp_element
+					= (replay_wld->element_list + (loaded_commands * sizeof (Workflow_element)));
+				fill_workflow_element (tmp_element);
+				parse_element (tmp_element, line);
+				loaded_commands += 1;
+			}
+		}
+	}
 
 	//A fake element is the workflow root
 	struct replay_command* root_cmd
 			= (struct replay_command*) malloc( sizeof (struct replay_command));
 	fill_replay_command(root_cmd);
+	root_cmd->command = NONE;
 
 	//fake element is also element_list's head
 	Workflow_element* root_element = element(replay_wld, 0);
@@ -398,22 +410,6 @@ int load2(Replay_workload* replay_wld, FILE* input_file) {
 	root_element->id = ROOT_ID;
 	root_element->produced = 1;
 	root_element->consumed = 1;
-
-	loaded_commands++;
-
-	while (! feof (input_file)) {
-		line = NULL;
-		line_len = 0;
-		tmp = getline (&line, &line_len, input_file);
-
-		if (tmp >= 0) {
-			Workflow_element* tmp_element
-				= (replay_wld->element_list + (loaded_commands * sizeof (Workflow_element)));
-			fill_workflow_element (tmp_element);
-			tmp = parse_element (tmp_element, line);
-			loaded_commands += 1;
-		}
-	}
 
 	//child that has no parents should become child of fake element
 	//For now, i'm attaching just the first child (2nd element in list)

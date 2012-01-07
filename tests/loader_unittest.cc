@@ -832,37 +832,11 @@ TEST(LoaderTest, LoadStatAndOpens) {
 
 TEST(ReplayTest, SingleOperationReplay) {
 
+	//1 0 - 0 - 1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /tmp/jdt-images 511 0
 	Replay_workload* rep_wld
 		= (Replay_workload*) malloc (sizeof (Replay_workload));
-	
-	//filling workload_element (TODO: it may be moved from this test to code)
-	rep_wld->element_list = (Workflow_element*) malloc (sizeof (Workflow_element));
-	rep_wld->element_list->n_children = 0;
-	rep_wld->element_list->children = NULL;
-
-	rep_wld->element_list->n_parents = 0;
-	rep_wld->element_list->parents = NULL;
-
-	rep_wld->element_list->produced = 0;
-	rep_wld->element_list->consumed = 0;
-	
-
-	rep_wld->element_list->command
-		= (struct replay_command*) malloc( sizeof (struct replay_command));
-
-	fill_replay_command (rep_wld->element_list->command);
-	//end workload_element filling
-
-	rep_wld->element_list->command->params = (Parms*) malloc (3 * sizeof (Parms));
-
-	Parms* parm;
-	parm = rep_wld->element_list->command->params;
-	parm[0].arg.cprt_val = (char*) malloc (MAX_FILE_NAME * sizeof (char));
-	strcpy (parm[0].arg.cprt_val, "fileToOpen");
-	parm[1].arg.i_val = 34816;//flag
-	parm[2].arg.i_val = 0; //mode
-
-	rep_wld->num_cmds = 1;
+	FILE * input_f = fopen("tests/replay_input/workflow_samples/workflow_single_command_mkdir", "r");
+	load2(rep_wld, input_f);
 
 	Replay_result* actual_result = (Replay_result*) malloc (sizeof (Replay_result));
 	actual_result->replayed_commands = 0;
@@ -872,6 +846,7 @@ TEST(ReplayTest, SingleOperationReplay) {
 
 	EXPECT_EQ (1, actual_result->replayed_commands);
 	EXPECT_EQ (1, actual_result->produced_commands);
+	fclose(input_f);
 }
 
 TEST(LoaderTest, ParseWorkflowElement) {

@@ -35,6 +35,12 @@ int N_ITEMS;
 
 Replay_workload* workload;
 
+void print_w_element (Workflow_element* element) {
+	printf("w_element id=%d n_children=%d n_parent=%d produced=%d consumed=%d\n",
+			element->id, element->n_children, element->n_parents, element->produced,
+			element->consumed);
+}
+
 Workflow_element* alloc_workflow_element () {
 	Workflow_element* element = (Workflow_element*) malloc (sizeof (Workflow_element));
 	fill_workflow_element (element);
@@ -171,6 +177,10 @@ int _contains (struct frontier* current, Workflow_element* tocheck) {
 }
 
 int produced (Workflow_element* element) {
+	if (DEBUG) {
+		printf("produced\n");
+		print_w_element(element);
+	}
 	return element->produced;
 }
 
@@ -196,7 +206,10 @@ void mark_produced (Workflow_element* element) {
 
 void do_produce(Workflow_element* el_to_produce) {
 
-	if (DEBUG) printf("do_produce element_id=%d\n", el_to_produce);
+	if (DEBUG) {
+		printf("do_produce\n");
+		print_w_element(el_to_produce);
+	}
 
 	//1. produce
 	shared_buff->produced_queue[++shared_buff->last_produced] = el_to_produce;
@@ -222,9 +235,11 @@ void *produce (void *arg) {
 	//It seems the second part of this algorithm cannot be nested in this while
 	//it is allowed to run even when all commands were produced
 	while ( ! all_produced (shared_buff)) {
+		printf ("main produce while\n");
 		sem_wait(shared_buff->mutex);
 			frontier = shared_buff->frontier;
 			while (frontier != NULL) {
+				printf ("produce frontier while\n");
 				//dispatch children that was not dispatched yet
 				w_element = frontier->w_element;
 				int chl_index;
@@ -327,7 +342,7 @@ void fill_shared_buffer (Replay_workload* workload, sbuffs_t* shared) {
 
 	shared->frontier = (struct frontier*) malloc (sizeof (struct frontier));
 
-	//by construction, first element is the fake bootstrapper
+	//by construction, first element is the fake bootstrapper FIXME: cannot call add ?
 	shared->frontier->w_element = element(workload, ROOT_ID);
 	shared->frontier->next = NULL;
 }

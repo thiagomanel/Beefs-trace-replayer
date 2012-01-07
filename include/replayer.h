@@ -121,9 +121,6 @@ void fill_workflow_element (Workflow_element* element);
 
 Workflow_element* element (Replay_workload* workload, int element_id);
 
-void add_child (Replay_workload* workload, Workflow_element* parent,
-		Workflow_element* child);
-
 int is_child (Workflow_element* parent, Workflow_element* child);
 
 /**

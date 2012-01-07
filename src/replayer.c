@@ -35,7 +35,6 @@ int N_ITEMS;
 
 Replay_workload* workload;
 
-//TODO: do we need both two methods below
 Workflow_element* alloc_workflow_element () {
 	Workflow_element* element = (Workflow_element*) malloc (sizeof (Workflow_element));
 	fill_workflow_element (element);
@@ -57,12 +56,9 @@ void fill_workflow_element (Workflow_element* element) {
 	element->command = NULL;
 }
 
-
 Workflow_element* element (Replay_workload* workload, int element_id) {
-	if (DEBUG) printf("element element_id=%d\n", element_id);
 	return (workload->element_list + (element_id * sizeof (Workflow_element)));
 }
-
 
 Workflow_element* get_child (Replay_workload* workload, Workflow_element* parent,
 		int child_index) {
@@ -79,32 +75,6 @@ int is_child (Workflow_element* parent, Workflow_element* child) {
 		}
 	}
 	return 0;
-}
-
-/**
- * Increase array size by one element and add value_to_append to last position
- */
-void append(int* array, int array_size, int value_to_append) {
-	realloc (array, array_size + 1);
-	array[array_size] = value_to_append;
-}
-
-//this function is used once, so I would not like to have it in header. I also
-//think resizing arrays smells bad, it necessary to insert the bootstrap element.
-void add_child (Replay_workload* workload, Workflow_element* parent,
-		Workflow_element* child) {
-	printf("adding child\n");
-	//assuming that is A is child of B, B is parent of A. So, everybody should
-	//modify child/parent arrays using the available functions, never directly
-	if (! is_child (parent, child)) {
-		printf("really adding child\n");
-
-		append (parent->children_ids, parent->n_children, child->id);
-		parent->n_children++;
-
-		append (child->parents_ids, child->n_parents, parent->id);
-		child->n_parents++;
-	}
 }
 
 struct frontier {//we can use a generic list instead of this struct

@@ -887,10 +887,10 @@ TEST(LoaderTest, ParseWorkflowElement) {
 
     EXPECT_EQ(1, element->id);
 
-    EXPECT_EQ(0, element->n_children);
+    EXPECT_EQ(0, element->n_parents);
 
-    EXPECT_EQ(1, element->n_parents);
-    int child_id = element->parents_ids[element->n_parents - 1];
+    EXPECT_EQ(1, element->n_children);
+    int child_id = element->children_ids[element->n_children - 1];
     EXPECT_EQ(2, child_id);
 
     EXPECT_EQ(0, element->consumed);
@@ -916,7 +916,7 @@ TEST(LoaderTest, ParseWorkflowElement) {
 TEST(LoaderTest, LoadWorkflow) {
 			//uid pid tid exec_name mkdir begin-elapsed fulpath mode return
 //1 0 - 1 2 1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /tmp/jdt-images-1 511 0
-//2 1 1 1 3 1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /tmp/jdt-images-2 511 0
+//2 1 1 0 - 1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /tmp/jdt-images-2 511 0
     Replay_workload* rep_wld = (Replay_workload*) malloc (sizeof (Replay_workload));
     FILE * input_f = fopen("tests/replay_input/workflow_samples/workflow_2_sequencial_command_mkdir", "r");
     int ret = load2(rep_wld, input_f);
@@ -945,7 +945,6 @@ TEST(LoaderTest, LoadWorkflow) {
     EXPECT_EQ(1, w_element->n_parents);
     parent_id = w_element->parents_ids[0];
     EXPECT_EQ(1, parent_id);
-
 
     fclose(input_f);
 }

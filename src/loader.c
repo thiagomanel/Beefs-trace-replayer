@@ -97,6 +97,11 @@ int load(Replay_workload* replay_wld, FILE* input_file) {
 	return 0;
 }
 
+void print_w_element (Workflow_element* element) {
+	printf("w_element id=%d n_children=%d n_parent=%d\n",
+			element->id, element->n_children, element->n_parents);
+}
+
 #define UNKNOW_OP_ERROR -2
 void fill_replay_command (struct replay_command* cmd) {
 
@@ -108,10 +113,6 @@ void fill_replay_command (struct replay_command* cmd) {
 	cmd->expected_retval = -666; //:O
 	cmd->next = NULL;
 	cmd->id = rand();
-}
-
-int parse_workflow_element (Workflow_element* element, char* line) {
-
 }
 
 void parse_caller2 (Caller* caller, char* token) {
@@ -239,15 +240,28 @@ Parms* alloc_and_parse_parms (op_t cmd_type,  char* token) {
 
 int parse_element (Workflow_element* element, char* line) {
 //1 0 - 1 2 1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /tmp/jdt-images-1 511 0
-
 	//ugly, eh !
 	char* token = strtok (line, " ");
 	element->id = atoi (token);
 
 	token = strtok (NULL, " ");
+	element->n_parents = atoi (token);
+
+	if (element->n_parents < 1) {
+		//consume special token "-". ugly. it seems better to have a double empty char
+		token = strtok (NULL, " ");
+	} else {
+		element->parents_ids = (int*) malloc (element->n_parents * sizeof (int));
+		int i;
+		for (i = 0; i < element->n_parents ; i++) {
+			token = strtok (NULL, " ");
+			element->parents_ids[i] = atoi(token);
+		}
+	}
+
+	token = strtok (NULL, " ");
 	element->n_children = atoi (token);
 
-	//consume special token "-". ugly. it seems better to have a double empty char
 	if (element->n_children < 1) {
 		token = strtok (NULL, " ");
 	} else {
@@ -256,19 +270,6 @@ int parse_element (Workflow_element* element, char* line) {
 		for (i = 0; i < element->n_children ; i++) {
 			token = strtok (NULL, " ");
 			element->children_ids[i] = atoi(token);
-		}
-	}
-
-	token = strtok (NULL, " ");
-	element->n_parents = atoi (token);
-	if (element->n_parents < 1) {
-		token = strtok (NULL, " ");
-	} else {
-		element->parents_ids = (int*) malloc (element->n_parents * sizeof (int));
-		int i;
-		for (i = 0; i < element->n_parents ; i++) {
-			token = strtok (NULL, " ");
-			element->parents_ids[i] = atoi(token);
 		}
 	}
 
@@ -339,6 +340,32 @@ int parse_line(struct replay_command** cmd, char* line) {
 //free something ?
 }
 
+/**
+ * Increase array size by one element and add value_to_append to last position
+ */
+int* append(int* array, int array_size, int value_to_append) {
+	realloc (array, array_size + 1);
+	array[array_size] = value_to_append;
+}
+
+//this function is used once, so I would not like to have it in header. I also
+//think resizing arrays smells bad, it necessary to insert the bootstrap element.
+void add_child (Replay_workload* workload, Workflow_element* parent,
+		Workflow_element* child) {
+	printf("adding child\n");
+	//assuming that is A is child of B, B is parent of A. So, everybody should
+	//modify child/parent arrays using the available functions, never directly
+	if (! is_child (parent, child)) {
+		printf("really adding child\n");
+
+		parent->children_ids = append (parent->children_ids, parent->n_children, child->id);
+		parent->n_children++;
+
+		child->parents_ids = append (child->parents_ids, child->n_parents, parent->id);
+		child->n_parents++;
+	}
+}
+
 int load2(Replay_workload* replay_wld, FILE* input_file) {
 
 	unsigned int line_len = 0;
@@ -394,7 +421,17 @@ int load2(Replay_workload* replay_wld, FILE* input_file) {
 	root_element->children_ids = (int*) malloc (sizeof (int));
 
 	//root_element becomes children's parent
-	add_child (replay_wld, root_element, child);
+	if (! is_child (root_element, child)) {
+		root_element->children_ids
+			= (int*) realloc (root_element->children_ids, root_element->n_children + 1);
+		root_element->children_ids[root_element->n_children] = child->id;
+		root_element->n_children++;
+
+		child->parents_ids
+			= (int*) realloc (child->parents_ids, child->n_parents + 1);
+		child->parents_ids[child->n_parents] = root_element->id;
+		child->n_parents++;
+	}
 
 	replay_wld->current_cmd = 0;
 	replay_wld->num_cmds = loaded_commands;

@@ -94,11 +94,9 @@ typedef struct workflow_element {
 
 	struct replay_command* command;
 
-	struct workflow_element* children;//deprecated
 	int n_children;
 	int* children_ids;//we are going to hash w_elements
 
-	struct workflow_element* parents;//deprecated
 	int n_parents;
 	int* parents_ids;//we are going to hash w_elements
 
@@ -111,8 +109,8 @@ typedef struct workflow_element {
 typedef struct replay_workload {
 	Workflow_element* element_list;
 	struct replay_command* cmd;
-	unsigned int num_cmds;
-	unsigned int current_cmd;
+	int num_cmds;
+	int current_cmd;
 } Replay_workload;
 
 Workflow_element* alloc_workflow_element ();

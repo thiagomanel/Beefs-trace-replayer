@@ -432,5 +432,7 @@ int load2(Replay_workload* replay_wld, FILE* input_file) {
 	replay_wld->current_cmd = 0;
 	replay_wld->num_cmds = loaded_commands;
 
+	free (line);
+
 	return 0;
 }

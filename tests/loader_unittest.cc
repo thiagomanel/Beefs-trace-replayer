@@ -844,8 +844,8 @@ TEST(ReplayTest, SingleOperationReplay) {
 
 	replay (rep_wld, actual_result);
 
-	EXPECT_EQ (1, actual_result->replayed_commands);
-	EXPECT_EQ (1, actual_result->produced_commands);
+	EXPECT_EQ (2, actual_result->replayed_commands);//boostrap + 1
+	EXPECT_EQ (2, actual_result->produced_commands);//boostrap + 1
 	fclose(input_f);
 }
 

@@ -311,9 +311,7 @@ void *produce (void *arg) {
 
 	//It seems the second part of this algorithm cannot be nested in this while
 	//it is allowed to run even when all commands were produced
-	//while ( ! all_produced (shared_buff)) {
-	while (1) {
-
+	while ( ! all_produced (shared_buff)) {
 		sem_wait(shared_buff->mutex);
 			frontier = shared_buff->frontier;
 			while (frontier != NULL) {
@@ -361,7 +359,8 @@ void *produce (void *arg) {
 				}
 			}
 
-			//FIXME: take all elements form consumed_queue
+			//cleaning consumed_queue
+			shared_buff->last_consumed = -1;
 		sem_post(shared_buff->mutex);
 	}
 }
@@ -426,9 +425,9 @@ int replay (Replay_workload* rep_workload, Replay_result* result) {
 
 	pthread_t consumer, producer;
 	pthread_create (&producer, NULL, produce, 0);
-	//pthread_create (&consumer, NULL, consume, 0);
+	pthread_create (&consumer, NULL, consume, 0);
 
-	//pthread_join(consumer, NULL);
+	pthread_join(consumer, NULL);
 	pthread_join(producer, NULL);
 
 	result->produced_commands = shared_buff->produced_count;

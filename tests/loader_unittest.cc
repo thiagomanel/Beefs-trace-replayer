@@ -43,25 +43,37 @@ TEST(LoaderTest, NonexistentInputFile) {
 //test for a misformatted op
 
 TEST(LoaderTest, LoadCloseCall) {
-//0 2097 2097 (udisks-daemon) close 1318539063006403-37 7 0
+//1 0 - 1 2 0 2097 2097 (udisks-daemon) close 1318539063006403-37 7 0
+	/**
     Replay_workload* rep_wld = (Replay_workload*) malloc (sizeof (Replay_workload));
     FILE * input_f = fopen("tests/input_data/close_input", "r");
-    int ret = load(rep_wld, input_f);
+    int ret = load(rep_wld, input_f);*/
 
-    EXPECT_EQ(0, ret);
-    EXPECT_EQ(1, rep_wld->num_cmds);
-    EXPECT_EQ(0, rep_wld->current_cmd);
+	Workflow_element* element = alloc_workflow_element();
+	EXPECT_EQ(0, element->consumed);
+	EXPECT_EQ(0, element->produced);
+	char line[] =
+			"1 0 - 1 2 0 2097 2097 (udisks-daemon) close 1318539063006403-37 7 0";
+	parse_element (element, line);
 
-    struct replay_command* loaded_cmd = rep_wld->cmd;
+	EXPECT_EQ(1, element->id);
+	EXPECT_EQ(0, element->n_parents);
+	EXPECT_EQ(1, element->n_children);
+	int child_id = element->children_ids[element->n_children - 1];
+	EXPECT_EQ(2, child_id);
+	EXPECT_EQ(0, element->consumed);
+	EXPECT_EQ(0, element->produced);
+
+    struct replay_command* loaded_cmd = element->command;
     EXPECT_EQ(CLOSE_OP, loaded_cmd->command);
     EXPECT_EQ(0, loaded_cmd->expected_retval);
+
     Caller* caller_id = loaded_cmd->caller;
     EXPECT_EQ(0, caller_id->uid);
     EXPECT_EQ(2097, caller_id->pid);
     EXPECT_EQ(2097, caller_id->tid);
 //args
     EXPECT_EQ(7, loaded_cmd->params[0].argm->i_val);
-    fclose(input_f);
 }
 
 TEST(LoaderTest, LoadFstatCall) {
@@ -869,7 +881,7 @@ TEST(ReplayTest, 2_sequencial_command_mkdir_parsing_skipped) {
 	fill_replay_command(root_cmd);
 	root_cmd->command = NONE;
 
-	Workflow_element* root_element = (rep_wld->element_list + (0 * sizeof (Workflow_element)));
+	Workflow_element* root_element = (rep_wld->element_list);
 	fill_workflow_element(root_element);
 	root_element->command = root_cmd;
 	root_element->id = ROOT_ID;
@@ -882,7 +894,7 @@ TEST(ReplayTest, 2_sequencial_command_mkdir_parsing_skipped) {
 	root_element->children_ids[0] = 1;
 
 	//element 1
-	Workflow_element* element_one = (rep_wld->element_list + (1 * sizeof (Workflow_element)));
+	Workflow_element* element_one = (rep_wld->element_list + 1);
 	fill_workflow_element(element_one);
 
 	struct replay_command* one_cmd
@@ -920,7 +932,7 @@ TEST(ReplayTest, 2_sequencial_command_mkdir_parsing_skipped) {
 	element_one->parents_ids[0] = ROOT_ID;
 
 	//element 1
-	Workflow_element* element_two = (rep_wld->element_list + (2 * sizeof (Workflow_element)));
+	Workflow_element* element_two = (rep_wld->element_list + 2);
 	fill_workflow_element(element_two);
 	struct replay_command* cmd_two
 					= (struct replay_command*) malloc( sizeof (struct replay_command));
@@ -992,6 +1004,8 @@ TEST(LoaderTest, ParseWorkflowElement) {
 	EXPECT_EQ(0, element->produced);
 
 	parse_element (element, line);
+	//parse_element (element,
+			//"1 0 - 1 2 1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /tmp/jdt-images-1 511 0");
 
     EXPECT_EQ(1, element->id);
 

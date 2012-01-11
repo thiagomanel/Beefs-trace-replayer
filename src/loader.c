@@ -137,11 +137,14 @@ Parms* alloc_and_parse_parms (op_t cmd_type,  char* token) {
 		parm = (Parms*) malloc(3 * sizeof(Parms)); //it should be done at each switch case
 		token = strtok(NULL, " "); //timestamp
 		token = strtok(NULL, " "); //fullpath
+		parm[0].argm = (arg*) malloc (sizeof (arg));
 		parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
 		strcpy(parm[0].argm->cprt_val, token);
 		token = strtok(NULL, " "); //flag
+		parm[1].argm = (arg*) malloc (sizeof (arg));
 		parm[1].argm->i_val = atoi(token);
 		token = strtok(NULL, " "); //mode
+		parm[2].argm = (arg*) malloc (sizeof (arg));
 		parm[2].argm->i_val = atoi(token);
 		break;
 	case DUP2_OP:
@@ -156,11 +159,14 @@ Parms* alloc_and_parse_parms (op_t cmd_type,  char* token) {
 		parm = (Parms*) malloc(3 * sizeof(Parms)); //it should be done at each switch case
 		token = strtok(NULL, " "); //timestamp
 		token = strtok(NULL, " "); //fullpath
+		parm[0].argm = (arg*) malloc (sizeof (arg));
 		parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
 		strcpy(parm[0].argm->cprt_val, token);
 		token = strtok(NULL, " "); //fd
+		parm[1].argm = (arg*) malloc (sizeof (arg));
 		parm[1].argm->i_val = atoi(token);
 		token = strtok(NULL, " "); //count
+		parm[2].argm = (arg*) malloc (sizeof (arg));
 		parm[2].argm->i_val = atoi(token);
 		break;
 	case LLSEEK_OP: //TODO: write and read have the same token sequence than open
@@ -176,9 +182,11 @@ Parms* alloc_and_parse_parms (op_t cmd_type,  char* token) {
 		parm = (Parms*) malloc(2 * sizeof(Parms)); //it should be done at each switch case
 		token = strtok(NULL, " "); //timestamp
 		token = strtok(NULL, " "); //fullpath
+		parm[0].argm = (arg*) malloc (sizeof (arg));
 		parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
 		strcpy(parm[0].argm->cprt_val, token);
 		token = strtok(NULL, " "); //mode
+		parm[1].argm = (arg*) malloc (sizeof (arg));
 		parm[1].argm->i_val = atoi(token);
 		break;
 	case MKNOD_OP:
@@ -216,12 +224,14 @@ Parms* alloc_and_parse_parms (op_t cmd_type,  char* token) {
 		parm = (Parms*) malloc(sizeof(Parms)); //it should be done at each switch case
 		token = strtok(NULL, " "); //timestamp
 		token = strtok(NULL, " ");
+		parm[0].argm = (arg*) malloc (sizeof (arg));
 		parm[0].argm->i_val = atoi(token); //fd
 		break;
 	default: //FIXME we need a case to NONE_OP, test it
 		parm = (Parms*) malloc(sizeof(Parms)); //it should be done at each switch case
 		token = strtok(NULL, " "); //timestamp
 		token = strtok(NULL, " "); //arg
+		parm[0].argm = (arg*) malloc (sizeof (arg));
 		parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
 		strcpy(parm[0].argm->cprt_val, token);
 		break;
@@ -383,7 +393,7 @@ int load2(Replay_workload* replay_wld, FILE* input_file) {
 		} else {
 			if (read_bytes >= 0) {
 				Workflow_element* tmp_element
-					= (replay_wld->element_list + (loaded_commands * sizeof (Workflow_element)));
+					= (replay_wld->element_list + loaded_commands);
 				fill_workflow_element (tmp_element);
 				parse_element (tmp_element, line);
 				loaded_commands += 1;

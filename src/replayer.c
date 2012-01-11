@@ -78,22 +78,22 @@ void fill_replay_workload (Replay_workload* r_workload) {
 	r_workload->num_cmds = 1;
 }
 
-Workflow_element* element (Replay_workload* workload, int element_id) {
-	return (workload->element_list + (element_id * sizeof (Workflow_element)));
+Workflow_element* element (Replay_workload* workload, int element_id) {//FIXME: do we need this boxing method ?
+	return &(workload->element_list[element_id]);
 }
 
 //FIXME: these 2 methods below share a lot
 Workflow_element* get_child (Replay_workload* workload, Workflow_element* parent,
 		int child_index) {
 
-	int child_id = *(parent->children_ids + (child_index * sizeof (int)));
+	int child_id = parent->children_ids[child_index];
     return element(workload, child_id);
 }
 
 Workflow_element* get_parent (Replay_workload* workload, Workflow_element* child,
 		int parent_index) {
 
-	int parent_id = *(child->parents_ids + (parent_index * sizeof (int)));
+	int parent_id = child->parents_ids[parent_index];
 	return element(workload, parent_id);
 }
 

@@ -57,7 +57,6 @@ typedef unsigned short op_t;
 
 #define ROOT_ID 0
 
-
 //TODO: timestamps
 //TODO: actual returned value
 typedef struct _caller {
@@ -66,25 +65,21 @@ typedef struct _caller {
 	int tid;
 } Caller;
 
-typedef struct _parms {
-  union args {
+typedef union args {
     int i_val;
     long l_val;
     char* cprt_val;
-  } arg;
+} arg;
+
+typedef struct _parms {
+	arg* argm;
 } Parms;
 
 struct replay_command {
 
-	//FIXME we can use a hash-like algorithm to put/remove commands from
-	//the dispatch frontier. however, iterating seems ok too
-	//(few elements in the frontier ? so, trading memory by computing
-	int id;
-
 	op_t command;
 	Caller* caller;
 	Parms* params;
-	int args[MAX_ARGS];
 	int expected_retval;
 
 	struct replay_command* next;//FIXME deprecated. to be removed
@@ -114,6 +109,8 @@ typedef struct replay_workload {
 } Replay_workload;
 
 Workflow_element* alloc_workflow_element ();
+
+void fill_replay_workload (Replay_workload* replay_workload);
 
 void fill_workflow_element (Workflow_element* element);
 

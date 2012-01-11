@@ -24,7 +24,6 @@
 #include "loader.h"
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
 
 int main (int argc, const char* argv[]) {
 
@@ -37,17 +36,9 @@ int main (int argc, const char* argv[]) {
 		perror("Error loading trace\n");
 	}
 
-	//loader.c is not using Workflow_elements yet, so we need to box them
-	Replay_workload* boxed_rep_wld = (Replay_workload*) malloc (
-				sizeof (Replay_workload));
-
-	boxed_rep_wld->element_list = alloc_workflow_element();
-	boxed_rep_wld->element_list->command = rep_wld->cmd;
-	boxed_rep_wld->num_cmds = 1;
-
 	Replay_result* actual_result = (Replay_result*) malloc (sizeof (Replay_result));
 	actual_result->replayed_commands = 0;
 	actual_result->produced_commands = 0;
 
-	replay (boxed_rep_wld, actual_result);
+	replay (rep_wld, actual_result);
 }

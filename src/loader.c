@@ -100,14 +100,11 @@ int load(Replay_workload* replay_wld, FILE* input_file) {
 #define UNKNOW_OP_ERROR -2
 void fill_replay_command (struct replay_command* cmd) {
 
-	srand ( time(NULL) );
-
-	cmd->command = NULL;
 	cmd->caller = NULL;
-	cmd->params = NULL;
+	cmd->command = NONE;
 	cmd->expected_retval = -666; //:O
+	cmd->params = NULL;
 	cmd->next = NULL;
-	cmd->id = rand();
 }
 
 void parse_caller2 (Caller* caller, char* token) {
@@ -140,12 +137,12 @@ Parms* alloc_and_parse_parms (op_t cmd_type,  char* token) {
 		parm = (Parms*) malloc(3 * sizeof(Parms)); //it should be done at each switch case
 		token = strtok(NULL, " "); //timestamp
 		token = strtok(NULL, " "); //fullpath
-		parm[0].arg.cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
-		strcpy(parm[0].arg.cprt_val, token);
+		parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
+		strcpy(parm[0].argm->cprt_val, token);
 		token = strtok(NULL, " "); //flag
-		parm[1].arg.i_val = atoi(token);
+		parm[1].argm->i_val = atoi(token);
 		token = strtok(NULL, " "); //mode
-		parm[2].arg.i_val = atoi(token);
+		parm[2].argm->i_val = atoi(token);
 		break;
 	case DUP2_OP:
 	case DUP3_OP:
@@ -159,12 +156,12 @@ Parms* alloc_and_parse_parms (op_t cmd_type,  char* token) {
 		parm = (Parms*) malloc(3 * sizeof(Parms)); //it should be done at each switch case
 		token = strtok(NULL, " "); //timestamp
 		token = strtok(NULL, " "); //fullpath
-		parm[0].arg.cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
-		strcpy(parm[0].arg.cprt_val, token);
+		parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
+		strcpy(parm[0].argm->cprt_val, token);
 		token = strtok(NULL, " "); //fd
-		parm[1].arg.i_val = atoi(token);
+		parm[1].argm->i_val = atoi(token);
 		token = strtok(NULL, " "); //count
-		parm[2].arg.i_val = atoi(token);
+		parm[2].argm->i_val = atoi(token);
 		break;
 	case LLSEEK_OP: //TODO: write and read have the same token sequence than open
 		parm = (Parms*) malloc(2 * sizeof(Parms)); //it should be done at each switch case
@@ -179,10 +176,10 @@ Parms* alloc_and_parse_parms (op_t cmd_type,  char* token) {
 		parm = (Parms*) malloc(2 * sizeof(Parms)); //it should be done at each switch case
 		token = strtok(NULL, " "); //timestamp
 		token = strtok(NULL, " "); //fullpath
-		parm[0].arg.cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
-		strcpy(parm[0].arg.cprt_val, token);
+		parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
+		strcpy(parm[0].argm->cprt_val, token);
 		token = strtok(NULL, " "); //mode
-		parm[1].arg.i_val = atoi(token);
+		parm[1].argm->i_val = atoi(token);
 		break;
 	case MKNOD_OP:
 		parm = (Parms*) malloc(2 * sizeof(Parms)); //it should be done at each switch case
@@ -219,14 +216,14 @@ Parms* alloc_and_parse_parms (op_t cmd_type,  char* token) {
 		parm = (Parms*) malloc(sizeof(Parms)); //it should be done at each switch case
 		token = strtok(NULL, " "); //timestamp
 		token = strtok(NULL, " ");
-		parm[0].arg.i_val = atoi(token); //fd
+		parm[0].argm->i_val = atoi(token); //fd
 		break;
 	default: //FIXME we need a case to NONE_OP, test it
 		parm = (Parms*) malloc(sizeof(Parms)); //it should be done at each switch case
 		token = strtok(NULL, " "); //timestamp
 		token = strtok(NULL, " "); //arg
-		parm[0].arg.cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
-		strcpy(parm[0].arg.cprt_val, token);
+		parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
+		strcpy(parm[0].argm->cprt_val, token);
 		break;
 	}
 
@@ -369,10 +366,7 @@ int load2(Replay_workload* replay_wld, FILE* input_file) {
 
 	int loaded_commands = 1;//first one is the fake bootstrap
 
-	replay_wld->num_cmds = 1;
-	replay_wld->current_cmd = -1;
-	replay_wld->cmd = NULL;
-	replay_wld->element_list = NULL;
+	fill_replay_workload (replay_wld);
 
 	if (input_file == NULL) {
 		replay_wld->current_cmd = 0;

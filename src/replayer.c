@@ -36,9 +36,17 @@ int N_ITEMS;
 Replay_workload* workload;
 
 void print_w_element (Workflow_element* element) {
-	printf("w_element id=%d n_children=%d n_parent=%d produced=%d consumed=%d\n",
-			element->id, element->n_children, element->n_parents, element->produced,
+	printf("w_element ptr=%p w_element id=%d n_children=%d n_parent=%d produced=%d consumed=%d\n",
+			element, element->id, element->n_children, element->n_parents, element->produced,
 			element->consumed);
+	int i;
+	for (i = 0; i < element->n_children; i++) {
+		printf ("child_i=%d id=%d\n", i, element->children_ids[i]);
+	}
+
+	for (i = 0; i < element->n_parents; i++) {
+		printf ("parent_i=%d id=%d\n", i, element->parents_ids[i]);
+	}
 }
 
 Workflow_element* alloc_workflow_element () {
@@ -48,6 +56,7 @@ Workflow_element* alloc_workflow_element () {
 }
 
 void fill_workflow_element (Workflow_element* element) {
+
 	element->n_children = 0;
 	element->children_ids = NULL;
 
@@ -57,7 +66,16 @@ void fill_workflow_element (Workflow_element* element) {
 	element->produced = 0;
 	element->consumed = 0;
 
+	element->id = -1;
 	element->command = NULL;
+}
+
+void fill_replay_workload (Replay_workload* r_workload) {
+
+	r_workload->cmd = NULL;
+	r_workload->current_cmd = -1;
+	r_workload->element_list = NULL;
+	r_workload->num_cmds = 1;
 }
 
 Workflow_element* element (Replay_workload* workload, int element_id) {
@@ -69,7 +87,7 @@ Workflow_element* get_child (Replay_workload* workload, Workflow_element* parent
 		int child_index) {
 
 	int child_id = *(parent->children_ids + (child_index * sizeof (int)));
-	return element(workload, child_id);
+    return element(workload, child_id);
 }
 
 Workflow_element* get_parent (Replay_workload* workload, Workflow_element* child,
@@ -144,6 +162,9 @@ int has_commands_to_consume (sbuffs_t* shared) {
 struct frontier* _del (struct frontier* current,
 		Workflow_element* to_remove) {
 
+	printf ("_del to_remove ->\t");
+	print_w_element(to_remove);
+
 	if (current == NULL) {
 		return NULL;
 	}
@@ -168,6 +189,9 @@ struct frontier* alloc_frontier (Workflow_element* element) {
 
 void _add (struct frontier* current, Workflow_element* to_add) {
 
+	printf ("to_add ->\t");
+	print_w_element(to_add);
+
 	struct frontier* tmp = current;
 
 	if (tmp != NULL) {
@@ -183,7 +207,7 @@ int _contains (struct frontier* current, Workflow_element* tocheck) {
 	struct frontier* tmp = current;
 
 	while (tmp != NULL) {
-		if (tmp->w_element->command->id == tocheck->command->id) {
+		if (tmp->w_element->id == tocheck->id) {
 			return 1;
 		}
 		tmp = tmp->next;
@@ -228,7 +252,7 @@ int do_replay (struct replay_command* cmd) {
 
 	switch (cmd->command) {
 		case MKDIR_OP: {
-			mkdir(args[0].arg.cprt_val, args[1].arg.i_val);
+			mkdir(args[0].argm->cprt_val, args[1].argm->i_val);
 		}
 		break;
 		default:
@@ -239,6 +263,9 @@ int do_replay (struct replay_command* cmd) {
 
 void do_produce(Workflow_element* el_to_produce) {
 
+	printf ("do_produce el->\t");
+	print_w_element(el_to_produce);
+
 	//1. produce
 	shared_buff->produced_queue[++shared_buff->last_produced] = el_to_produce;
 	//2. mark
@@ -248,6 +275,10 @@ void do_produce(Workflow_element* el_to_produce) {
 }
 
 void do_consume(Workflow_element* element) {
+
+	printf ("do_consume element->\t");
+	print_w_element(element);
+	fflush(stdin);
 
 	do_replay(element->command);
 
@@ -280,10 +311,14 @@ void *produce (void *arg) {
 
 	//It seems the second part of this algorithm cannot be nested in this while
 	//it is allowed to run even when all commands were produced
-	while ( ! all_produced (shared_buff)) {
+	//while ( ! all_produced (shared_buff)) {
+	while (1) {
+
 		sem_wait(shared_buff->mutex);
 			frontier = shared_buff->frontier;
 			while (frontier != NULL) {
+				print_frontier(frontier);
+				fflush(stdin);
 				//dispatch children that was not dispatched yet
 				w_element = frontier->w_element;
 				int chl_index;
@@ -296,7 +331,6 @@ void *produce (void *arg) {
 				}
 				frontier = frontier->next;
 			}
-
 		sem_post(shared_buff->mutex);
 
 		sleep(1);//FIXME remove this later
@@ -392,9 +426,9 @@ int replay (Replay_workload* rep_workload, Replay_result* result) {
 
 	pthread_t consumer, producer;
 	pthread_create (&producer, NULL, produce, 0);
-	pthread_create (&consumer, NULL, consume, 0);
+	//pthread_create (&consumer, NULL, consume, 0);
 
-	pthread_join(consumer, NULL);
+	//pthread_join(consumer, NULL);
 	pthread_join(producer, NULL);
 
 	result->produced_commands = shared_buff->produced_count;
@@ -415,16 +449,16 @@ int old_replay (Replay_workload* rep_workload, Replay_result* result) {
 		Parms* args = cmd->params;
 		switch (cmd->command) {
 		case MKDIR_OP:
-			mkdir(args[0].arg.cprt_val, args[1].arg.i_val);
+			mkdir(args[0].argm->cprt_val, args[1].argm->i_val);
 			break;
 		case STAT_OP: {
 			struct stat sb;
-			stat(args[0].arg.cprt_val, &sb);
+			stat(args[0].argm->cprt_val, &sb);
 		}
 			break;
 		case OPEN_OP: {
-			int fd_from_replay = open(args[0].arg.cprt_val, args[1].arg.i_val,
-					args[2].arg.i_val);
+			int fd_from_replay = open(args[0].argm->cprt_val, args[1].argm->i_val,
+					args[2].argm->i_val);
 			int pid_from_trace = cmd->caller->pid;
 
 			if (!pids[pid_from_trace]) {
@@ -438,8 +472,8 @@ int old_replay (Replay_workload* rep_workload, Replay_result* result) {
 		}
 			break;
 		case READ_OP: {
-			int fd_from_trace = args[1].arg.i_val;
-			int read_count = args[2].arg.i_val;
+			int fd_from_trace = args[1].argm->i_val;
+			int read_count = args[2].argm->i_val;
 
 			int pid_from_trace = cmd->caller->pid;
 			int* fds = pids[pid_from_trace];
@@ -451,8 +485,8 @@ int old_replay (Replay_workload* rep_workload, Replay_result* result) {
 		}
 			break;
 		case WRITE_OP: {
-			int fd_from_trace = args[1].arg.i_val;
-			int write_count = args[2].arg.i_val;
+			int fd_from_trace = args[1].argm->i_val;
+			int write_count = args[2].argm->i_val;
 
 			int pid_from_trace = cmd->caller->pid;
 			int* fds = pids[pid_from_trace];
@@ -464,7 +498,7 @@ int old_replay (Replay_workload* rep_workload, Replay_result* result) {
 		}
 			break;
 		case CLOSE_OP: {
-			int fd_from_trace = args[0].arg.i_val;
+			int fd_from_trace = args[0].argm->i_val;
 
 			int pid_from_trace = cmd->caller->pid;
 			int* fds = pids[pid_from_trace];

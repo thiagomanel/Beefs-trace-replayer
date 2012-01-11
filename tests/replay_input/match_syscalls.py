@@ -91,12 +91,14 @@ if __name__ == "__main__":
     opts, args = getopt.getopt(sys.argv[1:], "-v")
     
     replay_strace_output = open(args[0], 'r').readlines()
-    replay_input = open(args[1], 'r')
+    replay_input = open(args[1], 'r').readlines()[1:]#first line is head
     verbose = ("-v", "") in opts
 
     matcher = Matcher(replay_strace_output)
+
     for replay_line in replay_input:
-        result = matcher.match(replay_line, not verbose)
+	line_2_match = " ".join(replay_line.split()[5:])
+        result = matcher.match(line_2_match, not verbose)
 	for (expected_call, actual_call, ok_call, ok_args, ok_rvalue) in result:
 	    print '[RUN]\texpected={expected}\tactual={actual}'.format(expected=expected_call, actual=actual_call)
   	    print '\tactual\t{actual}'.format(actual=actual_call.strip())

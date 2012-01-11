@@ -37,8 +37,8 @@ Replay_workload* workload;
 
 
 void print_w_element (Workflow_element* element) {
-	printf("w_element ptr=%p w_element id=%d n_children=%d n_parent=%d produced=%d consumed=%d\n",
-			element, element->id, element->n_children, element->n_parents, element->produced,
+	printf("w_element id=%d n_children=%d n_parent=%d produced=%d consumed=%d\n",
+			element->id, element->n_children, element->n_parents, element->produced,
 			element->consumed);
 	int i;
 	for (i = 0; i < element->n_children; i++) {
@@ -156,8 +156,6 @@ typedef struct _sbuffs_t {
 sbuffs_t* shared_buff = (sbuffs_t*) malloc( sizeof(sbuffs_t));
 
 int all_produced (sbuffs_t* shared) {
-	printf("all_produced shared->produced_count=%d shared->total_commands=%d\n",
-			shared->produced_count, shared->total_commands);
 	return (shared->produced_count >= shared->total_commands);
 }
 
@@ -174,9 +172,6 @@ int has_commands_to_consume (sbuffs_t* shared) {
 //i had to modify _add method to malloc frontier when it is null
 struct frontier* _del (struct frontier* current,
 		Workflow_element* to_remove) {
-
-	printf ("_del to_remove ->\t");
-	print_w_element(to_remove);
 
 	if (current == NULL) {
 		return NULL;
@@ -199,28 +194,23 @@ void fill_frontier (struct frontier* new_frontier) {
 
 //We can think these add and remove to be specific to the frontier
 //or add one more indirection level and pass a frontier**
-void _add (struct frontier* current, Workflow_element* to_add) {
+void frontier_append (Workflow_element* to_add) {
 
-	printf ("to_add ->\t");
-	print_w_element(to_add);
-
-	if (current == NULL) {
-		current = (struct frontier*) malloc (sizeof (struct frontier));
-		fill_frontier (current);
-	}
-
-	struct frontier* tmp = current;
-
-	if (tmp != NULL) {
+	if (shared_buff->frontier == NULL) {
+		shared_buff->frontier
+			= (struct frontier*) malloc (sizeof (struct frontier));
+		fill_frontier (shared_buff->frontier);
+		shared_buff->frontier->w_element = to_add;
+	} else{
+		struct frontier* tmp = shared_buff->frontier;
 		while (tmp->next != NULL) {
 			tmp = tmp->next;
 		}
-	}
 
-	tmp = (struct frontier*) malloc (sizeof (struct frontier));
-	fill_frontier(tmp);
-	tmp->w_element = to_add;
-	print_frontier (shared_buff->frontier);
+		tmp = (struct frontier*) malloc (sizeof (struct frontier));
+		fill_frontier(tmp);
+		tmp->w_element = to_add;
+	}
 }
 
 int _contains (struct frontier* current, Workflow_element* tocheck) {
@@ -284,9 +274,6 @@ int do_replay (struct replay_command* cmd) {
 
 void do_produce(Workflow_element* el_to_produce) {
 
-	printf ("do_produce el->\t");
-	print_w_element(el_to_produce);
-
 	//1. produce
 	shared_buff->produced_queue[++shared_buff->last_produced] = el_to_produce;
 	//2. mark
@@ -296,10 +283,6 @@ void do_produce(Workflow_element* el_to_produce) {
 }
 
 void do_consume(Workflow_element* element) {
-
-	printf ("do_consume element->\t");
-	print_w_element(element);
-	fflush(stdin);
 
 	do_replay(element->command);
 
@@ -329,8 +312,6 @@ void *produce (void *arg) {
 		sem_wait(shared_buff->mutex);
 			frontier = shared_buff->frontier;
 			while (frontier != NULL) {
-				print_frontier(frontier);
-				fflush(stdin);
 				//dispatch children that was not dispatched yet
 				w_element = frontier->w_element;
 				int chl_index;
@@ -369,14 +350,12 @@ void *produce (void *arg) {
 				}
 
 				if (! _contains (shared_buff->frontier, consumed)) {
-					_add (shared_buff->frontier, consumed);
-					print_frontier(shared_buff->frontier);
+					frontier_append (consumed);
 				}
 			}
 
 			//cleaning consumed_queue
 			shared_buff->last_consumed = -1;
-			print_frontier(shared_buff->frontier);
 		sem_post(shared_buff->mutex);
 	}
 }

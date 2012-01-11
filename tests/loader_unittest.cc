@@ -875,6 +875,8 @@ TEST(ReplayTest, 2_sequencial_command_mkdir_parsing_skipped) {
 	rep_wld->element_list
 						= (Workflow_element*) malloc (3 * sizeof (Workflow_element));
 
+	rep_wld->num_cmds = 3;
+
 	//bootstrap
 	struct replay_command* root_cmd
 				= (struct replay_command*) malloc( sizeof (struct replay_command));
@@ -912,7 +914,7 @@ TEST(ReplayTest, 2_sequencial_command_mkdir_parsing_skipped) {
 	one_cmd->params[0].argm = (arg*) malloc (sizeof (arg));
 	one_cmd->params[0].argm->cprt_val = NULL;
 	one_cmd->params[0].argm->cprt_val = (char*) malloc (MAX_FILE_NAME * sizeof (char));
-	//strcpy(one_cmd->params[0].argm->cprt_val, "/tmp/jdt-images-1");
+	strcpy(one_cmd->params[0].argm->cprt_val, "/tmp/jdt-images-1");
 	one_cmd->params[1].argm = NULL;
 	one_cmd->params[1].argm = (arg*) malloc (sizeof (arg));
 	one_cmd->params[1].argm->i_val = 511;
@@ -949,7 +951,7 @@ TEST(ReplayTest, 2_sequencial_command_mkdir_parsing_skipped) {
 	cmd_two->params[0].argm = (arg*) malloc (sizeof (arg));
 	cmd_two->params[0].argm->cprt_val = NULL;
 	cmd_two->params[0].argm->cprt_val = (char*) malloc (MAX_FILE_NAME * sizeof (char));
-	//strcpy(cmd_two->params[0].argm->cprt_val, "/tmp/jdt-images-2");
+	strcpy(cmd_two->params[0].argm->cprt_val, "/tmp/jdt-images-2");
 	cmd_two->params[1].argm = NULL;
 	cmd_two->params[1].argm = (arg*) malloc (sizeof (arg));
 	cmd_two->params[1].argm->i_val = 511;

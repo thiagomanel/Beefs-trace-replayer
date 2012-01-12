@@ -22,7 +22,7 @@
 TEST(LoaderTest, EmptyInputFile) {
     Replay_workload rep_wld;
     FILE * input_f = fopen("tests/input_data/empty_input", "r");
-    int ret = load(&rep_wld, input_f);
+    int ret = load (&rep_wld, input_f);
     EXPECT_EQ(0, ret);
     EXPECT_EQ(0, rep_wld.num_cmds);
     EXPECT_EQ(0, rep_wld.current_cmd);
@@ -893,7 +893,7 @@ TEST(ReplayTest, SingleOperationReplay) {
 	Replay_workload* rep_wld
 		= (Replay_workload*) malloc (sizeof (Replay_workload));
 	FILE * input_f = fopen("tests/replay_input/workflow_samples/workflow_single_command_mkdir", "r");
-	load2(rep_wld, input_f);
+	load(rep_wld, input_f);
 
 	Replay_result* actual_result = (Replay_result*) malloc (sizeof (Replay_result));
 	actual_result->replayed_commands = 0;
@@ -1028,7 +1028,7 @@ TEST(ReplayTest, 2_sequencial_command_mkdir) {
 	Replay_workload* rep_wld
 		= (Replay_workload*) malloc (sizeof (Replay_workload));
 	FILE * input_f = fopen("tests/replay_input/workflow_samples/workflow_2_sequencial_command_mkdir", "r");
-	load2(rep_wld, input_f);
+	load(rep_wld, input_f);
 
 	Replay_result* actual_result = (Replay_result*) malloc (sizeof (Replay_result));
 	actual_result->replayed_commands = 0;
@@ -1088,7 +1088,7 @@ TEST(LoaderTest, LoadWorkflow_2_sequencial_command_mkdir) {
 //2 1 1 0 - 1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /tmp/jdt-images-2 511 0
     Replay_workload* rep_wld = (Replay_workload*) malloc (sizeof (Replay_workload));
     FILE * input_f = fopen("tests/replay_input/workflow_samples/workflow_2_sequencial_command_mkdir", "r");
-    int ret = load2(rep_wld, input_f);
+    int ret = load(rep_wld, input_f);
 
     EXPECT_EQ(0, ret);
     EXPECT_EQ(3, rep_wld->num_cmds);//fake + 2 commands

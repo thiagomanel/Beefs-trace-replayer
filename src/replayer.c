@@ -73,7 +73,7 @@ void fill_workflow_element (Workflow_element* element) {
 
 void fill_replay_workload (Replay_workload* r_workload) {
 
-	r_workload->cmd = NULL;
+	//r_workload->cmd = NULL;
 	r_workload->current_cmd = -1;
 	r_workload->element_list = NULL;
 	r_workload->num_cmds = 1;
@@ -429,12 +429,12 @@ int replay (Replay_workload* rep_workload, Replay_result* result) {
 	result->replayed_commands = shared_buff->consumed_count;
 	return -1;
 }
-
+/**
 int old_replay (Replay_workload* rep_workload, Replay_result* result) {
-	/**
-	 * pids[pid_from_trace] = fd_pairs[] = {fd_pair_0, fd_pair_1, ...,fd_pair_n}
-	 * fd_pairs[fd_from_trace] = fd_from_replay
-	 */
+	//
+	// pids[pid_from_trace] = fd_pairs[] = {fd_pair_0, fd_pair_1, ...,fd_pair_n}
+	// fd_pairs[fd_from_trace] = fd_from_replay
+	//
 	int *pids[PID_MAX];
 	memset(pids, 0, PID_MAX * sizeof(int*)); //size arg is correct ??
 
@@ -506,4 +506,4 @@ int old_replay (Replay_workload* rep_workload, Replay_result* result) {
 //		cmd = cmd->next;
 	}
 	return -1;
-}
+}*/

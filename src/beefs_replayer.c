@@ -31,7 +31,7 @@ int main (int argc, const char* argv[]) {
 	Replay_workload* rep_wld = (Replay_workload*) malloc (
 			sizeof (Replay_workload));
 
-	int ret = load2 (rep_wld, fp);
+	int ret = load (rep_wld, fp);
 	if (ret < 0) {
 		perror("Error loading trace\n");
 	}

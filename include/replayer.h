@@ -81,8 +81,6 @@ struct replay_command {
 	Caller* caller;
 	Parms* params;
 	int expected_retval;
-
-	struct replay_command* next;//FIXME deprecated. to be removed
 };
 
 typedef struct workflow_element {
@@ -103,7 +101,6 @@ typedef struct workflow_element {
 
 typedef struct replay_workload {
 	Workflow_element* element_list;
-	struct replay_command* cmd;
 	int num_cmds;
 	int current_cmd;
 } Replay_workload;

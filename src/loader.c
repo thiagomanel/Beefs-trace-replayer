@@ -70,57 +70,19 @@ int marker2operation(char *string) {
 
 #define NULL_FILE_OP_ERROR -3
 
-int load(Replay_workload* replay_wld, FILE* input_file) {
-	unsigned int line_len;
-	int tmp;
-	char* line;
-	int loaded_commands = 0;
-	replay_wld->cmd = NULL;
-
-	if (input_file == NULL) {
-		replay_wld->current_cmd = 0;
-		replay_wld->num_cmds = 0;
-		return NULL_FILE_OP_ERROR;
-	}
-
-	while (!feof(input_file)) {
-		line = NULL;
-		line_len = 0;
-		tmp = getline(&line, &line_len, input_file);
-		if (tmp >= 0) {
-			tmp = parse_line(&(replay_wld->cmd), line);
-			loaded_commands += 1;
-		}
-	}
-	replay_wld->current_cmd = 0;
-	replay_wld->num_cmds = loaded_commands;
-	return 0;
-}
-
 #define UNKNOW_OP_ERROR -2
+
 void fill_replay_command (struct replay_command* cmd) {
 
 	cmd->caller = NULL;
 	cmd->command = NONE;
 	cmd->expected_retval = -666; //:O
 	cmd->params = NULL;
-	cmd->next = NULL;
-}
-
-void parse_caller2 (Caller* caller, char* token) {
-
-	token = strtok(NULL, " ");
-	caller->uid = atoi(token);
-	token = strtok(NULL, " ");
-	caller->pid = atoi(token);
-	token = strtok(NULL, " ");
-	caller->tid = atoi(token);
 }
 
 void parse_caller (Caller* caller, char* token) {
 
-	caller = (Caller*) malloc(sizeof(Caller));
-
+	token = strtok(NULL, " ");
 	caller->uid = atoi(token);
 	token = strtok(NULL, " ");
 	caller->pid = atoi(token);
@@ -281,7 +243,7 @@ int parse_element (Workflow_element* element, char* line) {
 	fill_replay_command (current_command);
 
 	current_command->caller = (Caller*) malloc(sizeof(Caller));
-	parse_caller2 (current_command->caller, token);
+	parse_caller (current_command->caller, token);
 
 	token = strtok (NULL, " "); //exec_name
 
@@ -295,48 +257,6 @@ int parse_element (Workflow_element* element, char* line) {
 	current_command->expected_retval = atoi (token);
 
 	element->command = current_command;
-
-	return (loaded_cmd == NONE) ? UNKNOW_OP_ERROR : 0;
-//free something ?
-}
-
-int parse_line(struct replay_command** cmd, char* line) {
-
-	struct replay_command* current_command;
-	struct replay_command* new_command;
-
-	if ((*cmd) == NULL) {
-		(*cmd) = (struct replay_command*) malloc(sizeof(struct replay_command));
-		fill_replay_command((*cmd));
-		current_command = (*cmd);
-	} else {
-		current_command = (*cmd);
-		while (current_command->next != NULL) {
-			current_command = current_command->next;
-		}
-		new_command = (struct replay_command*) malloc(sizeof(struct replay_command));
-		fill_replay_command(new_command);
-		current_command->next = new_command;
-		current_command = current_command->next;
-	}
-
-	current_command->caller = (Caller*) malloc(sizeof(Caller));
-	//ugly, eh !
-	char* token = strtok(line, " ");
-	current_command->caller->uid = atoi(token);
-	token = strtok(NULL, " ");
-	current_command->caller->pid = atoi(token);
-	token = strtok(NULL, " ");
-	current_command->caller->tid = atoi(token);
-
-	token = strtok(NULL, " "); //exec_name
-	token = strtok(NULL, " ");
-	op_t loaded_cmd = marker2operation(token);
-	current_command->command = loaded_cmd;
-
-	current_command->params = alloc_and_parse_parms(loaded_cmd, token);
-	token = strtok(NULL, " ");
-	current_command->expected_retval = atoi(token);
 
 	return (loaded_cmd == NONE) ? UNKNOW_OP_ERROR : 0;
 //free something ?
@@ -368,13 +288,12 @@ void add_child (Replay_workload* workload, Workflow_element* parent,
 	}
 }
 
-int load2(Replay_workload* replay_wld, FILE* input_file) {
+int load (Replay_workload* replay_wld, FILE* input_file) {
 
 	size_t read_bytes = 0;
 	size_t line_len = 0;
 	char* line = NULL;
-
-	int loaded_commands = 1;//first one is the fake bootstrap
+	int loaded_commands = 0;
 
 	fill_replay_workload (replay_wld);
 
@@ -387,50 +306,60 @@ int load2(Replay_workload* replay_wld, FILE* input_file) {
 	while ( (read_bytes = getline (&line, &line_len, input_file)) != -1 ) {
 
 		if (replay_wld->element_list == NULL){//first line is the number of commands
+
 			int num_commands_to_load = atoi (line);
 			replay_wld->element_list
 					= (Workflow_element*) malloc ((num_commands_to_load + 1) * sizeof (Workflow_element));
+
+			//A fake element is the workflow root
+			struct replay_command* root_cmd
+				= (struct replay_command*) malloc( sizeof (struct replay_command));
+			fill_replay_command(root_cmd);
+			root_cmd->command = NONE;
+
+			//fake element is also element_list's head
+			Workflow_element* root_element = element(replay_wld, 0);
+			fill_workflow_element(root_element);
+			root_element->command = root_cmd;
+			root_element->id = ROOT_ID;
+			root_element->produced = 1;
+			root_element->consumed = 1;
+
+			++loaded_commands;
+
 		} else {
 			if (read_bytes >= 0) {
+
 				Workflow_element* tmp_element
 					= (replay_wld->element_list + loaded_commands);
 				fill_workflow_element (tmp_element);
 				parse_element (tmp_element, line);
-				loaded_commands += 1;
+
+				++loaded_commands;
 			}
 		}
 	}
 
-	//A fake element is the workflow root
-	struct replay_command* root_cmd
-			= (struct replay_command*) malloc( sizeof (struct replay_command));
-	fill_replay_command(root_cmd);
-	root_cmd->command = NONE;
+	if (loaded_commands > 1) {//ok, there is something to replay
 
-	//fake element is also element_list's head
-	Workflow_element* root_element = element(replay_wld, 0);
-	fill_workflow_element(root_element);
-	root_element->command = root_cmd;
-	root_element->id = ROOT_ID;
-	root_element->produced = 1;
-	root_element->consumed = 1;
+		//child that has no parents should become child of fake element
+		//For now, i'm attaching just the first child (2nd element in list)
+		Workflow_element* child = element(replay_wld, 1);
+		Workflow_element* root_element = element(replay_wld, 0);
+		root_element->children_ids = (int*) malloc (sizeof (int));
 
-	//child that has no parents should become child of fake element
-	//For now, i'm attaching just the first child (2nd element in list)
-	Workflow_element* child = element(replay_wld, 1);
-	root_element->children_ids = (int*) malloc (sizeof (int));
+		//root_element becomes children's parent
+		if (! is_child (root_element, child)) {
+			root_element->children_ids
+				= (int*) realloc (root_element->children_ids, root_element->n_children + 1);
+			root_element->children_ids[root_element->n_children] = child->id;
+			root_element->n_children++;
 
-	//root_element becomes children's parent
-	if (! is_child (root_element, child)) {
-		root_element->children_ids
-			= (int*) realloc (root_element->children_ids, root_element->n_children + 1);
-		root_element->children_ids[root_element->n_children] = child->id;
-		root_element->n_children++;
-
-		child->parents_ids
-			= (int*) realloc (child->parents_ids, child->n_parents + 1);
-		child->parents_ids[child->n_parents] = root_element->id;
-		child->n_parents++;
+			child->parents_ids
+				= (int*) realloc (child->parents_ids, child->n_parents + 1);
+			child->parents_ids[child->n_parents] = root_element->id;
+			child->n_parents++;
+		}
 	}
 
 	replay_wld->current_cmd = 0;

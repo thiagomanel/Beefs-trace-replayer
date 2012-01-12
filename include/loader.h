@@ -25,6 +25,4 @@ int parse_element (Workflow_element* element, char* line);
 
 int load (struct replay_workload* replay_wld, FILE* input_file);
 
-int load2 (struct replay_workload* replay_wld, FILE* input_file);
-
 #endif /* _LOADER_H */

@@ -906,6 +906,63 @@ TEST(ReplayTest, SingleOperationReplay) {
 	fclose(input_f);
 }
 
+//This method captures the bug of not replaying the
+//tests/replay_input/workflow_samples/workflow_single_command_open (debug points
+//out that its command type is NONE instead of OPEN
+TEST(ReplayTest, SingleOpenOperationReplay) {
+
+	Replay_workload* rep_wld
+		= (Replay_workload*) malloc (sizeof (Replay_workload));
+
+	FILE * input_f = fopen (
+			"tests/replay_input/workflow_samples/workflow_single_command_open",
+			"r");
+
+	load (rep_wld, input_f);
+
+	Replay_result* actual_result = (Replay_result*) malloc (sizeof (Replay_result));
+	actual_result->replayed_commands = 0;
+	actual_result->produced_commands = 0;
+
+	replay (rep_wld, actual_result);
+
+	EXPECT_EQ (2, actual_result->replayed_commands);//boostrap + 1
+	EXPECT_EQ (2, actual_result->produced_commands);//boostrap + 1
+	fclose (input_f);
+}
+
+//This method try to capture the same bug report in the above method
+TEST(LoaderTest, LoadWorkflowSingleOpenOperation) {
+    Replay_workload* rep_wld = (Replay_workload*) malloc (sizeof (Replay_workload));
+    FILE * input_f = fopen (
+    		"tests/replay_input/workflow_samples/workflow_single_command_open",
+    		"r");
+    int ret = load(rep_wld, input_f);
+
+    EXPECT_EQ(0, ret);
+    EXPECT_EQ(2, rep_wld->num_cmds);//fake + 1
+    EXPECT_EQ(0, rep_wld->current_cmd);
+
+    //bootstraper
+    Workflow_element* w_element = element(rep_wld, 0);
+    EXPECT_EQ(0, w_element->id);
+    EXPECT_EQ(1, w_element->n_children);
+    EXPECT_EQ(0, w_element->n_parents);
+    int child_id = w_element->children_ids[0];
+    EXPECT_EQ(1, child_id);
+
+    w_element = element(rep_wld, 1);
+    EXPECT_EQ(1, w_element->id);
+    EXPECT_EQ(0, w_element->n_children);
+    EXPECT_EQ(1, w_element->n_parents);
+    int parent_id = w_element->parents_ids[0];
+    EXPECT_EQ(0, parent_id);
+
+    struct replay_command* loaded_cmd = w_element->command;
+	EXPECT_EQ(OPEN_OP, loaded_cmd->command);
+    fclose(input_f);
+}
+
 //I have the felling that strtok is messing things up (in fact, doc said it
 //does not work well with sub-routines). So, this test creates the same
 //data structures loaded from workflow_2_sequencial_command_mkdir file

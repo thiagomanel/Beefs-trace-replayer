@@ -31,6 +31,8 @@
 #define BUFF_SIZE   20
 #define DEBUG 1
 
+#define REPLAY_SUCCESS 0
+
 int N_ITEMS;
 
 Replay_workload* workload;
@@ -136,10 +138,10 @@ typedef struct _sbuffs_t {
 	Workflow_element* consumed_queue[BUFF_SIZE];
 	int last_consumed;
 
-	unsigned int produced_count;
-	unsigned int consumed_count;
+	int produced_count;
+	int consumed_count;
 
-	unsigned int total_commands;//TODO: should include the fake command into the account ?
+	int total_commands;
 
 	struct frontier* frontier;
 
@@ -258,7 +260,7 @@ void mark_consumed (Workflow_element* element) {
 int do_replay (struct replay_command* cmd) {
 
 	assert (cmd != NULL);
-
+	printf ("do_replay cmd_type=%d\n", cmd->command);
 	Parms* args = cmd->params;
 
 	switch (cmd->command) {
@@ -271,10 +273,15 @@ int do_replay (struct replay_command* cmd) {
 			stat(args[0].argm->cprt_val, &sb);
 		}
 		break;
+		case OPEN_OP: {
+			open (args[0].argm->cprt_val, args[1].argm->i_val, args[2].argm->i_val);
+		}
+		break;
 		default:
 			return -1;
 	}
-	return 0;
+
+	return REPLAY_SUCCESS;
 }
 
 void do_produce(Workflow_element* el_to_produce) {
@@ -289,13 +296,15 @@ void do_produce(Workflow_element* el_to_produce) {
 
 void do_consume(Workflow_element* element) {
 
-	do_replay(element->command);
-
-	shared_buff->consumed_queue[++shared_buff->last_consumed] = element;
-
-	mark_consumed (element);
-
-	++shared_buff->consumed_count;
+	if (do_replay (element->command) == REPLAY_SUCCESS) {
+		shared_buff->consumed_queue[++shared_buff->last_consumed] = element;
+		mark_consumed (element);
+		++shared_buff->consumed_count;
+	} else {
+		fprintf (stderr, "Error on replaying command type=%s\n",
+				element->command->command);
+		exit (1);
+	}
 }
 
 /**

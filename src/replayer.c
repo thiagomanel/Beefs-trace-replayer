@@ -266,6 +266,11 @@ int do_replay (struct replay_command* cmd) {
 			mkdir(args[0].argm->cprt_val, args[1].argm->i_val);
 		}
 		break;
+		case STAT_OP: {
+			struct stat sb;
+			stat(args[0].argm->cprt_val, &sb);
+		}
+		break;
 		default:
 			return -1;
 	}
@@ -332,7 +337,7 @@ void *produce (void *arg) {
 
 			Workflow_element* consumed;
 
-			//new items come to the frontier after they have been consumed (dispatched)
+			//items come to the frontier after they have been consumed (dispatched)
 			for (i = 0; i <= shared_buff->last_consumed; i++) {
 				consumed = shared_buff->consumed_queue[i];
 				int parent_i;
@@ -398,7 +403,8 @@ void fill_shared_buffer (Replay_workload* workload, sbuffs_t* shared) {
 
 	shared->frontier = (struct frontier*) malloc (sizeof (struct frontier));
 
-	//by construction, first element is the fake bootstrapper FIXME: cannot call add ?
+	//by construction, first element is the fake bootstrapper
+	//FIXME: cannot call add ?
 	shared->frontier->w_element = element(workload, ROOT_ID);
 	shared->frontier->next = NULL;
 }

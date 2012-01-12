@@ -345,7 +345,7 @@ int parse_line(struct replay_command** cmd, char* line) {
 /**
  * Increase array size by one element and add value_to_append to last position
  */
-int* append(int* array, int array_size, int value_to_append) {
+void append(int* array, int array_size, int value_to_append) {
 	realloc (array, array_size + 1);
 	array[array_size] = value_to_append;
 }
@@ -360,10 +360,10 @@ void add_child (Replay_workload* workload, Workflow_element* parent,
 	if (! is_child (parent, child)) {
 		printf("really adding child\n");
 
-		parent->children_ids = append (parent->children_ids, parent->n_children, child->id);
+		append (parent->children_ids, parent->n_children, child->id);
 		parent->n_children++;
 
-		child->parents_ids = append (child->parents_ids, child->n_parents, parent->id);
+		append (child->parents_ids, child->n_parents, parent->id);
 		child->n_parents++;
 	}
 }

@@ -11,11 +11,7 @@ class TestFileUtil(unittest.TestCase):
         mode = access_mode(34816)
 	
 	#order is not important
-        self.assertSequenceEqual(mode, [access_modes.O_RDONLY, 
-                                            access_modes.O_NONBLOCK,
-                                            access_modes.O_LARGEFILE
-                                        ]
-                                )
+        self.assertSequenceEqual(mode, [access_modes.O_RDONLY])
 
 #    def test_acceptance_mode_438(self):
 #        modes = from_penmode(438)

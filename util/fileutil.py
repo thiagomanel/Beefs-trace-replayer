@@ -1,6 +1,6 @@
 from enum import Enum
 
-open_modes = Enum("O_RDONLY", "O_NONBLOCK", "O_LARGEFILE")
+access_modes = Enum("O_RDONLY", "O_NONBLOCK", "O_LARGEFILE")
 
 #O_ACCMODE	   0003
 #O_RDONLY	     00
@@ -18,6 +18,9 @@ open_modes = Enum("O_RDONLY", "O_NONBLOCK", "O_LARGEFILE")
 #O_FSYNC	 O_SYNC
 #O_ASYNC	 020000
 
-""" conversion from linux open_mode to its string representation """
-def from_openmode(openmode):
-    return [open_modes.O_RDONLY, open_modes.O_NONBLOCK, open_modes.O_LARGEFILE]
+""" 
+   conversion from linux open_mode to its string representation.
+   see http://linux.die.net/man/2/open
+"""
+def access_mode(flags):
+    return [access_modes.O_RDONLY, access_modes.O_NONBLOCK, access_modes.O_LARGEFILE]

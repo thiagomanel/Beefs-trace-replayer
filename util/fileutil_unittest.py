@@ -18,7 +18,8 @@ class TestFileUtil(unittest.TestCase):
         c_flags = creation_flags(34816)
 	#order is not important
         self.assertTrue(CREATION_FLAGS.O_NONBLOCK in c_flags)
-	self.assertTrue(len(c_flags) == 1)
+        self.assertTrue(CREATION_FLAGS.O_LARGEFILE in c_flags)
+	self.assertEquals(len(c_flags), 2)
 
     def test_access_mode_33281(self):
         #O_WRONLY|O_TRUNC|O_LARGEFILE=33281
@@ -33,8 +34,11 @@ class TestFileUtil(unittest.TestCase):
 	self.assertTrue(len(c_flags) == 2)
 
     def test_creation_flags_33281(self):
+        #O_WRONLY|O_TRUNC|O_LARGEFILE=33281
         c_flags = creation_flags(33281)
-        self.assertSequenceEqual(c_flags, [CREATION_FLAGS.O_TRUNC])
+        self.assertTrue(CREATION_FLAGS.O_TRUNC in c_flags)
+        self.assertTrue(CREATION_FLAGS.O_LARGEFILE in c_flags)
+	self.assertTrue(len(c_flags) == 2)
 
     # Linux reserves the special, nonstandard access mode 3 (binary 11) in flags to
     # mean: check for read and write permission on the file and return a descriptor

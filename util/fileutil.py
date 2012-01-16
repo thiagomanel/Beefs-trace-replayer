@@ -17,13 +17,41 @@ from enum import Enum
 #O_SYNC          010000       4096
 #O_FSYNC         O_SYNC
 #O_ASYNC         020000       8192
+#O_DIRECT	 040000	     16384
+#O_LARGEFILE	 100000	     32768 
+#O_DIRECTORY     200000      65536
+#O_NOFOLLOW      400000     131072
+#O_NOATIME	1000000     262144
+#O_CLOEXEC 	2000000     524288
 
 #FIXME: it would be nice to have bind a value to enum value (in this case
 #we can use it to store de flag octal code)
 ACCESS_MODES = Enum("O_RDONLY", "O_WRONLY", "O_RDWR")
 CREATION_FLAGS = Enum("O_CREAT", "O_EXCL", "O_NOCTTY", "O_TRUNC", 
                          "O_APPEND", "O_NONBLOCK", "O_NDELAY", 
-                         "O_SYNC", "O_FSYNC", "O_ASYNC")
+                         "O_SYNC", "O_FSYNC", "O_ASYNC",
+#"O_DSYNC", 
+#"O_RSYNC"
+#O_NDELAY
+#O_PRIV,
+   	 		 "O_DIRECT", "O_LARGEFILE",
+			 "O_DIRECTORY", "O_NOFOLLOW", 
+			 "O_NOATIME", "O_CLOEXEC")
+#"FNDELAY"
+#"FAPPEND"
+#"FMARK"
+#"FDEFER"
+#"FASYNC"
+#"FSHLOCK"
+#"FEXLOCK"
+#"FCREAT"
+#"FTRUNC"
+#"FEXCL"
+#"FNBIO"
+#"FSYNC"
+#"FNOCTTY"
+#O_SHLOCK"
+#"O_EXLOCK"
 
 # something outside the range [0,3] is a programming error and the code should 
 # fail
@@ -36,7 +64,13 @@ __value2creation_flags__ = {64:CREATION_FLAGS.O_CREAT, 128:CREATION_FLAGS.O_EXCL
                                1024:CREATION_FLAGS.O_APPEND, 
                                2048:CREATION_FLAGS.O_NONBLOCK, 
                                4096:CREATION_FLAGS.O_SYNC, 
-                               8192:CREATION_FLAGS.O_ASYNC}
+                               8192:CREATION_FLAGS.O_ASYNC,
+                               16384:CREATION_FLAGS.O_DIRECT,
+                               32768:CREATION_FLAGS.O_LARGEFILE,
+                               65536:CREATION_FLAGS.O_DIRECTORY,
+                               131072:CREATION_FLAGS.O_NOFOLLOW,
+                               262144:CREATION_FLAGS.O_NOATIME,
+                               524288:CREATION_FLAGS.O_CLOEXEC}
 
 """ from linux open flags to a human-friendly representation. 
 http://linux.die.net/man/2/open

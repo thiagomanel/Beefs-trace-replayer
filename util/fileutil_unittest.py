@@ -15,9 +15,10 @@ class TestFileUtil(unittest.TestCase):
 
     def test_creation_flags_34816(self):
 	#(O_RDONLY|O_NONBLOCK|O_LARGEFILE)=34816
-        c_flags = creation_flags(33816)
+        c_flags = creation_flags(34816)
 	#order is not important
-        self.assertSequenceEqual(c_flags, [CREATION_FLAGS.O_TRUNC])
+        self.assertTrue(CREATION_FLAGS.O_NONBLOCK in c_flags)
+	self.assertTrue(len(c_flags) == 1)
 
     def test_access_mode_33281(self):
         #O_WRONLY|O_TRUNC|O_LARGEFILE=33281
@@ -27,11 +28,9 @@ class TestFileUtil(unittest.TestCase):
     def test_creation_flags_CREAT_and_TRUNC(self):
         #O_RDONLY|O_CREAT|O_TRUNC=576=0x240
         c_flags = creation_flags(576)
-        self.assertSequenceEqual(c_flags, [CREATION_FLAGS.O_TRUNC,
-                                              CREATION_FLAGS.O_CREAT])
-        self.assertSequenceEqual(c_flags, [CREATION_FLAGS.O_CREAT, 
-                                              CREATION_FLAGS.O_TRUNC])
-        
+        self.assertTrue(CREATION_FLAGS.O_TRUNC in c_flags)
+        self.assertTrue(CREATION_FLAGS.O_CREAT in c_flags)
+	self.assertTrue(len(c_flags) == 2)
 
     def test_creation_flags_33281(self):
         c_flags = creation_flags(33281)

@@ -2,6 +2,7 @@ import unittest
 from enum import Enum
 from fileutil import access_mode
 from fileutil import creation_flags
+from fileutil import flags_number
 from fileutil import ACCESS_MODES
 from fileutil import CREATION_FLAGS
 
@@ -21,6 +22,12 @@ class TestFileUtil(unittest.TestCase):
         self.assertTrue(CREATION_FLAGS.O_LARGEFILE in c_flags)
 	self.assertEquals(len(c_flags), 2)
 
+    def test_O_RDONLY__O_NONBLOCK__O_LARGEFILE_as_number(self):
+        self.assertEquals(
+                             flags_number("O_RDONLY|O_NONBLOCK|O_LARGEFILE"), 
+                             34816
+                         )
+
     def test_access_mode_33281(self):
         #O_WRONLY|O_TRUNC|O_LARGEFILE=33281
         mode = access_mode(33281)
@@ -33,12 +40,24 @@ class TestFileUtil(unittest.TestCase):
         self.assertTrue(CREATION_FLAGS.O_CREAT in c_flags)
 	self.assertTrue(len(c_flags) == 2)
 
+    def test_O_RDONLY__O_CREAT__O_TRUNC_as_number(self):
+        self.assertEquals(
+                             flags_number("O_RDONLY|O_CREAT|O_TRUNC"), 
+                             576
+                         )
+
     def test_creation_flags_33281(self):
         #O_WRONLY|O_TRUNC|O_LARGEFILE=33281
         c_flags = creation_flags(33281)
         self.assertTrue(CREATION_FLAGS.O_TRUNC in c_flags)
         self.assertTrue(CREATION_FLAGS.O_LARGEFILE in c_flags)
 	self.assertTrue(len(c_flags) == 2)
+
+    def test_O_WRONLY__O_TRUNC__O_LARGEFILE_as_number(self):
+        self.assertEquals(
+                             flags_number("O_WRONLY|O_TRUNC|O_LARGEFILE"), 
+                             33281
+                         )
 
     # Linux reserves the special, nonstandard access mode 3 (binary 11) in flags to
     # mean: check for read and write permission on the file and return a descriptor

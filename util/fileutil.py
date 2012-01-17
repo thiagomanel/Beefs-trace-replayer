@@ -30,35 +30,19 @@ ACCESS_MODES = Enum("O_RDONLY", "O_WRONLY", "O_RDWR")
 CREATION_FLAGS = Enum("O_CREAT", "O_EXCL", "O_NOCTTY", "O_TRUNC", 
                          "O_APPEND", "O_NONBLOCK", "O_NDELAY", 
                          "O_SYNC", "O_FSYNC", "O_ASYNC",
-#"O_DSYNC", 
-#"O_RSYNC"
-#O_NDELAY
-#O_PRIV,
+#"O_DSYNC","O_RSYNC" O_NDELAY O_PRIV,
    	 		 "O_DIRECT", "O_LARGEFILE",
 			 "O_DIRECTORY", "O_NOFOLLOW", 
 			 "O_NOATIME", "O_CLOEXEC")
-#"FNDELAY"
-#"FAPPEND"
-#"FMARK"
-#"FDEFER"
-#"FASYNC"
-#"FSHLOCK"
-#"FEXLOCK"
-#"FCREAT"
-#"FTRUNC"
-#"FEXCL"
-#"FNBIO"
-#"FSYNC"
-#"FNOCTTY"
-#O_SHLOCK"
-#"O_EXLOCK"
+#"FNDELAY" #"FAPPEND" #"FMARK" #"FDEFER" #"FASYNC"
+#"FSHLOCK" #"FEXLOCK" #"FCREAT" #"FTRUNC" #"FEXCL"
+#"FNBIO" #"FSYNC" #"FNOCTTY" #O_SHLOCK" #"O_EXLOCK"
 
-# something outside the range [0,3] is a programming error and the code should 
-# fail
-__value2access_modes__ = {0:ACCESS_MODES.O_RDONLY, 1:ACCESS_MODES.O_WRONLY, 
+# if outside the range [0,3] is a programming error and the code should fail
+__value2access_modes = {0:ACCESS_MODES.O_RDONLY, 1:ACCESS_MODES.O_WRONLY, 
                            2:ACCESS_MODES.O_RDWR, 3:None}
 
-__value2creation_flags__ = {64:CREATION_FLAGS.O_CREAT, 128:CREATION_FLAGS.O_EXCL, 
+__value2creation_flags = {64:CREATION_FLAGS.O_CREAT, 128:CREATION_FLAGS.O_EXCL, 
                                256:CREATION_FLAGS.O_NOCTTY, 
                                512:CREATION_FLAGS.O_TRUNC,
                                1024:CREATION_FLAGS.O_APPEND, 
@@ -75,22 +59,37 @@ __value2creation_flags__ = {64:CREATION_FLAGS.O_CREAT, 128:CREATION_FLAGS.O_EXCL
 """ from linux open flags to a human-friendly representation. 
 http://linux.die.net/man/2/open
 """
-def access_mode_bits(open_flags):
-    return open_flags & 3
+def _access_mode_bits(flags_number):
+    return flags_number & 3
 
-def access_mode(open_flags):
-    return __value2access_modes__[access_mode_bits(open_flags)]
+def access_mode(flags_number):
+    return __value2access_modes[_access_mode_bits(flags_number)]
 
-def creation_flags_bits(open_flags):
-    return open_flags & ~3
+def _creation_flags_bits(flags_number):
+    return flags_number & ~3
 
-def match(open_flags, flag_code):#see flag codes in table above
-    return (open_flags & flag_code) == flag_code
-    
+def _match(flags_number, flag_code):#see flag codes in table above
+    return (flags_number & flag_code) == flag_code
 
-def creation_flags(open_flags):
+def creation_flags(flags_number):
     flags = []
-    for (code, flag) in __value2creation_flags__.iteritems():
-        if match(open_flags, code):
+    for (code, flag) in __value2creation_flags.iteritems():
+        if _match(flags_number, code):
             flags.append(flag)
     return flags
+
+def flags_number(flags_and_modes):
+    number = 0
+    tokens = flags_and_modes.split("|")#what if we have just one flag ?
+     #not efficient and ugly, but i'm late. What i really want is to 
+     #to index an Enum based on the types we use to build it, so in
+     #the case below I can do ACCESS_MODE[token]
+    for (access_mode_code, access_mode) in __value2access_modes.iteritems():
+        if str(access_mode) in tokens:
+            number = number | access_mode_code
+
+    for (creation_flag_code, creation_flag) in __value2creation_flags.iteritems():
+        if str(creation_flag) in tokens:
+            number = number | creation_flag_code
+
+    return number

@@ -1,5 +1,8 @@
 import sys
 import getopt
+from fileutil import access_mode
+from fileutil import creation_flags
+
 
 class Matcher:
 	
@@ -44,6 +47,13 @@ class Matcher:
         return_value = tokens[-1]
         if op == "mkdir":
 	    args[-1] = str(oct(int(args[-1])))
+        elif op == "open":#FIXME TEST ME
+	    #we are assuming strace always prints access_mode before c_flags
+	    #if not, we should complicate the comparison to ignore order
+            flags_number = int(args)
+            args = access_mode(flags_number)
+            args.extend(creation_flags(flags_number))
+            #args = " ".join
     
         return (op, args, return_value)
 

@@ -93,3 +93,5 @@ def flags_number(flags_and_modes):
             number = number | creation_flag_code
 
     return number
+
+def flags_and_modes(flags_number):

@@ -2,6 +2,7 @@ import unittest
 from enum import Enum
 from fileutil import access_mode
 from fileutil import creation_flags
+from fileutil import flags_and_modes
 from fileutil import flags_number
 from fileutil import ACCESS_MODES
 from fileutil import CREATION_FLAGS
@@ -13,6 +14,15 @@ class TestFileUtil(unittest.TestCase):
 	#(O_RDONLY|O_NONBLOCK|O_LARGEFILE)=34816
         mode = access_mode(34816)
         self.assertEqual(mode, ACCESS_MODES.O_RDONLY)
+
+    def test_flags_and_modes(self):
+       self.assertEquals(flags_and_modes(34816),
+                            "O_RDONLY|O_NONBLOCK|O_LARGEFILE")
+       self.assertEquals(flags_and_modes(33281),
+                            "O_WRONLY|O_TRUNC|O_LARGEFILE")
+       self.assertEquals(flags_and_modes(576),
+                            "O_RDONLY|O_CREAT|O_TRUNC")
+
 
     def test_creation_flags_34816(self):
 	#(O_RDONLY|O_NONBLOCK|O_LARGEFILE)=34816

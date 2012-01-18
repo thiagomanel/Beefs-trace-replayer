@@ -1,5 +1,14 @@
 from enum import Enum
 
+#  P.S Disclaimer. my intention with this code is to learn python, otherwise we can use a dict{oct_value:string} and a couple of list to solve the problem
+
+#FIXME This code works just fine but we can refactor it to an object (it seems beaultiful and I can learn more pythonic code):
+#  1. it has an init method which receives the numeric open argument
+#  2. it has an __repr__ which allows to eval to the object back
+#  3. it has python properties to access the ACCESSS_MODES and a list of CREATION_FLAGS
+#  4. it prints the strace format out e.g "O_RDONLY|O_NONBLOCK|O_LARGEFILE"
+#  5. Maybe we can have subtypes and implement __get_item__ to index by octal codes or string representation of enum values
+
 #		   (oct ?)  dec
 #O_ACCMODE         0003	      	 3			
 #O_RDONLY            00		 0
@@ -73,14 +82,18 @@ def _match(flags_number, flag_code):#see flag codes in table above
 
 def creation_flags(flags_number):
     flags = []
-    for (code, flag) in __value2creation_flags.iteritems():
+    for (code, flag) in sorted(__value2creation_flags.items()):#strace requires order
         if _match(flags_number, code):
             flags.append(flag)
     return flags
 
-def flags_number(flags_and_modes):
+""" 
+Converts from an strace string e.g O_RDONLY|O_NONBLOCK|O_LARGEFILE to
+its correspondent numeric code
+"""
+def flags_number(mode_and_flags):
     number = 0
-    tokens = flags_and_modes.split("|")#what if we have just one flag ?
+    tokens = mode_and_flags.split("|")#what if we have just one flag ?
      #not efficient and ugly, but i'm late. What i really want is to 
      #to index an Enum based on the types we use to build it, so in
      #the case below I can do ACCESS_MODE[token]
@@ -94,4 +107,11 @@ def flags_number(flags_and_modes):
 
     return number
 
-def flags_and_modes(flags_number):
+"""
+Converts from the open syscall open_flags parameter to the strace string
+"""
+def mode_and_flags(flags_number):
+    m_and_f = []
+    m_and_f.append(str(access_mode(flags_number)))
+    m_and_f.extend([str(flag) for flag in creation_flags(flags_number)])
+    return "|".join(m_and_f)

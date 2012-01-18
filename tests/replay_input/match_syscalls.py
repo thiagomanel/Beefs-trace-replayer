@@ -2,7 +2,7 @@ import sys
 import getopt
 from fileutil import access_mode
 from fileutil import creation_flags
-
+from fileutil import mode_and_flags
 
 class Matcher:
 	
@@ -49,11 +49,10 @@ class Matcher:
 	    args[-1] = str(oct(int(args[-1])))
         elif op == "open":#FIXME TEST ME
 	    #we are assuming strace always prints access_mode before c_flags
-	    #if not, we should complicate the comparison to ignore order
-            flags_number = int(args)
-            args = access_mode(flags_number)
-            args.extend(creation_flags(flags_number))
-            #args = " ".join
+            #args is a 3 token str list e.g [/var/spool/cron/crontabs', '34816', '0']
+            #    we want the second token
+            flags_number = int(args[1])
+            args[1] = mode_and_flags(flags_number)
     
         return (op, args, return_value)
 

@@ -317,6 +317,14 @@ int do_replay (struct replay_command* cmd) {
 			read (repl_fd, buf, read_count);
 		}
 		break;
+		case CLOSE_OP: {
+			int traced_fd = args[0].argm->i_val;
+			int repl_fd = replayed_fd (cmd->caller->pid, traced_fd);
+			close (repl_fd);
+			//FIXME should we set the fd mapping to something impossible as -1
+			//i think i this way we do not mask programming errors
+		}
+		break;
 		default:
 			return -1;
 	}
@@ -365,8 +373,6 @@ void *produce (void *arg) {
 	while ( ! all_produced (shared_buff)) {
 		sem_wait(shared_buff->mutex);
 			frontier = shared_buff->frontier;
-			print_frontier(frontier);
-			printf("----------\n");
 			while (frontier != NULL) {
 				//dispatch children that was not dispatched yet
 				w_element = frontier->w_element;

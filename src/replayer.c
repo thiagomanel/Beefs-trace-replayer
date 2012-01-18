@@ -28,6 +28,10 @@
 #include <assert.h>
 
 #define PID_MAX 32768
+//FIXME: FD_MAX is a way to high. I doubt trace has a single pid so high.
+//maybe pre-process trace to uncover the biggest possible value ?
+#define FD_MAX 32768
+
 #define BUFF_SIZE   20
 #define DEBUG 1
 
@@ -37,6 +41,12 @@ int N_ITEMS;
 
 Replay_workload* workload;
 
+/**
+ * We cannot guarantee that a replayed call, e.g open, returns the same file
+ * descriptor than when it was traced becaused the value of file descriptors
+ * depends on operating system state.
+ */
+static int *pids_to_fd_pairs[PID_MAX];
 
 void print_w_element (Workflow_element* element) {
 	printf("w_element id=%d n_children=%d n_parent=%d produced=%d consumed=%d\n",
@@ -123,11 +133,6 @@ void print_frontier (struct frontier* frontier) {
 			frontier->next);
 		print_w_element(frontier->w_element);
 	}
-}
-
-void alloc_fd_array (int* pid_entry) {
-	pid_entry = (int*) malloc (PID_MAX * sizeof(int));
-	memset (pid_entry, -1, PID_MAX * sizeof(int));
 }
 
 typedef struct _sbuffs_t {
@@ -257,6 +262,27 @@ void mark_consumed (Workflow_element* element) {
 	element->consumed = 1;
 }
 
+/**
+ * Maps traced file descriptors to the real one returned during
+ * replay for each pid registered in trace calls.
+ */
+int replayed_fd (int traced_pid, int traced_fd) {
+	int* fds = pids_to_fd_pairs[traced_pid];
+	return fds[traced_fd];
+}
+
+void map_fd (int traced_pid, int traced_fd, int replayed_fd) {
+
+	if (!pids_to_fd_pairs[traced_pid]) {
+		//TODO: create a fuction to allocate and memset this ?
+		pids_to_fd_pairs[traced_pid] = (int*) malloc (FD_MAX * sizeof (int));
+		memset (pids_to_fd_pairs[traced_pid], -1, FD_MAX * sizeof(int));
+	}
+
+	int* fd_pairs = pids_to_fd_pairs[traced_pid];
+	fd_pairs[traced_fd] = replayed_fd;
+}
+
 int do_replay (struct replay_command* cmd) {
 
 	assert (cmd != NULL);
@@ -274,7 +300,21 @@ int do_replay (struct replay_command* cmd) {
 		}
 		break;
 		case OPEN_OP: {
-			open (args[0].argm->cprt_val, args[1].argm->i_val, args[2].argm->i_val);
+			int replayed_fd =
+					open (args[0].argm->cprt_val, args[1].argm->i_val, args[2].argm->i_val);
+
+			int traced_fd = cmd->expected_retval;
+			map_fd (cmd->caller->pid, traced_fd, replayed_fd);
+		}
+		break;
+		case READ_OP: {
+			int traced_fd = args[1].argm->i_val;
+			int repl_fd = replayed_fd (cmd->caller->pid, traced_fd);
+
+			//FIXME should share a big bufer to avoid malloc'ing time wasting ?
+			int read_count = args[2].argm->i_val;
+			char* buf = (char*) malloc (sizeof (char) * read_count);
+			read (repl_fd, buf, read_count);
 		}
 		break;
 		default:
@@ -301,7 +341,7 @@ void do_consume(Workflow_element* element) {
 		mark_consumed (element);
 		++shared_buff->consumed_count;
 	} else {
-		fprintf (stderr, "Error on replaying command type=%s\n",
+		fprintf (stderr, "Error on replaying command type=%d\n",
 				element->command->command);
 		exit (1);
 	}
@@ -325,6 +365,8 @@ void *produce (void *arg) {
 	while ( ! all_produced (shared_buff)) {
 		sem_wait(shared_buff->mutex);
 			frontier = shared_buff->frontier;
+			print_frontier(frontier);
+			printf("----------\n");
 			while (frontier != NULL) {
 				//dispatch children that was not dispatched yet
 				w_element = frontier->w_element;
@@ -424,6 +466,8 @@ int replay (Replay_workload* rep_workload, Replay_result* result) {
 	assert (result != NULL);
 	assert (rep_workload->num_cmds >= 0);
 
+	memset (pids_to_fd_pairs, 0, PID_MAX * sizeof (int*));
+
 	if (rep_workload->num_cmds > 0) {
 		assert (rep_workload->element_list != NULL);
 	}
@@ -471,7 +515,6 @@ int old_replay (Replay_workload* rep_workload, Replay_result* result) {
 			int pid_from_trace = cmd->caller->pid;
 
 			if (!pids[pid_from_trace]) {
-				//FIXME it is a way too big. maybe pre-process trace to uncover the biggest possible value
 				pids[pid_from_trace] = (int*) malloc(PID_MAX * sizeof(int));
 				alloc_fd_array(pids[pid_from_trace]);
 			}

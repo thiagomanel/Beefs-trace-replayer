@@ -317,6 +317,16 @@ int do_replay (struct replay_command* cmd) {
 			read (repl_fd, buf, read_count);
 		}
 		break;
+		case WRITE_OP: {
+			int traced_fd = args[1].argm->i_val;
+			int repl_fd = replayed_fd (cmd->caller->pid, traced_fd);
+
+			//FIXME should share a big bufer to avoid malloc'ing time wasting ?
+			int write_count = args[2].argm->i_val;
+			char* buf = (char*) malloc (sizeof (char) * write_count);
+			write (repl_fd, buf, write_count);
+		}
+		break;
 		case CLOSE_OP: {
 			int traced_fd = args[0].argm->i_val;
 			int repl_fd = replayed_fd (cmd->caller->pid, traced_fd);

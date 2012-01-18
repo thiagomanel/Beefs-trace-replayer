@@ -1098,6 +1098,30 @@ TEST(ReplayTest, 2_sequencial_command_mkdir) {
 	fclose(input_f);
 }
 
+//Wrote because our testing tool was saying that we are blocking on
+//workflow_single_command_open
+TEST(ReplayTest, sequencial_open_read_close_same_file) {
+
+	//3
+	//1 0 - 0 - 0 2097 2097 (udisks-daemon) open 1318539063003892-2505 workflow_samples/workflow_single_command_open 34816 0 7
+	//2 1 3 1 1 0 2097 2097 (udisks-daemon) read 1318539063004000-329 workflow_samples/workflow_single_command_open 7 5 5
+	//3 1 2 0 - 0 2097 2097 (udisks-daemon) close 1318539063006403-37 7 0
+	Replay_workload* rep_wld
+		= (Replay_workload*) malloc (sizeof (Replay_workload));
+	FILE * input_f = fopen("tests/replay_input/workflow_samples/workflow_sequencial_open_read_close_same_file", "r");
+	load(rep_wld, input_f);
+
+	Replay_result* actual_result = (Replay_result*) malloc (sizeof (Replay_result));
+	actual_result->replayed_commands = 0;
+	actual_result->produced_commands = 0;
+
+	replay (rep_wld, actual_result);
+
+	EXPECT_EQ (4, actual_result->replayed_commands);//boostrap + 3
+	EXPECT_EQ (4, actual_result->produced_commands);//boostrap + 2
+	fclose(input_f);
+}
+
 TEST(LoaderTest, ParseWorkflowElement) {
 	//uid pid tid exec_name mkdir begin-elapsed fullpath mode return
 	//1 0 - 1 2 1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /tmp/jdt-images-1 511 0

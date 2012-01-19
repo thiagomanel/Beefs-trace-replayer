@@ -174,6 +174,9 @@ typedef struct _sbuffs_t {
 sbuffs_t* shared_buff = (sbuffs_t*) malloc( sizeof(sbuffs_t));
 
 int all_produced (sbuffs_t* shared) {
+	printf ("all_produced -"
+			" shared->produced_count=%d shared->total_commands=%d\n",
+			shared->produced_count, shared->total_commands);
 	return (shared->produced_count >= shared->total_commands);
 }
 

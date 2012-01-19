@@ -1122,6 +1122,51 @@ TEST(ReplayTest, sequencial_open_read_close_same_file) {
 	fclose(input_f);
 }
 
+//Wrote because our testing tool was saying that we are blocking on
+//workflow_9_seq__mkdir_and_an_independent
+//This workflow pattern has two lines that have no parents (other than the fake
+//boostrappper added after loading), probably we are not handling this two special
+//lines correctly
+TEST(ReplayTest, workflow_9_seq__mkdir_and_an_independent) {
+
+/**
+ *  10
+	1 0 - 1 2 1159 2364 32311 (eclipse) mkdir 0-0 /tmp/jdt-images-1 511 0
+	2 1 1 1 3 1159 2364 32311 (eclipse) mkdir 1000000-0 /tmp/jdt-images-2 511 0
+	3 1 2 1 4 1159 2364 32311 (eclipse) mkdir 1000000-0 /tmp/jdt-images-3 511 0
+	4 1 3 1 5 1159 2364 32311 (eclipse) mkdir 1000000-0 /tmp/jdt-images-4 511 0
+	5 0 - 0 - 1159 2364 32311 (eclipse) mkdir 1000000-0 /tmp/jdt-images-5 511 0
+	6 1 5 1 7 1159 2364 32311 (eclipse) mkdir 1000000-0 /tmp/jdt-images-6 511 0
+	7 1 6 1 8 1159 2364 32311 (eclipse) mkdir 1000000-0 /tmp/jdt-images-7 511 0
+	8 1 7 1 9 1159 2364 32311 (eclipse) mkdir 1000000-0 /tmp/jdt-images-8 511 0
+	9 1 8 1 10 1159 2364 32311 (eclipse) mkdir 1000000-0 /tmp/jdt-images-9 511 0
+	10 1 9 1 11 1159 2364 32311 (eclipse) mkdir 1000000-0 /tmp/jdt-images-10 511
+ */
+	Replay_workload* rep_wld
+		= (Replay_workload*) malloc (sizeof (Replay_workload));
+	FILE * input_f = fopen("tests/replay_input/workflow_samples/workflow_9_seq__mkdir_and_an_independent", "r");
+	load(rep_wld, input_f);
+
+	Replay_result* actual_result = (Replay_result*) malloc (sizeof (Replay_result));
+	actual_result->replayed_commands = 0;
+	actual_result->produced_commands = 0;
+
+	//Bootstrap children [1, 5]
+	EXPECT_EQ(11, rep_wld->num_cmds);//boostrap + 1
+
+	//bootstraper
+	Workflow_element* w_element = element(rep_wld, 0);
+	EXPECT_EQ(0, w_element->id);
+	EXPECT_EQ(2, w_element->n_children);
+	EXPECT_EQ(0, w_element->n_parents);
+	int child_one = w_element->children_ids[0];
+	EXPECT_EQ(1, child_one);
+	int child_two = w_element->children_ids[1];
+	EXPECT_EQ(5, child_one);
+
+	fclose(input_f);
+}
+
 TEST(LoaderTest, ParseWorkflowElement) {
 	//uid pid tid exec_name mkdir begin-elapsed fullpath mode return
 	//1 0 - 1 2 1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /tmp/jdt-images-1 511 0

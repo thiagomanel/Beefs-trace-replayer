@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <assert.h>
 
 static struct lookuptab {
 	char *string;
@@ -364,12 +365,15 @@ int load (Replay_workload* replay_wld, FILE* input_file) {
 		}
 	}
 
+	replay_wld->current_cmd = 0;
+	replay_wld->num_cmds = loaded_commands;
+
 	if (loaded_commands > 1) {//ok, there is something to replay
 
 		//child that has no parents should become child of fake element
 		Workflow_element* root_element = element(replay_wld, 0);
 
-		//we are wasting a lot of memory (it is realeased soon), but is make thinks easy
+		//we are wasting a lot of memory, but is make thinks easy
 		int *orphans_ids = (int*) malloc (sizeof (int) * replay_wld->num_cmds);
 		root_element->n_children = orphans (orphans_ids, replay_wld);
 
@@ -382,24 +386,21 @@ int load (Replay_workload* replay_wld, FILE* input_file) {
 			//proud papa gets a new baby
 			root_element->children_ids[i] = orphans_ids[i];
 
-			//poor orphan baby get a new papa
+			//poor orphan baby gets a new papa
 			Workflow_element *child = element (replay_wld,
 												root_element->children_ids[i]);
 
-			assert ( !is_parent (root_element, child));
-			assert ( child->n_parents == 0);
+			assert (! is_parent (root_element, child));
+			assert (child->n_parents == 0);
+			assert (child->parents_ids == NULL);
 
-			//FIXME: don't we expect parent_ids to be null ? If so, we do not need
-			//realloc and code seems simpler
-			child->parents_ids
-					= (int*) realloc (child->parents_ids, child->n_parents + 1);
+			child->parents_ids = (int*) malloc (sizeof(int));
 			child->parents_ids[child->n_parents] = root_element->id;
 			child->n_parents++;
 		}
-	}
 
-	replay_wld->current_cmd = 0;
-	replay_wld->num_cmds = loaded_commands;
+		free (orphans_ids);
+	}
 
 	free (line);
 

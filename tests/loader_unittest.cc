@@ -1162,7 +1162,7 @@ TEST(ReplayTest, workflow_9_seq__mkdir_and_an_independent) {
 	int child_one = w_element->children_ids[0];
 	EXPECT_EQ(1, child_one);
 	int child_two = w_element->children_ids[1];
-	EXPECT_EQ(5, child_one);
+	EXPECT_EQ(5, child_two);
 
 	fclose(input_f);
 }

@@ -114,6 +114,8 @@ Workflow_element* element (Replay_workload* workload, int element_id);
 
 int is_child (Workflow_element* parent, Workflow_element* child);
 
+int is_parent (Workflow_element* parent, Workflow_element* child);
+
 /**
  * Replay result.
  * TODO: begin and end of each replayed call

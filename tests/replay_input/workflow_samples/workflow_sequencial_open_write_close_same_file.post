@@ -1,0 +1,2 @@
+#!/bin/sh
+rm -f /tmp/workflow_sequencial_open_write_close_same_file.data

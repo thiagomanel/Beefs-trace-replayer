@@ -120,6 +120,17 @@ int is_child (Workflow_element* parent, Workflow_element* child) {
 	return 0;
 }
 
+int is_parent(Workflow_element* parent, Workflow_element* child) {
+
+	int i;
+	for (i = 0; i < child->n_parents; i++) {
+		if (child->parents_ids[i] == parent->id) {
+			return 1;
+		}
+	}
+	return 0;
+}
+
 struct frontier {//we can use a generic list instead of this struct
 	struct workflow_element* w_element;
 	struct frontier* next;

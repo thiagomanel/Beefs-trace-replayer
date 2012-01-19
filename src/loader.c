@@ -274,7 +274,7 @@ void append(int* array, int array_size, int value_to_append) {
 //think resizing arrays smells bad, it necessary to insert the bootstrap element.
 void add_child (Replay_workload* workload, Workflow_element* parent,
 		Workflow_element* child) {
-	printf("adding child\n");
+
 	//assuming that is A is child of B, B is parent of A. So, everybody should
 	//modify child/parent arrays using the available functions, never directly
 	if (! is_child (parent, child)) {
@@ -286,6 +286,29 @@ void add_child (Replay_workload* workload, Workflow_element* parent,
 		append (child->parents_ids, child->n_parents, parent->id);
 		child->n_parents++;
 	}
+}
+
+/**
+ * Collect who are the orphans
+ *
+ * @param int *orphans_ids_result - An malloc'ed array to store the orphans' ids.
+ * 	It is ok to assume that we have enough space in this array.
+ * @param Replay_workload* repl_wld - A pointer to the Replay_workload we are
+ *	collecting the orphans
+ *
+ * @return the number of collected orphans
+ */
+int orphans (int *orphans_ids_result, Replay_workload* repl_wld)  {
+
+	int i;
+	int orphans_i = 0;
+	for (i = 1; i < repl_wld->num_cmds; i++) {
+		if ( element(repl_wld, i)->n_parents == 0 ) {
+			orphans_ids_result[orphans_i++] = i;
+		}
+	}
+
+	return orphans_i;
 }
 
 int load (Replay_workload* replay_wld, FILE* input_file) {
@@ -309,7 +332,8 @@ int load (Replay_workload* replay_wld, FILE* input_file) {
 
 			int num_commands_to_load = atoi (line);
 			replay_wld->element_list
-					= (Workflow_element*) malloc ((num_commands_to_load + 1) * sizeof (Workflow_element));
+					= (Workflow_element*) malloc ((num_commands_to_load + 1)
+													* sizeof (Workflow_element));
 
 			//A fake element is the workflow root
 			struct replay_command* root_cmd
@@ -343,20 +367,32 @@ int load (Replay_workload* replay_wld, FILE* input_file) {
 	if (loaded_commands > 1) {//ok, there is something to replay
 
 		//child that has no parents should become child of fake element
-		//For now, i'm attaching just the first child (2nd element in list)
-		Workflow_element* child = element(replay_wld, 1);
 		Workflow_element* root_element = element(replay_wld, 0);
-		root_element->children_ids = (int*) malloc (sizeof (int));
 
-		//root_element becomes children's parent
-		if (! is_child (root_element, child)) {
-			root_element->children_ids
-				= (int*) realloc (root_element->children_ids, root_element->n_children + 1);
-			root_element->children_ids[root_element->n_children] = child->id;
-			root_element->n_children++;
+		//we are wasting a lot of memory (it is realeased soon), but is make thinks easy
+		int *orphans_ids = (int*) malloc (sizeof (int) * replay_wld->num_cmds);
+		root_element->n_children = orphans (orphans_ids, replay_wld);
 
+		assert (root_element->children_ids == NULL);
+		root_element->children_ids =
+				(int*) malloc (sizeof (int) * root_element->n_children);
+
+		int i;
+		for (i = 0; i < root_element->n_children ; i++) {
+			//proud papa gets a new baby
+			root_element->children_ids[i] = orphans_ids[i];
+
+			//poor orphan baby get a new papa
+			Workflow_element *child = element (replay_wld,
+												root_element->children_ids[i]);
+
+			assert ( !is_parent (root_element, child));
+			assert ( child->n_parents == 0);
+
+			//FIXME: don't we expect parent_ids to be null ? If so, we do not need
+			//realloc and code seems simpler
 			child->parents_ids
-				= (int*) realloc (child->parents_ids, child->n_parents + 1);
+					= (int*) realloc (child->parents_ids, child->n_parents + 1);
 			child->parents_ids[child->n_parents] = root_element->id;
 			child->n_parents++;
 		}

@@ -45,12 +45,6 @@ then
     exit 1
 fi
 
-if [ -f $workload_input.pre ]
-then 
-    echo "Running setup $workload_input.pre"
-    $workload_input.pre
-fi
-
 #setup env. e.g create files and directories
 pre_replay
 

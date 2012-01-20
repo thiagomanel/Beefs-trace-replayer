@@ -56,8 +56,6 @@ typedef unsigned short op_t;
 
 #define ROOT_ID 0
 
-//TODO: timestamps
-//TODO: actual returned value
 typedef struct _caller {
 	int uid;
 	int pid;
@@ -79,6 +77,10 @@ struct replay_command {
 	op_t command;
 	Caller* caller;
 	Parms* params;
+
+	long traced_begin;
+	long traced_elapsed_time;
+
 	int expected_retval;
 };
 
@@ -87,10 +89,10 @@ typedef struct workflow_element {
 	struct replay_command* command;
 
 	int n_children;
-	int* children_ids;//we are going to hash w_elements
+	int* children_ids;
 
 	int n_parents;
-	int* parents_ids;//we are going to hash w_elements
+	int* parents_ids;
 
 	int produced;
 	int consumed;
@@ -98,11 +100,21 @@ typedef struct workflow_element {
 
 } Workflow_element;
 
+typedef struct _command_replay_result {
+	struct timeval *dispatch_end;
+} command_replay_result ;
+
 typedef struct replay_workload {
 	Workflow_element* element_list;
 	int num_cmds;
 	int current_cmd;
 } Replay_workload;
+
+typedef struct replay_result {
+	int replayed_commands;
+	int produced_commands;
+	command_replay_result* cmds_replay_result;
+} Replay_result;
 
 Workflow_element* alloc_workflow_element ();
 
@@ -116,18 +128,8 @@ int is_child (Workflow_element* parent, Workflow_element* child);
 
 int is_parent (Workflow_element* parent, Workflow_element* child);
 
-/**
- * Replay result.
- * TODO: begin and end of each replayed call
- * TODO: actual return value
- */
-typedef struct replay_result {
-	int replayed_commands;
-	int produced_commands;
-} Replay_result;
-
 void fill_replay_command (struct replay_command* cmd);
 
-int replay (Replay_workload* rep_workload, Replay_result* result);
+Replay_result* replay (Replay_workload* rep_workload);
 
 #endif /* _REPLAYER_H */

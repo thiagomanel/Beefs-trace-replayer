@@ -895,11 +895,7 @@ TEST(ReplayTest, SingleOperationReplay) {
 	FILE * input_f = fopen("tests/replay_input/workflow_samples/workflow_single_command_mkdir", "r");
 	load(rep_wld, input_f);
 
-	Replay_result* actual_result = (Replay_result*) malloc (sizeof (Replay_result));
-	actual_result->replayed_commands = 0;
-	actual_result->produced_commands = 0;
-
-	replay (rep_wld, actual_result);
+	Replay_result* actual_result = replay (rep_wld);
 
 	EXPECT_EQ (2, actual_result->replayed_commands);//boostrap + 1
 	EXPECT_EQ (2, actual_result->produced_commands);//boostrap + 1
@@ -920,11 +916,7 @@ TEST(ReplayTest, SingleOpenOperationReplay) {
 
 	load (rep_wld, input_f);
 
-	Replay_result* actual_result = (Replay_result*) malloc (sizeof (Replay_result));
-	actual_result->replayed_commands = 0;
-	actual_result->produced_commands = 0;
-
-	replay (rep_wld, actual_result);
+	Replay_result* actual_result = replay (rep_wld);
 
 	EXPECT_EQ (2, actual_result->replayed_commands);//boostrap + 1
 	EXPECT_EQ (2, actual_result->produced_commands);//boostrap + 1
@@ -1068,11 +1060,7 @@ TEST(ReplayTest, 2_sequencial_command_mkdir_parsing_skipped) {
 	element_two->parents_ids = (int*) malloc (sizeof (int));
 	element_two->parents_ids[0] = 1;
 
-	Replay_result* actual_result = (Replay_result*) malloc (sizeof (Replay_result));
-	actual_result->replayed_commands = 0;
-	actual_result->produced_commands = 0;
-
-	replay (rep_wld, actual_result);
+	Replay_result* actual_result = replay (rep_wld);
 
 	EXPECT_EQ (3, actual_result->replayed_commands);//boostrap + 2
 	EXPECT_EQ (3, actual_result->produced_commands);//boostrap + 2
@@ -1087,11 +1075,7 @@ TEST(ReplayTest, 2_sequencial_command_mkdir) {
 	FILE * input_f = fopen("tests/replay_input/workflow_samples/workflow_2_sequencial_command_mkdir", "r");
 	load(rep_wld, input_f);
 
-	Replay_result* actual_result = (Replay_result*) malloc (sizeof (Replay_result));
-	actual_result->replayed_commands = 0;
-	actual_result->produced_commands = 0;
-
-	replay (rep_wld, actual_result);
+	Replay_result* actual_result = replay (rep_wld);
 
 	EXPECT_EQ (3, actual_result->replayed_commands);//boostrap + 2
 	EXPECT_EQ (3, actual_result->produced_commands);//boostrap + 2
@@ -1111,11 +1095,7 @@ TEST(ReplayTest, sequencial_open_read_close_same_file) {
 	FILE * input_f = fopen("tests/replay_input/workflow_samples/workflow_sequencial_open_read_close_same_file", "r");
 	load(rep_wld, input_f);
 
-	Replay_result* actual_result = (Replay_result*) malloc (sizeof (Replay_result));
-	actual_result->replayed_commands = 0;
-	actual_result->produced_commands = 0;
-
-	replay (rep_wld, actual_result);
+	Replay_result* actual_result = replay (rep_wld);
 
 	EXPECT_EQ (4, actual_result->replayed_commands);//boostrap + 3
 	EXPECT_EQ (4, actual_result->produced_commands);//boostrap + 2

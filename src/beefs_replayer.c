@@ -36,9 +36,5 @@ int main (int argc, const char* argv[]) {
 		perror("Error loading trace\n");
 	}
 
-	Replay_result* actual_result = (Replay_result*) malloc (sizeof (Replay_result));
-	actual_result->replayed_commands = 0;
-	actual_result->produced_commands = 0;
-
-	replay (rep_wld, actual_result);
+	replay (rep_wld);
 }

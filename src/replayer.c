@@ -174,9 +174,6 @@ typedef struct _sbuffs_t {
 sbuffs_t* shared_buff = (sbuffs_t*) malloc( sizeof(sbuffs_t));
 
 int all_produced (sbuffs_t* shared) {
-	printf ("all_produced -"
-			" shared->produced_count=%d shared->total_commands=%d\n",
-			shared->produced_count, shared->total_commands);
 	return (shared->produced_count >= shared->total_commands);
 }
 
@@ -222,15 +219,16 @@ void frontier_append (Workflow_element* to_add) {
 			= (struct frontier*) malloc (sizeof (struct frontier));
 		fill_frontier (shared_buff->frontier);
 		shared_buff->frontier->w_element = to_add;
-	} else{
+	} else {
 		struct frontier* tmp = shared_buff->frontier;
 		while (tmp->next != NULL) {
 			tmp = tmp->next;
 		}
 
-		tmp = (struct frontier*) malloc (sizeof (struct frontier));
-		fill_frontier(tmp);
-		tmp->w_element = to_add;
+		tmp->next = (struct frontier*) malloc (sizeof (struct frontier));
+		fill_frontier(tmp->next);
+
+		tmp->next->w_element = to_add;
 	}
 }
 
@@ -420,12 +418,13 @@ void *produce (void *arg) {
 
 			//items come to the frontier after they have been consumed (dispatched)
 			for (i = 0; i <= shared_buff->last_consumed; i++) {
+
 				consumed = shared_buff->consumed_queue[i];
 				int parent_i;
 				for (parent_i = 0; parent_i < consumed->n_parents; parent_i++) {
 
 					Workflow_element* parent
-						= get_parent(workload, consumed, parent_i);
+						= get_parent (workload, consumed, parent_i);
 
 					//items left the frontier if its children were consumed (dispatched)
 					int all_children_consumed =
@@ -507,11 +506,14 @@ int replay (Replay_workload* rep_workload, Replay_result* result) {
 
 	sem_init(shared_buff->mutex, 0, 1);
 
-	pthread_t consumer, producer;
+	pthread_t consumer, consumer2, producer;
+
 	pthread_create (&producer, NULL, produce, 0);
 	pthread_create (&consumer, NULL, consume, 0);
+	pthread_create (&consumer2, NULL, consume, 0);
 
 	pthread_join(consumer, NULL);
+	pthread_join(consumer2, NULL);
 	pthread_join(producer, NULL);
 
 	result->produced_commands = shared_buff->produced_count;

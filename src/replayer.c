@@ -26,6 +26,7 @@
 #include <pthread.h>
 #include </usr/include/semaphore.h>
 #include <assert.h>
+#include <sys/time.h>
 
 #define PID_MAX 32768
 //FIXME: FD_MAX is a way to high. I doubt trace has a single pid so high.
@@ -40,6 +41,7 @@
 int N_ITEMS;
 
 Replay_workload* workload;
+Replay_result* result;
 
 /**
  * We cannot guarantee that a replayed call, e.g open, returns the same file
@@ -84,8 +86,6 @@ void fill_workflow_element (Workflow_element* element) {
 }
 
 void fill_replay_workload (Replay_workload* r_workload) {
-
-	//r_workload->cmd = NULL;
 	r_workload->current_cmd = -1;
 	r_workload->element_list = NULL;
 	r_workload->num_cmds = 1;
@@ -95,17 +95,21 @@ Workflow_element* element (Replay_workload* workload, int element_id) {//FIXME: 
 	return &(workload->element_list[element_id]);
 }
 
-//FIXME: these 2 methods below share a lot
-Workflow_element* get_child (Replay_workload* workload, Workflow_element* parent,
-		int child_index) {
+/**
+ * Return a pointer to the Replay_result struct which comes from the replay of the
+ * Workflow_element identified by w_element_id
+ */
+command_replay_result* replay_result (int w_element_id) {
+	return &(result->cmds_replay_result[w_element_id]);
+}
 
+//FIXME: these 2 methods below share a lot
+Workflow_element* get_child (Workflow_element* parent, int child_index) {
 	int child_id = parent->children_ids[child_index];
     return element(workload, child_id);
 }
 
-Workflow_element* get_parent (Replay_workload* workload, Workflow_element* child,
-		int parent_index) {
-
+Workflow_element* get_parent (Workflow_element* child, int parent_index) {
 	int parent_id = child->parents_ids[parent_index];
 	return element(workload, parent_id);
 }
@@ -174,6 +178,8 @@ typedef struct _sbuffs_t {
 sbuffs_t* shared_buff = (sbuffs_t*) malloc( sizeof(sbuffs_t));
 
 int all_produced (sbuffs_t* shared) {
+	printf ("all_produced shared->produced_count=%d shared->total_commands=%d\n",
+			shared->produced_count, shared->total_commands);
 	return (shared->produced_count >= shared->total_commands);
 }
 
@@ -364,11 +370,25 @@ void do_produce(Workflow_element* el_to_produce) {
 	++shared_buff->produced_count;
 }
 
-void do_consume(Workflow_element* element) {
+void fill_command_replay_result (command_replay_result *result) {
+	result->dispatch_end = NULL;
+}
+
+void stamp_replay_time (command_replay_result* cmd_result) {
+	assert (cmd_result != NULL);
+	fill_command_replay_result (cmd_result);
+	gettimeofday (cmd_result->dispatch_end, NULL);
+}
+
+void do_consume (Workflow_element* element) {
 
 	if (do_replay (element->command) == REPLAY_SUCCESS) {
+
 		shared_buff->consumed_queue[++shared_buff->last_consumed] = element;
+
 		mark_consumed (element);
+		stamp_replay_time (replay_result (element->id));
+
 		++shared_buff->consumed_count;
 	} else {
 		fprintf (stderr, "Error on replaying command type=%d\n",
@@ -400,8 +420,7 @@ void *produce (void *arg) {
 				w_element = frontier->w_element;
 				int chl_index;
 				for (chl_index = 0; chl_index < w_element->n_children; chl_index++) {
-					Workflow_element*
-						child = get_child (workload, w_element, chl_index);
+					Workflow_element* child = get_child (w_element, chl_index);
 					if (! produced (child)) {
 						do_produce (child);
 					}
@@ -409,8 +428,6 @@ void *produce (void *arg) {
 				frontier = frontier->next;
 			}
 		sem_post(shared_buff->mutex);
-
-		sleep(1);//FIXME remove this later
 
 		sem_wait(shared_buff->mutex);
 
@@ -423,8 +440,7 @@ void *produce (void *arg) {
 				int parent_i;
 				for (parent_i = 0; parent_i < consumed->n_parents; parent_i++) {
 
-					Workflow_element* parent
-						= get_parent (workload, consumed, parent_i);
+					Workflow_element* parent = get_parent (consumed, parent_i);
 
 					//items left the frontier if its children were consumed (dispatched)
 					int all_children_consumed =
@@ -445,26 +461,86 @@ void *produce (void *arg) {
 	}
 }
 
+/**
+ * Take a command from produced buffer
+ */
+Workflow_element* take () {
+	Workflow_element* cmd = shared_buff->produced_queue[shared_buff->last_produced];
+	--shared_buff->last_produced;
+	return cmd;
+}
+
+long delay_on_trace (struct replay_command* earlier,	struct replay_command* later) {
+	//assert negative, programming error
+	return 0;
+}
+
+long elapsed_to_now (struct timeval *timestamp) {
+
+	assert (timestamp != NULL);
+
+	struct timeval now;
+	gettimeofday (&now, NULL);
+    long us_elapsed = (now.tv_sec - timestamp->tv_sec) * 1000000
+    		+ (now.tv_usec - timestamp->tv_usec);
+
+    assert (us_elapsed >= 0);
+
+    return us_elapsed;
+}
+
+/**
+ * Returns the amount of microseconds since the replay of replay_command from
+ * Workflow_element identified by w_element_id
+FIXME: exceptional conditions ? such as command was not replayed yet ... at
+least it needs docs
+ */
+long elapsed_since_replay (command_replay_result* cmd_replay_result) {
+	assert (cmd_replay_result != NULL);
+	return elapsed_to_now (cmd_replay_result->dispatch_end);
+}
+
+
+/**
+ * This function returns the number of useconds a thread needs to wait before
+ * dispatching a command. It should wait to preserve the timing between itself
+ * and its parents described on trace data.
+	FIXME what if I don't have a parent ? :
+	FIXME take care or root's timestamp, it is not proper replayer.
+ */
+long delay (Workflow_element* to_replay) {
+	//FIXME what if I have two parents. I don't think it is possible in your data
+	//but our workflow allows it
+	Workflow_element* parent = get_parent (to_replay, 0);
+	command_replay_result* parent_cmd_result = replay_result (parent->id);
+    long dlay_trace = delay_on_trace (parent->command, to_replay->command);
+    long elapsed = elapsed_since_replay (parent_cmd_result);
+    printf ("dlay_trace=%d elapsed=%d\n", dlay_trace, elapsed);
+    return dlay_trace - elapsed;
+}
+
+/**
+ * 1.take a command C from produced queue
+ * 2.dispatch C
+ * 3.add C to consumed queue
+ */
 void *consume (void *arg) {
-
-	//FIXME I will add locks after code the algorithm
-	//(don't trust tips concerning locks below)
+	//FIXME don't trust tips concerning locks below
 	while ( ! all_consumed (shared_buff)) {
-		/*
-		 * 1.take a command C from produced queue
-		 * 2.dispatch C
-		 * 3.add C to consumed queue
-		*/
-		sem_wait(shared_buff->mutex);
-			if ( has_commands_to_consume (shared_buff)) {
-				Workflow_element* cmd
-					= shared_buff->produced_queue[shared_buff->last_produced];//take (i could move to a function)
-				--shared_buff->last_produced;
-				do_consume(cmd);
+		sem_wait (shared_buff->mutex);
+		if ( has_commands_to_consume (shared_buff)) {
+			//take (i could move to a function)
+			Workflow_element* cmd = take ();
+			long dlay = delay (cmd);
+			if (dlay > 0) {
+				sem_post (shared_buff->mutex);
+				printf ("usleeping delay%d\n", dlay);
+				usleep (dlay);
+				sem_wait (shared_buff->mutex);
 			}
-		sem_post(shared_buff->mutex);
-
-		sleep (1);
+			do_consume (cmd);
+		}
+		sem_post (shared_buff->mutex);
 	}
 }
 
@@ -487,12 +563,14 @@ void fill_shared_buffer (Replay_workload* workload, sbuffs_t* shared) {
 	//FIXME: cannot call add ?
 	shared->frontier->w_element = element(workload, ROOT_ID);
 	shared->frontier->next = NULL;
+
+	//stamping root
+	stamp_replay_time (replay_result (element->id));
 }
 
-int replay (Replay_workload* rep_workload, Replay_result* result) {
+Replay_result* replay (Replay_workload* rep_workload) {
 
 	assert (rep_workload != NULL);
-	assert (result != NULL);
 	assert (rep_workload->num_cmds >= 0);
 
 	memset (pids_to_fd_pairs, 0, PID_MAX * sizeof (int*));
@@ -502,6 +580,13 @@ int replay (Replay_workload* rep_workload, Replay_result* result) {
 	}
 
 	workload = rep_workload;
+
+	result = (Replay_result*) malloc (sizeof(Replay_result));
+	result->produced_commands = 0;
+	result->replayed_commands = 0;
+	result->cmds_replay_result = (command_replay_result*) malloc (
+			sizeof (command_replay_result) * workload->num_cmds);
+
 	fill_shared_buffer (workload, shared_buff);
 
 	sem_init(shared_buff->mutex, 0, 1);
@@ -518,5 +603,6 @@ int replay (Replay_workload* rep_workload, Replay_result* result) {
 
 	result->produced_commands = shared_buff->produced_count;
 	result->replayed_commands = shared_buff->consumed_count;
-	return -1;
+
+	return result;
 }

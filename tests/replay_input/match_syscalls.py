@@ -14,6 +14,9 @@ class Matcher:
        	expected_syscall = self.__parse__(replay_input_line)
         partial_matches = []
 	full_matches = []
+        #Since we now the syscalls were dispacthed by pthread we can make
+        #strace parse easier by using only calls that start by "[pid " token 
+        #e.g [pid 32237] mkdir("/tmp/jdt-images", 0777) = 0
         for called_syscall in self.replay_output_lines:
             (ok_call, ok_args, ok_rvalue) = self.__match__(expected_syscall, 
                                                            called_syscall)
@@ -92,7 +95,104 @@ class Matcher:
 	    return retvalue
         except IndexError:#strace can output bad-formatted strings (I saw no reason splitted lines)
 	    return ""
-	
+
+class WorkflowElement:
+
+    def __init__(self, my_id, parents_ids, children_ids, call):
+        self.my_id = my_id
+        self.parents_ids = parents_ids
+        self.children_ids = children_ids
+        self.call = calls
+
+class Workflow:
+
+    def __init__(replay_input_lines):
+        self.elements = {}
+        for line in replay_input_lines:
+            el = self.__build_element__(line)
+            self.elements[el.my_id] = el
+
+    def __parse_id__(self, tokens):
+        return (int(tokens[0]), tokens[1:])
+
+    def __parse_ids__(self, num_ids, line_tokens):
+        if num_ids:
+            return ([int(x) for x in line_tokens[0:num_ids]], token[num_ids])
+        else:
+            return ([], tokens[1:])
+
+    def __build_element__(self, line):
+        #our format is a piece of shit. Consuming tokens makes it easy to be parsed, that is the reason i'm returning a 
+	#new tokens collection
+        tokens = line.split()
+        (el_id, tokens) = self.__parse_id__(tokens)
+
+        num_parents = int(tokens[0])
+        tokens = tokens[1:]
+
+        (parents_ids, tokens) =  self.__parse_ids__(num_parents, tokens)
+
+        num_childs = int(tokens[0])
+        tokens = tokens[1:]
+        (children_ids, tokens) =  self.__parse_ids__(num_childs, tokens)
+
+        call = " ".join(tokens)
+        return WorkflowElement(el_id, parents_ids, children_ids, call)
+
+    def succ(self, el_id):
+        if (self.elements[el_id].children_ids):
+            _succ = [self.succ(child_id) for child_id in self.elements[el_id].children_ids]
+            return _succ.extend(self.elements[el_id].children_ids)
+        else:
+            return None
+
+    def pred(self, el_id):
+        if (self.elements[el_id].parents_ids):
+            _pred = [self.pred(parent_id) for parent_id in self.elements[el_id].parents_ids]
+            return _pred.extend(self.elements[el_id].parents_ids)
+        else:
+            return None
+
+"""
+    def __iter__(self):
+        return None
+    def next(self):
+        return None"""
+    
+
+class OrderMatcher:
+
+    def __init__(self, replay_output_path):
+        self.matcher = Matcher(open(replay_output_path).readlines())
+
+    def __map2output__(self, replay_input):
+        input2output = {}
+        for replay_line in replay_input:
+            line_2_match = " ".join(replay_line.split()[5:])
+            result = self.matcher.match(line_2_match, False)
+            if (not len(result) == 1):
+                raise Exception("Missing an one-to-one match for: " + replay_line)
+            (expected_call, actual_call, ok_call, ok_args, ok_rvalue) = result[0]
+            input2output[replay_line] = actual_call
+        return input2output
+
+    def __pred__(self, line, input_lines):
+        return None
+
+    def __succ__(self, input_line, output_lines):
+        return None
+
+    def __match_line__(input_line, output_lines):
+        return None
+
+    def match(self, replay_input_path):
+        result = []
+        replay_input = open(replay_input_path).readlines()[1:]
+        in2out = self.__map2output__(replay_input)
+        for r_input_line in self.__map2output__(replay_input).keys():#replace this for by a comprehension
+            result.append(self.__match_line__(r_input_line, ))
+        return result
+
 #
 if __name__ == "__main__":
     #FIXME: how to test timing and ordering ??

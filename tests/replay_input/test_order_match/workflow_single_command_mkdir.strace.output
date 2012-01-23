@@ -1,0 +1,27 @@
+open("/etc/ld.so.cache", O_RDONLY)      = 3
+close(3)                                = 0
+open("/lib/tls/i686/cmov/libpthread.so.0", O_RDONLY) = 3
+read(3, "\177ELF\1\1\1\0\0\0\0\0\0\0\0\0\3\0\3\0\1\0\0\0 J\0\0004\0\0\0"..., 512) = 512
+close(3)                                = 0
+open("/usr/lib/libstdc++.so.6", O_RDONLY) = 3
+read(3, "\177ELF\1\1\1\0\0\0\0\0\0\0\0\0\3\0\3\0\1\0\0\0000r\4\0004\0\0\0"..., 512) = 512
+close(3)                                = 0
+open("/lib/tls/i686/cmov/libm.so.6", O_RDONLY) = 3
+read(3, "\177ELF\1\1\1\0\0\0\0\0\0\0\0\0\3\0\3\0\1\0\0\0`4\0\0004\0\0\0"..., 512) = 512
+close(3)                                = 0
+open("/lib/libgcc_s.so.1", O_RDONLY)    = 3
+read(3, "\177ELF\1\1\1\0\0\0\0\0\0\0\0\0\3\0\3\0\1\0\0\0p#\0\0004\0\0\0"..., 512) = 512
+close(3)                                = 0
+open("/lib/tls/i686/cmov/libc.so.6", O_RDONLY) = 3
+read(3, "\177ELF\1\1\1\0\0\0\0\0\0\0\0\0\3\0\3\0\1\0\0\0000m\1\0004\0\0\0"..., 512) = 512
+close(3)                                = 0
+open("workflow_samples/workflow_single_command_mkdir", O_RDONLY) = 3
+read(3, "1\n1 0 - 0 - 1159 2364 32311 (ecl"..., 4096) = 87
+read(3, "", 4096)                       = 0
+Process 32236 attached
+Process 32236 detached
+Process 32237 attached
+[pid 32237] mkdir("/tmp/jdt-images", 0777) = 0
+Process 32238 attached
+Process 32237 detached
+Process 32238 detached

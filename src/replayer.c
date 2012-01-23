@@ -178,8 +178,6 @@ typedef struct _sbuffs_t {
 sbuffs_t* shared_buff = (sbuffs_t*) malloc( sizeof(sbuffs_t));
 
 int all_produced (sbuffs_t* shared) {
-	printf ("all_produced shared->produced_count=%d shared->total_commands=%d\n",
-			shared->produced_count, shared->total_commands);
 	return (shared->produced_count >= shared->total_commands);
 }
 
@@ -194,8 +192,7 @@ int has_commands_to_consume (sbuffs_t* shared) {
 //FIXME we can move this list method do an util list code outside replayer
 //FIXME this code can set the frontier to null, do we want this (because of this,
 //i had to modify _add method to malloc frontier when it is null
-struct frontier* _del (struct frontier* current,
-		Workflow_element* to_remove) {
+struct frontier* _del (struct frontier* current, Workflow_element* to_remove) {
 
 	if (current == NULL) {
 		return NULL;
@@ -292,7 +289,7 @@ int replayed_fd (int traced_pid, int traced_fd) {
 void map_fd (int traced_pid, int traced_fd, int replayed_fd) {
 
 	if (!pids_to_fd_pairs[traced_pid]) {
-		//TODO: create a fuction to allocate and memset this ?
+		//TODO: create a function to allocate and memset this ?
 		pids_to_fd_pairs[traced_pid] = (int*) malloc (FD_MAX * sizeof (int));
 		memset (pids_to_fd_pairs[traced_pid], -1, FD_MAX * sizeof(int));
 	}
@@ -304,7 +301,6 @@ void map_fd (int traced_pid, int traced_fd, int replayed_fd) {
 int do_replay (struct replay_command* cmd) {
 
 	assert (cmd != NULL);
-	printf ("do_replay cmd_type=%d\n", cmd->command);
 	Parms* args = cmd->params;
 
 	switch (cmd->command) {
@@ -371,7 +367,7 @@ void do_produce(Workflow_element* el_to_produce) {
 }
 
 void fill_command_replay_result (command_replay_result *result) {
-	result->dispatch_end = NULL;
+	result->dispatch_end = (struct timeval*) malloc (sizeof (struct timeval));
 }
 
 void stamp_replay_time (command_replay_result* cmd_result) {
@@ -500,22 +496,19 @@ long elapsed_since_replay (command_replay_result* cmd_replay_result) {
 	return elapsed_to_now (cmd_replay_result->dispatch_end);
 }
 
-
 /**
  * This function returns the number of useconds a thread needs to wait before
  * dispatching a command. It should wait to preserve the timing between itself
  * and its parents described on trace data.
-	FIXME what if I don't have a parent ? :
-	FIXME take care or root's timestamp, it is not proper replayer.
  */
 long delay (Workflow_element* to_replay) {
-	//FIXME what if I have two parents. I don't think it is possible in your data
-	//but our workflow allows it
+//FIXME what if I have two parents. I don't think it is possible in your data but our workflow allows it
+//FIXME what if I don't have a parent ? :
 	Workflow_element* parent = get_parent (to_replay, 0);
 	command_replay_result* parent_cmd_result = replay_result (parent->id);
+
     long dlay_trace = delay_on_trace (parent->command, to_replay->command);
     long elapsed = elapsed_since_replay (parent_cmd_result);
-    printf ("dlay_trace=%d elapsed=%d\n", dlay_trace, elapsed);
     return dlay_trace - elapsed;
 }
 
@@ -534,7 +527,6 @@ void *consume (void *arg) {
 			long dlay = delay (cmd);
 			if (dlay > 0) {
 				sem_post (shared_buff->mutex);
-				printf ("usleeping delay%d\n", dlay);
 				usleep (dlay);
 				sem_wait (shared_buff->mutex);
 			}
@@ -559,13 +551,12 @@ void fill_shared_buffer (Replay_workload* workload, sbuffs_t* shared) {
 
 	shared->frontier = (struct frontier*) malloc (sizeof (struct frontier));
 
-	//by construction, first element is the fake bootstrapper
 	//FIXME: cannot call add ?
 	shared->frontier->w_element = element(workload, ROOT_ID);
 	shared->frontier->next = NULL;
 
 	//stamping root
-	stamp_replay_time (replay_result (element->id));
+	stamp_replay_time (replay_result (ROOT_ID));
 }
 
 Replay_result* replay (Replay_workload* rep_workload) {

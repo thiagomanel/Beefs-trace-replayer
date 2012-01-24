@@ -1,26 +1,27 @@
-open("/etc/ld.so.cache", O_RDONLY)      = 3
-close(3)                                = 0
-open("/lib/tls/i686/cmov/libpthread.so.0", O_RDONLY) = 3
-read(3, "\177ELF\1\1\1\0\0\0\0\0\0\0\0\0\3\0\3\0\1\0\0\0 J\0\0004\0\0\0"..., 512) = 512
-close(3)                                = 0
-open("/usr/lib/libstdc++.so.6", O_RDONLY) = 3
-read(3, "\177ELF\1\1\1\0\0\0\0\0\0\0\0\0\3\0\3\0\1\0\0\0000r\4\0004\0\0\0"..., 512) = 512
-close(3)                                = 0
-open("/lib/tls/i686/cmov/libm.so.6", O_RDONLY) = 3
-read(3, "\177ELF\1\1\1\0\0\0\0\0\0\0\0\0\3\0\3\0\1\0\0\0`4\0\0004\0\0\0"..., 512) = 512
-close(3)                                = 0
-open("/lib/libgcc_s.so.1", O_RDONLY)    = 3
-read(3, "\177ELF\1\1\1\0\0\0\0\0\0\0\0\0\3\0\3\0\1\0\0\0p#\0\0004\0\0\0"..., 512) = 512
-close(3)                                = 0
-open("/lib/tls/i686/cmov/libc.so.6", O_RDONLY) = 3
-read(3, "\177ELF\1\1\1\0\0\0\0\0\0\0\0\0\3\0\3\0\1\0\0\0000m\1\0004\0\0\0"..., 512) = 512
-close(3)                                = 0
-open("workflow_samples/workflow_single_command_mkdir", O_RDONLY) = 3
-read(3, "1159 2364 32311 (eclipse) mkdir "..., 4096) = 75
-read(3, "", 4096)                       = 0
-Process 7816 attached
-Process 7817 attached (waiting for parent)
-Process 7817 resumed (parent 7815 ready)
-[pid  7817] mkdir("/tmp/jdt-images", 0777) = 0
-Process 7817 detached
-Process 7816 detached
+1327429172.293069 open("/etc/ld.so.cache", O_RDONLY) = 3
+1327429172.293261 close(3)              = 0
+1327429172.293370 open("/lib/tls/i686/cmov/libpthread.so.0", O_RDONLY) = 3
+1327429172.293444 read(3, "\177ELF\1\1\1\0\0\0\0\0\0\0\0\0\3\0\3\0\1\0\0\0 J\0\0004\0\0\0"..., 512) = 512
+1327429172.293700 close(3)              = 0
+1327429172.293789 open("/usr/lib/libstdc++.so.6", O_RDONLY) = 3
+1327429172.293859 read(3, "\177ELF\1\1\1\0\0\0\0\0\0\0\0\0\3\0\3\0\1\0\0\0000r\4\0004\0\0\0"..., 512) = 512
+1327429172.294138 close(3)              = 0
+1327429172.294233 open("/lib/tls/i686/cmov/libm.so.6", O_RDONLY) = 3
+1327429172.294302 read(3, "\177ELF\1\1\1\0\0\0\0\0\0\0\0\0\3\0\3\0\1\0\0\0`4\0\0004\0\0\0"..., 512) = 512
+1327429172.294536 close(3)              = 0
+1327429172.294630 open("/lib/libgcc_s.so.1", O_RDONLY) = 3
+1327429172.294691 read(3, "\177ELF\1\1\1\0\0\0\0\0\0\0\0\0\3\0\3\0\1\0\0\0p#\0\0004\0\0\0"..., 512) = 512
+1327429172.294870 close(3)              = 0
+1327429172.295127 open("/lib/tls/i686/cmov/libc.so.6", O_RDONLY) = 3
+1327429172.295192 read(3, "\177ELF\1\1\1\0\0\0\0\0\0\0\0\0\3\0\3\0\1\0\0\0000m\1\0004\0\0\0"..., 512) = 512
+1327429172.295444 close(3)              = 0
+1327429172.298868 open("workflow_samples/workflow_single_command_mkdir", O_RDONLY) = 3
+1327429172.299007 read(3, "1\n1 0 - 0 - 1159 2364 32311 (ecl"..., 4096) = 87
+1327429172.299083 read(3, "", 4096)     = 0
+Process 17767 attached
+Process 17768 attached
+Process 17769 attached
+[pid 17769] 1327429172.301389 mkdir("/tmp/jdt-images", 0777) = 0
+Process 17769 detached
+Process 17767 detached
+Process 17768 detached

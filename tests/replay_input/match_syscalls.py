@@ -122,8 +122,7 @@ class Workflow:
             return ([], tokens[1:])
 
     def __build_element__(self, line):
-        #our format is a piece of shit. Consuming tokens makes it easy to be parsed, that is the reason i'm returning a 
-	#new tokens collection
+#our format is a piece of shit. Consuming tokens makes it easy to be parsed, that is the reason i'm returning a new tokens collection
         tokens = line.split()
         (el_id, tokens) = self.__parse_id__(tokens)
 
@@ -152,48 +151,47 @@ class Workflow:
             return _pred.extend(self.elements[el_id].parents_ids)
         else:
             return None
+""" """
+def match_order(replay_input_path, replay_output_path):
 
-"""
-    def __iter__(self):
-        return None
-    def next(self):
-        return None"""
-    
+    class OrderMatcher:
 
-class OrderMatcher:
+        def __init__(self, replay_input, replay_output):
+            self.workflow = Workflow(replay_input)
+            self.input2output = self.__map2output__(replay_input, replay_output)
 
-    def __init__(self, replay_output_path):
-        self.matcher = Matcher(open(replay_output_path).readlines())
+        def __map2output__(self, replay_input, replay_output):
+            matcher = Matcher(replay_output)
+            input2output = {}
+            for replay_line in replay_input:
+                line_2_match = " ".join(replay_line.split()[5:])
+                result = matcher.match(line_2_match, False)
+                if (not len(result) == 1):
+                    raise Exception("Missing an one-to-one match for: " + replay_line)
+                (expected_call, actual_call, ok_call, ok_args, ok_rvalue) = result[0]
+                input2output[replay_line] = actual_call
+            return input2output
 
-    def __map2output__(self, replay_input):
-        input2output = {}
-        for replay_line in replay_input:
-            line_2_match = " ".join(replay_line.split()[5:])
-            result = self.matcher.match(line_2_match, False)
-            if (not len(result) == 1):
-                raise Exception("Missing an one-to-one match for: " + replay_line)
-            (expected_call, actual_call, ok_call, ok_args, ok_rvalue) = result[0]
-            input2output[replay_line] = actual_call
-        return input2output
+        def __pred__(self, line):
+            return None
 
-    def __pred__(self, line, input_lines):
-        return None
+        def __succ__(self, input_line, output_lines):
+            return None
 
-    def __succ__(self, input_line, output_lines):
-        return None
+        def __match_line__(input_line, output_lines):
+            return None
 
-    def __match_line__(input_line, output_lines):
-        return None
+        def match(self, replay_input, replay_output):
+            for input_line in replay_input:
+                pred = self.__pred__(input_line)
+            
+    replay_input = open(replay_input_path).readlines()[1:]
+    replay_output = open(replay_output_path).readlines()
+    matcher = OrderMatcher()
+    matcher.match(replay_input, replay_output)
+    return None
 
-    def match(self, replay_input_path):
-        result = []
-        replay_input = open(replay_input_path).readlines()[1:]
-        in2out = self.__map2output__(replay_input)
-        for r_input_line in self.__map2output__(replay_input).keys():#replace this for by a comprehension
-            result.append(self.__match_line__(r_input_line, ))
-        return result
-
-#
+""" """
 if __name__ == "__main__":
     #FIXME: how to test timing and ordering ??
     #python match_syscalls.py replay_strace_output replay_input -v

@@ -1,6 +1,6 @@
 import unittest
 from match_syscalls import Matcher
-from match_syscalls import OrderMatcher
+from match_syscalls import match_order
 
 class TestMatchSyscalls(unittest.TestCase):
 
@@ -27,8 +27,8 @@ class TestMatchSyscalls(unittest.TestCase):
         self.assertEquals(return_value, str(0))
 
     def test_match_ordering(self):
-        o_matcher = OrderMatcher("test_order_match/workflow_single_command_mkdir.strace.output")
-        matches = o_matcher.match("workflow_samples/workflow_single_command_mkdir")
+        matches = match_order("test_order_match/workflow_single_command_mkdir.strace.output", 
+                                  "workflow_samples/workflow_single_command_mkdir")
         
         self.assertEquals(len(matches), 1)# we have only 1 command in workflow_single_command_mkdir :)
         for (input_line, match_result, message) in matches:

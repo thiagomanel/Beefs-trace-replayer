@@ -52,33 +52,35 @@ def parse_replay_input(line):
 
 def parse_replay_output(line):
 
-    def retvalue(self, call):
+    def retvalue(call):
+    #it is possible to have more than one "=" in a strace output e.g stat, so taking the last token
         try:
-#it is possible to have more than one "=" in a strace output e.g stat, so taking the last token
             result_and_errors = call.split("=")[-1].strip()
             retvalue = result_and_errors.split(" ")[0].strip()
             return retvalue
         except IndexError:#strace can output bad-formatted strings (I saw no reason splitted lines)
             return ""
 
-def __call_args__(self, call):#buggy if arg string has ( or )
-    try:
-        par1_removed = call.split("(")[1]
-        args = par1_removed.split(")")[0]
-        args = args.split(",")
-        args = [x.strip("\" ") for x in args]
-        if self.__call_name__(call) == "stat":
-            del args [1:]
+    def args(call):#buggy if arg string has ( or )
+        try:
+            par1_removed = call.split("(")[1]
+            args = par1_removed.split(")")[0]
+            args = args.split(",")
+            args = [x.strip("\" ") for x in args]
+            if name(call) == "stat":#super ugly
+                del args [1:]
             return args
-    except IndexError:
-        return ""
+        except IndexError:
+            return ""
 
-def __call_name__(self, call):
-# due to attached process, strace output changes, i.e
-# [pid  7817] mkdir("/tmp/jdt-images", 0777) = 0
-# mkdir("/tmp/jdt-images", 0777) = 0
-    before_sep = call.split("(")[0]
-    return before_sep.split()[-1].strip()
+    def name(call):
+    # due to attached process, strace output changes, i.e
+    # [pid  7817] mkdir("/tmp/jdt-images", 0777) = 0
+    # mkdir("/tmp/jdt-images", 0777) = 0
+        before_sep = call.split("(")[0]
+        return before_sep.split()[-1].strip()
+
+    return (name(line), args(line), retvalue(line))
 
 class Matcher:
 	

@@ -7,7 +7,7 @@ class TestMatchSyscalls(unittest.TestCase):
 
     def test_mknod_match(self):
         matcher = Matcher(open("test_match/strace_mkdir").readlines())
-        results = matcher.match("1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /tmp/jdt-images 511 0", False)
+        results = matcher.match("1 0 - 0 - 1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /tmp/jdt-images 511 0", False)
 	#there is a single match -> [pid  7817] mkdir("/tmp/jdt-images", 0777) = 0
         self.assertEquals(len(results), 1)
         (expected_syscall, called_syscall, ok_call, ok_args, ok_rvalue) = results[0]
@@ -22,7 +22,7 @@ class TestMatchSyscalls(unittest.TestCase):
 
     def test_parse_mkdir_expected_call(self):
         matcher = Matcher(open("test_match/strace_mkdir").readlines())
-        (op, args, return_value) = parse_replay_input("1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /tmp/jdt-images 511 0")
+        (line_header, (op, args, return_value)) = parse_replay_input("1 0 - 0 - 1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /tmp/jdt-images 511 0")
         self.assertEquals(op, "mkdir")
         self.assertEquals(args, ["/tmp/jdt-images", oct(511)])
         self.assertEquals(return_value, str(0))

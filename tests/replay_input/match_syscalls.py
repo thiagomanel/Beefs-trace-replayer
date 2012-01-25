@@ -7,17 +7,48 @@ from fileutil import mode_and_flags
 #CALLS = ["mkdir", "open", "close", "read", "write"]
 
 def parse_replay_input(line):
-    tokens = line.split()
-    op = tokens[4]
-    args = tokens[6:-1]
-    return_value = tokens[-1]
-    if op == "mkdir":
-        args[-1] = str(oct(int(args[-1])))
-    elif op == "open":#FIXME TEST ME
-#we are assuming strace always prints access_mode before c_flags args is a 3 token str list e.g [/var/spool/cron/crontabs', '34816', '0'] we want the second token
-        flags_number = int(args[1])
-        args[1] = mode_and_flags(flags_number)
-    return (op, args, return_value)
+    #our format is a piece of shit. Consuming tokens makes it easy to be parsed
+
+    def parse_id(tokens):
+        return (int(tokens[0]), tokens[1:])
+
+    def parse_ids(num_ids, tokens):
+        if num_ids:
+            return ([int(x) for x in tokens[0:num_ids]], tokens[num_ids:])
+        else:
+            return ([], tokens[1:])
+
+    def parse_header(line):
+        tokens = line.split()
+        (el_id, tokens) = parse_id(tokens)
+
+        num_parents = int(tokens[0])
+        tokens = tokens[1:]
+
+        (parents_ids, tokens) =  parse_ids(num_parents, tokens)
+
+        num_childs = int(tokens[0])
+        tokens = tokens[1:]
+        (children_ids, tokens) = parse_ids(num_childs, tokens)
+
+        call = " ".join(tokens)
+        return ((el_id, parents_ids, children_ids), call)
+
+    def parse_call(line):
+        tokens = line.split()
+        op = tokens[4]
+        args = tokens[6:-1]
+        return_value = tokens[-1]
+        if op == "mkdir":
+            args[-1] = str(oct(int(args[-1])))
+        elif op == "open":#FIXME TEST ME
+	#we are assuming strace always prints access_mode before c_flags args is a 3 token str list e.g [/var/spool/cron/crontabs', '34816', '0'] we want the second token
+           flags_number = int(args[1])
+           args[1] = mode_and_flags(flags_number)
+        return (op, args, return_value)
+
+    (line_header, call) = parse_header(line)
+    return (line_header, parse_call(call))
 
 def parse_replay_output(line):
 
@@ -55,7 +86,7 @@ class Matcher:
 	self.replay_output_lines = replay_output_lines
 
     def match(self, replay_input_line, exclude_partial_matches=True):
-       	expected_syscall = parse_replay_input(replay_input_line)
+       	(line_header, expected_syscall) = parse_replay_input(replay_input_line)
         partial_matches = []
 	full_matches = []
         for called_syscall in self.replay_output_lines:
@@ -94,11 +125,12 @@ class Matcher:
 
 class WorkflowElement:
 
-    def __init__(self, my_id, parents_ids, children_ids, call):
+    def __init__(self, my_id, parents_ids, children_ids, call, line):
         self.my_id = my_id
         self.parents_ids = parents_ids
         self.children_ids = children_ids
         self.call = call
+        self.line = line
 
 class Workflow:
 
@@ -108,31 +140,9 @@ class Workflow:
             el = self.__build_element__(line)
             self.elements[el.my_id] = el
 
-    def __parse_id__(self, tokens):
-        return (int(tokens[0]), tokens[1:])
-
-    def __parse_ids__(self, num_ids, tokens):
-        if num_ids:
-            return ([int(x) for x in tokens[0:num_ids]], tokens[num_ids:])
-        else:
-            return ([], tokens[1:])
-
     def __build_element__(self, line):
-#our format is a piece of shit. Consuming tokens makes it easy to be parsed, that is the reason i'm returning a new tokens collection
-        tokens = line.split()
-        (el_id, tokens) = self.__parse_id__(tokens)
-
-        num_parents = int(tokens[0])
-        tokens = tokens[1:]
-
-        (parents_ids, tokens) =  self.__parse_ids__(num_parents, tokens)
-
-        num_childs = int(tokens[0])
-        tokens = tokens[1:]
-        (children_ids, tokens) =  self.__parse_ids__(num_childs, tokens)
-
-        call = " ".join(tokens)
-        return WorkflowElement(el_id, parents_ids, children_ids, call)
+        ((line_id, parents_ids, children_ids), call) = parse_replay_input(line)
+        return WorkflowElement(line_id, parents_ids, children_ids, call, line)
 
     def succ(self, el_id):
         if (self.elements[el_id].children_ids):
@@ -174,8 +184,8 @@ def match_order(replay_input_path, replay_output_path):
             matcher = Matcher(replay_output)
             input2output = {}
             for replay_line in replay_input:
-                line_2_match = " ".join(replay_line.split()[5:])
-                result = matcher.match(line_2_match, False)
+                #line_2_match = " ".join(replay_line.split()[5:])
+                result = matcher.match(replay_line, False)
                 if (not len(result) == 1):
                     raise Exception("Missing an one-to-one match for: " + replay_line)
                 (expected_call, actual_call, ok_call, ok_args, ok_rvalue) = result[0]

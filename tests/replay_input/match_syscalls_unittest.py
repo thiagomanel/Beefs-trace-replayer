@@ -16,7 +16,7 @@ class TestMatchSyscalls(unittest.TestCase):
         self.assertTrue(ok_rvalue)
 
     def test_parse_output_callname(self):
-        (op_name, args, r_value) = parse_replay_output("[pid 28475] mkdir(\"/tmp/jdt-images\", 0777) = 0")
+        (timestamp, op_name, args, r_value) = parse_replay_output("[pid 28475] 1327429172.301389 mkdir(\"/tmp/jdt-images\", 0777) = 0")
         self.assertEquals(op_name, "mkdir")
         self.assertEquals(args[0], "/tmp/jdt-images")
         self.assertEquals(args[1], "0777")

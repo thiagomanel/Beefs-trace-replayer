@@ -4,7 +4,50 @@ from fileutil import access_mode
 from fileutil import creation_flags
 from fileutil import mode_and_flags
 
-CALLS = ["mkdir", "open", "close", "read", "write"]
+#CALLS = ["mkdir", "open", "close", "read", "write"]
+
+def parse_replay_input(line):
+    tokens = line.split()
+    op = tokens[4]
+    args = tokens[6:-1]
+    return_value = tokens[-1]
+    if op == "mkdir":
+        args[-1] = str(oct(int(args[-1])))
+    elif op == "open":#FIXME TEST ME
+#we are assuming strace always prints access_mode before c_flags args is a 3 token str list e.g [/var/spool/cron/crontabs', '34816', '0'] we want the second token
+        flags_number = int(args[1])
+        args[1] = mode_and_flags(flags_number)
+    return (op, args, return_value)
+
+def parse_replay_output(line):
+
+    def retvalue(self, call):
+        try:
+#it is possible to have more than one "=" in a strace output e.g stat, so taking the last token
+            result_and_errors = call.split("=")[-1].strip()
+            retvalue = result_and_errors.split(" ")[0].strip()
+            return retvalue
+        except IndexError:#strace can output bad-formatted strings (I saw no reason splitted lines)
+            return ""
+
+def __call_args__(self, call):#buggy if arg string has ( or )
+    try:
+        par1_removed = call.split("(")[1]
+        args = par1_removed.split(")")[0]
+        args = args.split(",")
+        args = [x.strip("\" ") for x in args]
+        if self.__call_name__(call) == "stat":
+            del args [1:]
+            return args
+    except IndexError:
+        return ""
+
+def __call_name__(self, call):
+# due to attached process, strace output changes, i.e
+# [pid  7817] mkdir("/tmp/jdt-images", 0777) = 0
+# mkdir("/tmp/jdt-images", 0777) = 0
+    before_sep = call.split("(")[0]
+    return before_sep.split()[-1].strip()
 
 class Matcher:
 	
@@ -12,12 +55,9 @@ class Matcher:
 	self.replay_output_lines = replay_output_lines
 
     def match(self, replay_input_line, exclude_partial_matches=True):
-       	expected_syscall = self.__parse__(replay_input_line)
+       	expected_syscall = parse_replay_input(replay_input_line)
         partial_matches = []
 	full_matches = []
-        #Since we now the syscalls were dispacthed by pthread we can make
-        #strace parse easier by using only calls that start by "[pid " token 
-        #e.g [pid 32237] mkdir("/tmp/jdt-images", 0777) = 0
         for called_syscall in self.replay_output_lines:
             (ok_call, ok_args, ok_rvalue) = self.__match__(expected_syscall, 
                                                            called_syscall)
@@ -36,66 +76,21 @@ class Matcher:
             return full_matches + partial_matches
 
     def __match__(self, exp_call, actual_call):
-        return (self.__match_call_name__(exp_call[0], 
-                                         self.__call_name__(actual_call)), 
-                self.__match_args__(exp_call[1], 
-                                    self.__call_args__(actual_call)), 
-                self.__match_retvalue__(exp_call[2], 
-                                        self.__retvalue__(actual_call))
+        (exp_op, exp_args, exp_r_value) = exp_call
+        (actual_op, actual_args, actual_r_value) = exp_call
+        return (self.__match_call_name__(exp_op, actual_op), 
+                self.__match_args__(exp_args, actual_args), 
+                self.__match_retvalue__(exp_r_value, actual_r_value)
                )
-
-    def __parse__(self, replay_input_line):#naive case, a single input call in a input file
-        tokens = replay_input_line.split()
-        op = tokens[4]
-        args = tokens[6:-1]
-        return_value = tokens[-1]
-        if op == "mkdir":
-	    args[-1] = str(oct(int(args[-1])))
-        elif op == "open":#FIXME TEST ME
-	    #we are assuming strace always prints access_mode before c_flags
-            #args is a 3 token str list e.g [/var/spool/cron/crontabs', '34816', '0']
-            #    we want the second token
-            flags_number = int(args[1])
-            args[1] = mode_and_flags(flags_number)
     
-        return (op, args, return_value)
-
     def __match_call_name__(self, exp_call_name, actual_call_name):
         return exp_call_name == actual_call_name
 
-    def __call_name__(self, call):
-	# due to attached process, strace output changes, i.e
-	# [pid  7817] mkdir("/tmp/jdt-images", 0777) = 0
-	# mkdir("/tmp/jdt-images", 0777) = 0
-        before_sep = call.split("(")[0]
-	return before_sep.split()[-1].strip()
-
     def __match_args__(self, exp_args, actual_args):
         return exp_args == actual_args
-
-    def __call_args__(self, call):#buggy if arg string has ( or )
-        try:
-	    par1_removed = call.split("(")[1]
-	    args = par1_removed.split(")")[0]
-	    args = args.split(",")
-	    args = [x.strip("\" ") for x in args]
-	    if self.__call_name__(call) == "stat":
-	        del args [1:]
-	    return args
-        except IndexError:
-	    return ""
-
+    
     def __match_retvalue__(self, exp_rval, actual_rval):
         return exp_rval == actual_rval
-
-    def __retvalue__(self, call):
-        try:
-	    #it is possible to have more than one "=" in a strace output e.g stat, so taking the last token
-	    result_and_errors = call.split("=")[-1].strip()
-	    retvalue = result_and_errors.split(" ")[0].strip()
-	    return retvalue
-        except IndexError:#strace can output bad-formatted strings (I saw no reason splitted lines)
-	    return ""
 
 class WorkflowElement:
 

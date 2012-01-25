@@ -1,6 +1,7 @@
 import unittest
 from match_syscalls import Matcher
 from match_syscalls import match_order
+from match_syscalls import *
 
 class TestMatchSyscalls(unittest.TestCase):
 
@@ -21,7 +22,7 @@ class TestMatchSyscalls(unittest.TestCase):
 
     def test_parse_mkdir_expected_call(self):
         matcher = Matcher(open("test_match/strace_mkdir").readlines())
-        (op, args, return_value) = matcher.__parse__("1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /tmp/jdt-images 511 0")
+        (op, args, return_value) = parse_replay_input("1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /tmp/jdt-images 511 0")
         self.assertEquals(op, "mkdir")
         self.assertEquals(args, ["/tmp/jdt-images", oct(511)])
         self.assertEquals(return_value, str(0))

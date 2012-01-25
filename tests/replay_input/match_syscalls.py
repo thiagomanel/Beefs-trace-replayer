@@ -250,11 +250,11 @@ if __name__ == "__main__":
     matcher = Matcher(replay_strace_output)
 
     for replay_line in replay_input:
-	line_2_match = " ".join(replay_line.split()[5:])
+	line_2_match = " ".join(replay_line.split())
         result = matcher.match(line_2_match, not verbose)
 	for (expected_call, actual_call, ok_call, ok_args, ok_rvalue) in result:
 	    print '[RUN]\texpected={expected}\tactual={actual}'.format(expected=expected_call, actual=actual_call)
-  	    print '\tactual\t{actual}'.format(actual=actual_call.strip())
+  	    print '\tactual\t{actual}'.format(actual=actual_call)
 	    print '\tcall_name\t{ok_name}'.format(ok_name=ok_call)
 	    print '\targs\t{ok_args}'.format(ok_args=ok_args)
 	    print '\trvalue\t{ok_rvalue}\n'.format(ok_rvalue=ok_rvalue)

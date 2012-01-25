@@ -17,7 +17,7 @@ pre_replay()
 
 replay()
 {
-    strace -ttt -f -e trace=open,close,read,write,mkdir,stat64  $replayer_path $workload_input 2> strace.output
+    strace -ttt -f -e trace=open,close,read,write,mkdir,stat64 -o strace.output $replayer_path $workload_input
     sed -i 's/stat64/stat/g' strace.output
     python match_syscalls.py $verbose strace.output $workload_input
 }

@@ -5,6 +5,8 @@ from match_syscalls import *
 
 class TestMatchSyscalls(unittest.TestCase):
 
+    # we to match, if it is ok then we do order match, if it ok then we do timing match
+
     def test_mknod_match(self):
         matcher = Matcher(open("test_match/strace_mkdir").readlines())
         results = matcher.match("1 0 - 0 - 1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /tmp/jdt-images 511 0", False)
@@ -37,6 +39,13 @@ class TestMatchSyscalls(unittest.TestCase):
         for (input_line, match_result, message) in matches:
              self.assertEquals("1 0 - 0 - 1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /tmp/jdt-images 511 0", input_line)
              self.assertTrue(match_result)
+
+    def test_match_timing_single_command(self):
+        r_input = ["1 0 - 0 - 1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /tmp/jdt-images 511 0"]
+        r_output = ["[pid 28475] 1327429172.301389 mkdir(\"/tmp/jdt-images\", 0777) = 0"]
+        matches = match_timing(r_input, r_output)
+        self.assertEquals(len(matches), 1)
+        #assert match content TODO:
 
 
 if __name__ == '__main__':

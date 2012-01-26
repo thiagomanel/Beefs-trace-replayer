@@ -237,6 +237,9 @@ def match_order(replay_input_path, replay_output_path):
     matcher = OrderMatcher(Workflow(replay_input), input_id2output)
     return matcher.match()
 
+def match_timing(input_lines, output_lines):
+    return []
+
 """ """
 if __name__ == "__main__":
     #FIXME: how to test timing and ordering ??

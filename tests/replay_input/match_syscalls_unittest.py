@@ -26,10 +26,10 @@ class TestMatchSyscalls(unittest.TestCase):
 
     def test_parse_mkdir_expected_call(self):
         matcher = Matcher(open("test_match/strace_mkdir").readlines())
-        (line_header, (op, args, return_value)) = parse_replay_input("1 0 - 0 - 1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /tmp/jdt-images 511 0")
-        self.assertEquals(op, "mkdir")
-        self.assertEquals(args, ["/tmp/jdt-images", oct(511)])
-        self.assertEquals(return_value, str(0))
+        r_input = parse_replay_input("1 0 - 0 - 1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /tmp/jdt-images 511 0")
+        self.assertEquals(r_input.op, "mkdir")
+        self.assertEquals(r_input.args, ["/tmp/jdt-images", oct(511)])
+        self.assertEquals(r_input.return_value, str(0))
 
     def test_match_ordering(self):
         matches = match_order("workflow_samples/workflow_single_command_mkdir", 
@@ -45,8 +45,69 @@ class TestMatchSyscalls(unittest.TestCase):
         r_output = ["[pid 28475] 1327429172.301389 mkdir(\"/tmp/jdt-images\", 0777) = 0"]
         matches = match_timing(r_input, r_output)
         self.assertEquals(len(matches), 1)
-        #assert match content TODO:
+        (input_call, replayed_call, match, message) = matches[0]
+        self.assertEquals(input_call, r_input[0])
+        self.assertEquals(replayed_call, r_output[0])
+        self.assertEquals(match, True)
+        self.assertEquals(message, "")
 
+    def __input_timestamp__(self, first, second):
+        return "-".join([str(first), str(second)])
+
+    def __output_timestamp__(self, first, second):
+        return ".".join([str(first), str(second)])
+
+    def test_match_timing_two_sequencial_command_with_zero_delta(self):
+
+        input_delay = 479
+        r_input = ["1 0 - 1 2 1159 2364 32311 (eclipse) mkdir " + self.__input_timestamp__(10, 0) + " /tmp/jdt-images-1 511 0",
+                   "2 1 1 0 - 1159 2364 32311 (eclipse) mkdir " + self.__input_timestamp__(10, input_delay) + " /tmp/jdt-images-2 511 0"]
+
+	
+        r_output = ["[pid 28475] " + self.__output_timestamp__(0, 0) + " mkdir(\"/tmp/jdt-images-1\", 0777) = 0",
+                       "[pid 28475] " + self.__output_timestamp__(0, input_delay) + " mkdir(\"/tmp/jdt-images-2\", 0777) = 0"]
+
+        #missing the third parameter means delta == 0
+        matches = match_timing(r_input, r_output)
+        self.assertEquals(len(matches), 2)
+
+        (input_call, replayed_call, match, message) = matches[0]
+        self.assertEquals(input_call, r_input[0])
+        self.assertEquals(replayed_call, r_output[0])
+        self.assertEquals(match, True)
+        self.assertEquals(message, "")
+
+        (input_call, replayed_call, match, message) = matches[1]
+        self.assertEquals(input_call, r_input[1])
+        self.assertEquals(replayed_call, r_output[1])
+        self.assertEquals(match, True)
+        self.assertEquals(message, "")
+
+    def test_mismatch_timing_two_sequencial_command_with_zero_delta(self):
+
+        input_delay = 479
+        r_input = ["1 0 - 1 2 1159 2364 32311 (eclipse) mkdir " + self.__input_timestamp__(10, 0) + " /tmp/jdt-images-1 511 0",
+                   "2 1 1 0 - 1159 2364 32311 (eclipse) mkdir " + self.__input_timestamp__(10, input_delay) + " /tmp/jdt-images-2 511 0"]
+
+        mismatch = -1
+        r_output = ["[pid 28475] " + self.__output_timestamp__(0, 0) + " mkdir(\"/tmp/jdt-images-1\", 0777) = 0",
+                       "[pid 28475] " + self.__output_timestamp__(0, input_delay + mismatch) + " mkdir(\"/tmp/jdt-images-2\", 0777) = 0"]
+
+        #missing the third parameter means delta == 0
+        matches = match_timing(r_input, r_output)
+        self.assertEquals(len(matches), 2)
+
+        (input_call, replayed_call, match, message) = matches[0]
+        self.assertEquals(input_call, r_input[0])
+        self.assertEquals(replayed_call, r_output[0])
+        self.assertEquals(match, True)
+        self.assertEquals(message, "")
+
+        (input_call, replayed_call, match, message) = matches[1]
+        self.assertEquals(input_call, r_input[1])
+        self.assertEquals(replayed_call, r_output[1])
+        self.assertEquals(match, False)
+        self.assertEquals(message, "mismatch timing. amount=" + mismatch)
 
 if __name__ == '__main__':
     unittest.main()

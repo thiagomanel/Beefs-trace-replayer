@@ -20,19 +20,21 @@ def filter_and_clean_attached_calls(replayed_lines):
     return map(clean_attached_call, 
                filter(lambda x: x.startswith("[pid"), replayed_lines))
 
-def parse_replay_input(line):
+class Replay_Input:#ugly but helps me
 
-    class Replay_Input:#ugly but helps me
-        def __init__(self, el_id, parents_ids, children_ids, timestamp, op, 
-                     args, return_value, original_line):
-            self.el_id = el_id
-            self.parents_ids = parents_ids
-            self.children_ids = children_ids
-            self.timestamp = timestamp
-            self.op = op
-            self.args = args
-            self.return_value = return_value
-            self.original_line = original_line
+    def __init__(self, el_id, parents_ids, children_ids, timestamp, op, 
+                 args, return_value, original_line):
+        self.el_id = el_id
+        self.parents_ids = parents_ids
+        self.children_ids = children_ids
+        self.begin_us = timestamp[0]
+        self.end_us = timestamp[0] + timestamp[1]
+        self.op = op
+        self.args = args
+        self.return_value = return_value
+        self.original_line = original_line
+
+def parse_replay_input(line):
 
     def parse_id(tokens):
         return (int(tokens[0]), tokens[1:])
@@ -163,39 +165,54 @@ class Matcher:
         return exp_rval == actual_rval
 
 
-class WorkflowElement:
-
-    def __init__(self, replay_input):#ugly but helps me
-        self.r_input = replay_input
-
 class Workflow:
-    def __init__(self, replay_input_lines):
-        self.elements = dict((el.r_input.el_id, el) 
-                             for el in map(self.__build__, replay_input_lines))
+    
+    FAKE_ROOT_ID = 0
 
-    def __build__(self, line):
-        return WorkflowElement(parse_replay_input(line))
+    def __init__(self, replay_input_lines):
+        self.__root = Replay_Input(self.FAKE_ROOT_ID, [], [], (0, 0), "fake_op", 
+                                 None, None, "fake_line")
+
+        tmp_elements = [parse_replay_input(line) for line in replay_input_lines]
+        if not all([element.el_id for element in tmp_elements]):
+            raise Exception("An input line with id equals to zero was found")
+
+        map(self.__bind_root_as_parent__, filter(self.__orphan__, tmp_elements))
+        
+        self.__elements = dict((el.el_id, el) for el in tmp_elements)
+        self.__elements[self.FAKE_ROOT_ID] = self.__root
+
+    def __bind_root_as_parent__(self, element):
+        element.parents_ids.append(self.__root.el_id)
+        self.__root.children_ids.append(element.el_id)
+
+    def __orphan__(self, element):
+        return element.parents_ids
+
+    def element(self, element_id):
+        return self.__elements[element_id]
+
+    def __iter__(self):
+        return self.__elements.values().__iter__()
 
     def succ(self, el_id):
-        if (self.elements[el_id].r_input.children_ids):
+        if (self.element(el_id).children_ids):
             _succ = [self.succ(child_id) 
-                     for child_id in self.elements[el_id].r_input.children_ids]
-            return _succ.extend(self.elements[el_id].r_input.children_ids)
+                     for child_id in self.element(el_id).children_ids]
+            return _succ.extend(self.element(el_id).children_ids)
         else:
             return []
 
     def pred(self, el_id):
-        if (self.elements[el_id].r_input.parents_ids):
+        if (self.element(el_id).parents_ids):
             _pred = [self.pred(parent_id) 
-                     for parent_id in self.elements[el_id].r_input.parents_ids]
-            return _pred.extend(self.elements[el_id].r_input.parents_ids)
+                     for parent_id in self.element(el_id).parents_ids]
+            return _pred.extend(self.element(el_id).parents_ids)
         else:
             return []
 
     def root(self):
-        #wrong. we are assuming too much, it not true input_lines always starts with 1, also
-        #i think we should code the fake root FIXME
-        return self.elements[1]
+        return self.element(self.FAKE_ROOT_ID)
 
 """ """
 def match_order(replay_input_path, replay_output_path):
@@ -237,14 +254,15 @@ def match_order(replay_input_path, replay_output_path):
 
         def match(self):
             result = []
-            for (el_id, el) in self.__workflow.elements.iteritems():#FIXME: it would be nice to have Workflow implementing iter protocol
-                pred_ids = self.__workflow.pred(el_id)
-                succ_ids = self.__workflow.succ(el_id)
-                result.append([el.r_input.original_line,
-                              self.__after__(self.__output__([el_id]), 
+            for _id in [element.el_id for element in self.__workflow 
+                                          if not element is self.__workflow.root()]:
+                pred_ids = self.__workflow.pred(_id)
+                succ_ids = self.__workflow.succ(_id)
+                result.append([self.__workflow.element(_id).original_line,
+                              self.__after__(self.__output__([_id]), 
                                              self.__output__(pred_ids))
                               and
-                              self.__before__(self.__output__([el_id]),
+                              self.__before__(self.__output__([_id]),
                                               self.__output__(succ_ids)),
                               ""])
             return result
@@ -261,18 +279,16 @@ def match_order(replay_input_path, replay_output_path):
 def match_timing(input_lines, output_lines):
 
     def __child__(el_id):
-        return workflow.elements[el_id]
+        return workflow.element(el_id)
 
     def input_delay(one, two):
-        #FIXME we have to consider both 2 elements
-        #we can make timestamp as an object with a cmp method
-        return one.timestamp[1] - two.timestamp[1]
+        return one.end_us - two.end_us
 
-    def output_delay(one, two):
+    def output_delay(one, two):#FIXME
         return one.timestamp[1] - two.timestamp[1]
 
     def __output__(r_input):
-        return workflow.elements[r_input.el_id].r_input
+        return workflow.element(r_input.el_id)#FIXME it return input instead of out
 
     """ match input_ont against input_two
         returning a (input_line, replayed_line, match, message) tuple
@@ -287,17 +303,17 @@ def match_timing(input_lines, output_lines):
         return abs( input_delay(input_one, input_two) 
                     - output_delay( __output__(input_one), __output__(input_two)))                                         <= delta 
 
-    def visit(element):
-        children = map(__child__, element.r_input.children_ids)
-        my_check = [match(element.r_input, child.r_input) for child in children]
+    def visit(replay_input):
+        children = map(__child__, replay_input.children_ids)
+        my_check = [match(replay_input, child) for child in children]
         my_check.extend(map(visit, children))
         return my_check
 
     delta = 0
     replay_output = filter_and_clean_attached_calls(output_lines)
     workflow = Workflow(input_lines)
-    return visit(workflow.root())
-    #return [(in_line, out_line, True, "") for (in_line, out_line) in zip(input_lines, output_lines)]
+    root_input = workflow.root()
+    return visit(root_input)
 
 """ """
 if __name__ == "__main__":

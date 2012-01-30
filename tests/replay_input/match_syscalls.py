@@ -80,20 +80,35 @@ def parse_replay_input(line):
     (timestamp, op, args, return_value) = parse_call(call)
     return Replay_Input(el_id, parents_ids, children_ids, timestamp, op, args, return_value, line)
 
-def parse_replay_output(line):
-# [pid 17769] 1327429172.301389 mkdir("/tmp/jdt-images", 0777) = 0
 
-# timestamp = (long(1327429172), long(301389))
-# name = "mkdir"
-# args ["/tmp/jdt-images", "0777"]
-# retvalue = "0"
+class ReplayOutput:
+
+    def __init__(self, timestamp, name, args, retvalue):
+        self.timestamp = timestamp
+        self.name = name
+        self.args = args
+        self.retvalue = retvalue
+
+    def __str__(self):
+        return " ".join([str(self.timestamp), self.name, str(self.args), str(self.retvalue)])
+
+"""
+[pid 17769] 1327429172.301389 mkdir("/tmp/jdt-images", 0777) = 0
+
+timestamp = (long(1327429172), long(301389))
+name = "mkdir"
+args ["/tmp/jdt-images", "0777"]
+retvalue = "0"
+"""
+def parse_replay_output(line):
+
     def timestamp(call):
         stamp_str = call.split("(")[0].split()[-2].strip()
-        seconds_and_nanos = stamp_str.split(".")
-        return map(long, seconds_and_nanos)
+        seconds_and_micros = stamp_str.split(".")
+        return map(long, seconds_and_micros)
 
     def retvalue(call):
-    #it is possible to have more than one "=" in a strace output e.g stat, so taking the last token
+        #it is possible to have more than one "=" in a strace output e.g stat, so taking the last token
         try:
             result_and_errors = call.split("=")[-1].strip()
             retvalue = result_and_errors.split(" ")[0].strip()
@@ -117,21 +132,19 @@ def parse_replay_output(line):
         before_sep = call.split("(")[0]
         return before_sep.split()[-1].strip()
 
-    return (timestamp(line), name(line), args(line), retvalue(line))
+    return ReplayOutput(timestamp(line), name(line), args(line), retvalue(line))
 
 class Matcher:
 	
-    def __init__(self, replay_output_lines):
-	self.replayed_calls = [parse_replay_output(outputline) 
-                                  for outputline in replay_output_lines]
+    def __init__(self, replay_output):
+	self.replayed_calls = replay_output
 
-    def match(self, replay_input_line, exclude_partial_matches=True):
+    def match(self, replay_input, exclude_partial_matches=True):
         partial_matches = []
 	full_matches = []
-       	r_input = parse_replay_input(replay_input_line)
-        expected_syscall = (r_input.op, r_input.args, r_input.return_value)
+        expected_syscall = (replay_input.op, replay_input.args, replay_input.return_value)
         for actual_syscall in self.replayed_calls:
-            (ok_call, ok_args, ok_rvalue) = self.__match__(expected_syscall, 
+            (ok_call, ok_args, ok_rvalue) = self.__match__(expected_syscall,
                                                            actual_syscall)
             if all((ok_call, ok_args, ok_rvalue)):
                 full_matches.append([expected_syscall,
@@ -149,10 +162,9 @@ class Matcher:
 
     def __match__(self, exp_call, actual_call):
         (exp_op, exp_args, exp_r_value) = exp_call
-        (timestamp, actual_op, actual_args, actual_r_value) = actual_call
-        return (self.__match_call_name__(exp_op, actual_op), 
-                self.__match_args__(exp_args, actual_args), 
-                self.__match_retvalue__(exp_r_value, actual_r_value)
+        return (self.__match_call_name__(exp_op, actual_call.name), 
+                self.__match_args__(exp_args, actual_call.args), 
+                self.__match_retvalue__(exp_r_value, actual_call.retvalue)
                )
     
     def __match_call_name__(self, exp_call_name, actual_call_name):
@@ -169,28 +181,34 @@ class Workflow:
     
     FAKE_ROOT_ID = 0
 
-    def __init__(self, replay_input_lines):
+    def __init__(self, replay_input):
         self.__root = Replay_Input(self.FAKE_ROOT_ID, [], [], (0, 0), "fake_op", 
                                  None, None, "fake_line")
 
-        tmp_elements = [parse_replay_input(line) for line in replay_input_lines]
-        if not all([element.el_id for element in tmp_elements]):
+        if not all([element.el_id for element in replay_input]):
             raise Exception("An input line with id equals to zero was found")
 
-        map(self.__bind_root_as_parent__, filter(self.__orphan__, tmp_elements))
+        map(self.__bind_root_as_parent__, filter(self.__orphan__, replay_input))
         
-        self.__elements = dict((el.el_id, el) for el in tmp_elements)
+        self.__elements = dict((el.el_id, el) for el in replay_input)
+        self.__root.timestamp = self.__eldest__().end_us
         self.__elements[self.FAKE_ROOT_ID] = self.__root
 
     def __bind_root_as_parent__(self, element):
         element.parents_ids.append(self.__root.el_id)
         self.__root.children_ids.append(element.el_id)
 
+    def __eldest__(self):
+        return min(self.__elements.values(), key=lambda x:x.end_us)
+
     def __orphan__(self, element):
         return element.parents_ids
 
     def element(self, element_id):
         return self.__elements[element_id]
+
+    def elements(self):
+        return self.__elements.values()
 
     def __iter__(self):
         return self.__elements.values().__iter__()
@@ -214,20 +232,21 @@ class Workflow:
     def root(self):
         return self.element(self.FAKE_ROOT_ID)
 
-""" """
-def match_order(replay_input_path, replay_output_path):
 
-    def in2out(replay_input, replay_output):#we can remove from this class to the upper level
-        matcher = Matcher(replay_output)
-        input_id2output = {}
-        for replay_line in replay_input:
-            result = matcher.match(replay_line, False)
-            if (not len(result) == 1):
-               raise Exception("Missing an one-to-one match for: " + replay_line)
-            (expected_call, actual_call, ok_call, ok_args, ok_rvalue) = result[0]
-            line_id = parse_replay_input(replay_line).el_id
-            input_id2output[line_id] = actual_call
-        return input_id2output
+def in2out(replay_input, replay_output):
+    matcher = Matcher(replay_output)
+    input_id2output = {}
+    for r_input in replay_input:
+        result = matcher.match(r_input, True)
+        if (not len(result) == 1):
+           raise Exception("Missing an one-to-one match for: " + r_input.original_line)
+        (expected_call, actual_call, ok_call, ok_args, ok_rvalue) = result[0]
+        line_id = r_input.el_id
+        input_id2output[line_id] = actual_call
+    return input_id2output
+
+
+def match_order(replay_input_path, replay_output_path):
 
     class OrderMatcher:
 
@@ -240,16 +259,13 @@ def match_order(replay_input_path, replay_output_path):
 
         """ Assert that target_line was replayed before all test_lines """
         def __before__(self, target_line, test_lines):
-            target_stamp = self.__timestamp__(target_line)
-            test_stamps = [self.__timestamp__(line) for line in test_lines]
+            target_stamp = target_line.timestamp
+            test_stamps = [line.timestamp for line in test_lines]
             return all([(target_stamp < stamp) for stamp in test_stamps])
 
-        def __timestamp__(self, output):
-            return output[0][0]#ugly FIXME
-
         def __after__(self, target_output, test_outputs):#duplicated code with before FIXME
-            target_stamp = self.__timestamp__(target_output)
-            test_stamps = [self.__timestamp__(line) for line in test_outputs]
+            target_stamp = target_output.timestamp
+            test_stamps = [line.timestamp for line in test_outputs]
             return all([(target_stamp > stamp) for stamp in test_stamps])#does it work ? FIXME
 
         def match(self):
@@ -259,18 +275,22 @@ def match_order(replay_input_path, replay_output_path):
                 pred_ids = self.__workflow.pred(_id)
                 succ_ids = self.__workflow.succ(_id)
                 result.append([self.__workflow.element(_id).original_line,
-                              self.__after__(self.__output__([_id]), 
+                              self.__after__(self.__output__([_id])[0], 
                                              self.__output__(pred_ids))
                               and
-                              self.__before__(self.__output__([_id]),
+                              self.__before__(self.__output__([_id])[0],
                                               self.__output__(succ_ids)),
                               ""])
             return result
                             
             
-    replay_input = [line.strip() for line in open(replay_input_path).readlines()[1:]]
-    replay_output = filter_and_clean_attached_calls([line.strip() 
-                                      for line in open(replay_output_path).readlines()])
+    replay_input = [parse_replay_input(line.strip()) 
+                    for line in open(replay_input_path).readlines()[1:]]
+
+    replay_output = [parse_replay_output(clean_output) 
+                     for clean_output in 
+                     filter_and_clean_attached_calls(
+                         [line.strip() for line in open(replay_output_path).readlines()])]
 
     input_id2output = in2out(replay_input, replay_output)
     matcher = OrderMatcher(Workflow(replay_input), input_id2output)
@@ -278,41 +298,52 @@ def match_order(replay_input_path, replay_output_path):
 
 def match_timing(input_lines, output_lines):
 
-    def __child__(el_id):
-        return workflow.element(el_id)
+    def fake_replay_output(replay_input):
+        #convert from in.timestamp to out.timestamp FIXME
+        return ReplayOutput(replay_input.end_us, "FAKE", replay_input.args,
+                            replay_input.return_value)
 
     def input_delay(one, two):
         return one.end_us - two.end_us
 
-    def output_delay(one, two):#FIXME
-        return one.timestamp[1] - two.timestamp[1]
+    def output_delay(one, two):
+        return one.timestamp - two.timestamp
 
-    def __output__(r_input):
-        return workflow.element(r_input.el_id)#FIXME it return input instead of out
+    def output(r_input):
+        return input_id2output[r_input.el_id]
 
-    """ match input_ont against input_two
-        returning a (input_line, replayed_line, match, message) tuple
+    """ 
+    match input_ont against input_two
+    returning a (input_line, replayed_line, match, message) tuple
     """
     def match(input_one, input_two):
         return (input_two.original_line,
-                str(__output__(input_two)),
+                str(output(input_two)),
                 assert_timing(input_one, input_two),
                 "")
 
     def assert_timing(input_one, input_two):
         return abs( input_delay(input_one, input_two) 
-                    - output_delay( __output__(input_one), __output__(input_two)))                                         <= delta 
+                    - output_delay(output(input_one), output(input_two))) <= delta 
 
     def visit(replay_input):
-        children = map(__child__, replay_input.children_ids)
+        children = map(workflow.element, replay_input.children_ids)
         my_check = [match(replay_input, child) for child in children]
         my_check.extend(map(visit, children))
         return my_check
 
     delta = 0
-    replay_output = filter_and_clean_attached_calls(output_lines)
-    workflow = Workflow(input_lines)
+
+    replay_input = [parse_replay_input(line) for line in input_lines]
+    replay_output = [parse_replay_output(clean_output) 
+                     for clean_output in 
+                     filter_and_clean_attached_calls(output_lines)]
+
+    workflow = Workflow(replay_input)
+    input_id2output = in2out(replay_input, replay_output)
+    #we need both in and out fakes in timing match
     root_input = workflow.root()
+    input_id2output[root_input.el_id] = fake_replay_output(root_input)
     return visit(root_input)
 
 """ """

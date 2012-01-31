@@ -41,8 +41,14 @@ class TestMatchSyscalls(unittest.TestCase):
              self.assertTrue(match_result)
 
     def test_match_timing_single_command(self):
-        r_input = ["1 0 - 0 - 1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /tmp/jdt-images 511 0"]
-        r_output = ["[pid 28475] 1327429172.301389 mkdir(\"/tmp/jdt-images\", 0777) = 0"]
+        input_lines = ["1 0 - 0 - 1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /tmp/jdt-images 511 0"]
+        output_lines = ["[pid 28475] 1327429172.301389 mkdir(\"/tmp/jdt-images\", 0777) = 0"]
+
+        r_input = [parse_replay_input(line) for line in input_lines]
+        r_output = [parse_replay_output(clean_output)
+                         for clean_output in
+                         filter_and_clean_attached_calls(output_lines)]
+
         matches = match_timing(r_input, r_output)
         self.assertEquals(len(matches), 1)
         (input_call, replayed_call, match, message) = matches[0]
@@ -60,26 +66,31 @@ class TestMatchSyscalls(unittest.TestCase):
     def test_match_timing_two_sequencial_command_with_zero_delta(self):
 
         input_delay = 479
-        r_input = ["1 0 - 1 2 1159 2364 32311 (eclipse) mkdir " + self.__input_timestamp__(10, 0) + " /tmp/jdt-images-1 511 0",
+        input_lines = ["1 0 - 1 2 1159 2364 32311 (eclipse) mkdir " + self.__input_timestamp__(10, 0) + " /tmp/jdt-images-1 511 0",
                    "2 1 1 0 - 1159 2364 32311 (eclipse) mkdir " + self.__input_timestamp__(10, input_delay) + " /tmp/jdt-images-2 511 0"]
 
 	
-        r_output = ["[pid 28475] " + self.__output_timestamp__(0, 0) + " mkdir(\"/tmp/jdt-images-1\", 0777) = 0",
+        output_lines = ["[pid 28475] " + self.__output_timestamp__(0, 0) + " mkdir(\"/tmp/jdt-images-1\", 0777) = 0",
                        "[pid 28475] " + self.__output_timestamp__(0, input_delay) + " mkdir(\"/tmp/jdt-images-2\", 0777) = 0"]
+
+        r_input = [parse_replay_input(line) for line in input_lines]
+        r_output = [parse_replay_output(clean_output)
+                         for clean_output in
+                         filter_and_clean_attached_calls(output_lines)]
 
         #missing the third parameter means delta == 0
         matches = match_timing(r_input, r_output)
         self.assertEquals(len(matches), 2)
 
         (input_call, replayed_call, match, message) = matches[0]
-        self.assertEquals(input_call, r_input[0])
-        self.assertEquals(replayed_call, r_output[0])
+        self.assertEquals(input_call, r_input[0].original_line)
+        self.assertEquals(replayed_call, str(r_output[0]))
         self.assertEquals(match, True)
         self.assertEquals(message, "")
 
         (input_call, replayed_call, match, message) = matches[1]
-        self.assertEquals(input_call, r_input[1])
-        self.assertEquals(replayed_call, r_output[1])
+        self.assertEquals(input_call, r_input[1].original_line)
+        self.assertEquals(replayed_call, str(r_output[1]))
         self.assertEquals(match, True)
         self.assertEquals(message, "")
 
@@ -93,20 +104,24 @@ class TestMatchSyscalls(unittest.TestCase):
         out_lines = ["[pid 28475] " + self.__output_timestamp__(0, 0) + " mkdir(\"/tmp/jdt-images-1\", 0777) = 0",
                     "[pid 28475] " + self.__output_timestamp__(0, input_delay + mismatch) + " mkdir(\"/tmp/jdt-images-2\", 0777) = 0"]
 
+        r_input = [parse_replay_input(line) for line in in_lines]
+        r_output = [parse_replay_output(clean_output)
+                         for clean_output in
+                         filter_and_clean_attached_calls(out_lines)]
 
         #missing the third parameter means delta == 0
-        matches = match_timing(in_lines, out_lines)
+        matches = match_timing(r_input, r_output)
         self.assertEquals(len(matches), 2)
 
         (input_call, replayed_call, match, message) = matches[0]
-        self.assertEquals(input_call, in_lines[0])
-        self.assertEquals(replayed_call, out_lines[0])
+        self.assertEquals(input_call, r_input[0].original_line)
+        self.assertEquals(replayed_call, str(r_output[0]))
         self.assertEquals(match, True)
         self.assertEquals(message, "")
 
         (input_call, replayed_call, match, message) = matches[1]
-        self.assertEquals(input_call, in_lines[1])
-        self.assertEquals(replayed_call, out_lines[1])
+        self.assertEquals(input_call, r_input[1].original_line)
+        self.assertEquals(replayed_call, str(r_output[1]))
         self.assertEquals(match, False)
         self.assertEquals(message, "mismatch timing. amount=" + mismatch)
 

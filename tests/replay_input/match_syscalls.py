@@ -202,7 +202,7 @@ class Workflow:
         return min(self.__elements.values(), key=lambda x:x.end_us)
 
     def __orphan__(self, element):
-        return element.parents_ids
+        return not element.parents_ids
 
     def element(self, element_id):
         return self.__elements[element_id]
@@ -223,9 +223,11 @@ class Workflow:
 
     def pred(self, el_id):
         if (self.element(el_id).parents_ids):
-            _pred = [self.pred(parent_id) 
-                     for parent_id in self.element(el_id).parents_ids]
-            return _pred.extend(self.element(el_id).parents_ids)
+            _pred = []
+            for parent_id in self.element(el_id).parents_ids:
+                _pred.extend(self.pred(parent_id)) 
+            _pred.extend(self.element(el_id).parents_ids)
+            return _pred
         else:
             return []
 
@@ -247,6 +249,7 @@ def in2out(replay_input, replay_output):
 
 
 def match_order(replay_input_path, replay_output_path):
+#should be receive a string list instead of paths ?
 
     class OrderMatcher:
 
@@ -272,8 +275,12 @@ def match_order(replay_input_path, replay_output_path):
             result = []
             for _id in [element.el_id for element in self.__workflow 
                                           if not element is self.__workflow.root()]:
+
                 pred_ids = self.__workflow.pred(_id)
+                if Workflow.FAKE_ROOT_ID in pred_ids: pred_ids.remove(Workflow.FAKE_ROOT_ID)
                 succ_ids = self.__workflow.succ(_id)
+                if Workflow.FAKE_ROOT_ID in succ_ids: succ_ids.remove(Workflow.FAKE_ROOT_ID)
+
                 result.append([self.__workflow.element(_id).original_line,
                               self.__after__(self.__output__([_id])[0], 
                                              self.__output__(pred_ids))
@@ -293,21 +300,34 @@ def match_order(replay_input_path, replay_output_path):
                          [line.strip() for line in open(replay_output_path).readlines()])]
 
     input_id2output = in2out(replay_input, replay_output)
-    matcher = OrderMatcher(Workflow(replay_input), input_id2output)
+    workflow = Workflow(replay_input)
+    matcher = OrderMatcher(workflow, input_id2output)
+    root_input = workflow.root()
+    input_id2output[root_input.el_id] = fake_replay_output(root_input)
     return matcher.match()
 
-def match_timing(input_lines, output_lines):
+def fake_replay_output(replay_input):
+    #convert from in.timestamp to out.timestamp FIXME
+    return ReplayOutput((replay_input.end_us, replay_input.end_us), 
+                        "FAKE",
+                        replay_input.args,
+                        replay_input.return_value)
 
-    def fake_replay_output(replay_input):
-        #convert from in.timestamp to out.timestamp FIXME
-        return ReplayOutput(replay_input.end_us, "FAKE", replay_input.args,
-                            replay_input.return_value)
+def match_timing(replay_input, replay_output):
 
     def input_delay(one, two):
         return one.end_us - two.end_us
 
     def output_delay(one, two):
-        return one.timestamp - two.timestamp
+        """
+        seconds since epoch.microseconds
+        1328016624.544599 fstat64(3, {st_mode=S_IFREG|0644, st_size=256324, ...}) = 0
+        1328016624.544687 mmap2(NULL, 256324, PROT_READ, MAP_PRIVATE, 3, 0) = 0xb766b000
+        """
+        def us_since_epoch(output_stamp):
+            return (output_stamp[0] * 1000000 + output_stamp[1])
+
+        return us_since_epoch(one.timestamp) - us_since_epoch(two.timestamp)
 
     def output(r_input):
         return input_id2output[r_input.el_id]
@@ -324,24 +344,20 @@ def match_timing(input_lines, output_lines):
 
     def assert_timing(input_one, input_two):
         return abs( input_delay(input_one, input_two) 
-                    - output_delay(output(input_one), output(input_two))) <= delta 
+                    - output_delay(output(input_one), 
+                                   output(input_two))) <= delta 
 
     def visit(replay_input):
-        children = map(workflow.element, replay_input.children_ids)
+        children = [workflow.element(child_id) 
+                    for child_id in replay_input.children_ids]
         my_check = [match(replay_input, child) for child in children]
         my_check.extend(map(visit, children))
         return my_check
 
     delta = 0
 
-    replay_input = [parse_replay_input(line) for line in input_lines]
-    replay_output = [parse_replay_output(clean_output) 
-                     for clean_output in 
-                     filter_and_clean_attached_calls(output_lines)]
-
     workflow = Workflow(replay_input)
     input_id2output = in2out(replay_input, replay_output)
-    #we need both in and out fakes in timing match
     root_input = workflow.root()
     input_id2output[root_input.el_id] = fake_replay_output(root_input)
     return visit(root_input)

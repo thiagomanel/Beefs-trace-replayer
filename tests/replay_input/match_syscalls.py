@@ -351,7 +351,10 @@ def match_timing(replay_input, replay_output):
         children = [workflow.element(child_id) 
                     for child_id in replay_input.children_ids]
         my_check = [match(replay_input, child) for child in children]
-        my_check.extend(map(visit, children))
+        for child in children:
+            child_check = visit(child)
+            if child_check:
+                my_check.extend(child_check)
         return my_check
 
     delta = 0

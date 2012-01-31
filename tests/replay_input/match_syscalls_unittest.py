@@ -50,10 +50,11 @@ class TestMatchSyscalls(unittest.TestCase):
                          filter_and_clean_attached_calls(output_lines)]
 
         matches = match_timing(r_input, r_output)
+	
         self.assertEquals(len(matches), 1)
         (input_call, replayed_call, match, message) = matches[0]
-        self.assertEquals(input_call, r_input[0])
-        self.assertEquals(replayed_call, r_output[0])
+        self.assertEquals(input_call, r_input[0].original_line)
+        self.assertEquals(replayed_call, str(r_output[0]))
         self.assertEquals(match, True)
         self.assertEquals(message, "")
 

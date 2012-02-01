@@ -191,7 +191,10 @@ class Workflow:
         map(self.__bind_root_as_parent__, filter(self.__orphan__, replay_input))
         
         self.__elements = dict((el.el_id, el) for el in replay_input)
-        self.__root.timestamp = self.__eldest__().end_us
+
+        self.__root.begin_us = self.__eldest__().begin_us
+        self.__root.end_us = self.__eldest__().end_us
+
         self.__elements[self.FAKE_ROOT_ID] = self.__root
 
     def __bind_root_as_parent__(self, element):
@@ -308,7 +311,7 @@ def match_order(replay_input_path, replay_output_path):
 
 def fake_replay_output(replay_input):
     #convert from in.timestamp to out.timestamp FIXME
-    return ReplayOutput((replay_input.end_us, replay_input.end_us), 
+    return ReplayOutput((replay_input.end_us , replay_input.end_us),
                         "FAKE",
                         replay_input.args,
                         replay_input.return_value)

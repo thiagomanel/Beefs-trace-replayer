@@ -56,7 +56,7 @@ class TestMatchSyscalls(unittest.TestCase):
         self.assertEquals(input_call, r_input[0].original_line)
         self.assertEquals(replayed_call, str(r_output[0]))
         self.assertEquals(match, True)
-        self.assertEquals(message, "")
+        self.assertEquals(message, str(0))
 
     def __input_timestamp__(self, first, second):
         return "-".join([str(first), str(second)])
@@ -87,13 +87,13 @@ class TestMatchSyscalls(unittest.TestCase):
         self.assertEquals(input_call, r_input[0].original_line)
         self.assertEquals(replayed_call, str(r_output[0]))
         self.assertEquals(match, True)
-        self.assertEquals(message, "")
+        self.assertEquals(message, str(0))
 
         (input_call, replayed_call, match, message) = matches[1]
         self.assertEquals(input_call, r_input[1].original_line)
         self.assertEquals(replayed_call, str(r_output[1]))
         self.assertEquals(match, True)
-        self.assertEquals(message, "")
+        self.assertEquals(message, str(0))
 
     def test_mismatch_timing_two_sequencial_command_with_zero_delta(self):
 
@@ -118,13 +118,13 @@ class TestMatchSyscalls(unittest.TestCase):
         self.assertEquals(input_call, r_input[0].original_line)
         self.assertEquals(replayed_call, str(r_output[0]))
         self.assertEquals(match, True)
-        self.assertEquals(message, "")
+        self.assertEquals(message, str(0))
 
         (input_call, replayed_call, match, message) = matches[1]
         self.assertEquals(input_call, r_input[1].original_line)
         self.assertEquals(replayed_call, str(r_output[1]))
         self.assertEquals(match, False)
-        self.assertEquals(message, "mismatch timing. amount=" + mismatch)
+        self.assertEquals(message, str(mismatch))
 
 if __name__ == '__main__':
     unittest.main()

@@ -253,6 +253,10 @@ def in2out(replay_input, replay_output):
 
 def match_order(replay_input_path, replay_output_path):
 #should be receive a string list instead of paths ?
+    """
+    A call respect order when it was dispatched before its successors
+    and after its antecessors
+    """
 
     class OrderMatcher:
 
@@ -317,7 +321,9 @@ def fake_replay_output(replay_input):
                         replay_input.return_value)
 
 def match_timing(replay_input, replay_output):
-
+    """
+    A replayed call respect timing when ...
+    """
     def input_delay(one, two):
         return one.end_us - two.end_us
 
@@ -340,15 +346,20 @@ def match_timing(replay_input, replay_output):
     returning a (input_line, replayed_line, match, message) tuple
     """
     def match(input_one, input_two):
+        (match, mismatch_amount) = assert_timing(input_one, input_two)
         return (input_two.original_line,
                 str(output(input_two)),
-                assert_timing(input_one, input_two),
-                "")
+                match,
+                str(mismatch_amount))
 
     def assert_timing(input_one, input_two):
-        return abs( input_delay(input_one, input_two) 
-                    - output_delay(output(input_one), 
-                                   output(input_two))) <= delta 
+        if input_one.el_id is Workflow.FAKE_ROOT_ID:
+            return (True, 0)
+        else:
+            mismatch = input_delay(input_one, input_two) - output_delay(
+                                                             output(input_one),  
+                                                             output(input_two))
+            return (abs(mismatch) <= delta, mismatch)
 
     def visit(replay_input):
         children = [workflow.element(child_id) 

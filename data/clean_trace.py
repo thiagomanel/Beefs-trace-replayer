@@ -3,13 +3,26 @@ import sys
 
 HOME = "/home"
 
+#        "vfs_rmdir",
+#      "vfs_getattr",
+#    "sys_lstat",#sys_lstat64
+#   "sys_fstat", #sys_fstat64
 
-#"vfs_unlink",
- #        "vfs_rmdir",
-   #      "vfs_getattr",
-    #     "sys_stat",#sys_stat64
-     #    "sys_lstat",#sys_lstat64
-      #   "sys_fstat", #sys_fstat64
+def clean(lines_tokens):
+
+    def call(tokens):
+        return tokens[4]
+       
+    cleaned = []
+    for tokens in lines_tokens:
+        _call = call(tokens)
+        if _call == "sys_stat64":
+            cleaned.append(clean_stat(tokens))
+        elif _call == "sys_mkdir":
+            cleaned.append(clean_mkdir(tokens))
+        elif _call == "sys_unlink":
+            cleaned.append(clean_unlink(tokens))
+    return cleaned
 
 def full_path(pwdir, basepath):
     """
@@ -18,6 +31,16 @@ def full_path(pwdir, basepath):
     if not basepath.startswith('/'):
         return pwdir + basepath
     return basepath
+
+def clean_open(tokens):
+    #interesting line -> 0 940 940 (tar) sys_open 1319227153693893-147 /local/ourgrid/vserver_images/worker.lsd.ufcg.edu.br_2/ usr/lib/python2.5/encodings/euc_jp.pyc 32961 384 5
+    """
+    when 
+    0 940 940 (tar) sys_open 1319227153693893-147 /local/ourgrid/vserver_images/worker.lsd.ufcg.edu.br_2/ usr/lib/python2.5/encodings/euc_jp.pyc 32961 384 5
+    returns
+     0 940 940 (tar) open 1319227153693893-147 /local/ourgrid/vserver_images/worker.lsd.ufcg.edu.br_2/usr/lib/python2.5/encodings/euc_jp.pyc 32961 384 5
+    """
+    return " ".join(tokens[:4] + ["open"] + [tokens[5]] + [full_path(tokens[6], tokens[7])] + [tokens[-3]] + [tokens[-2]] + [tokens[-1]])
 
 def clean_stat(tokens):
     """

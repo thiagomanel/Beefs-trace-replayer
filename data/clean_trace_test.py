@@ -14,5 +14,11 @@ class TestCleanTrace(unittest.TestCase):
                 "65534 1856 1856 (gmetad) sys_mkdir 1318615768915818-17 / /var/lib/ganglia/rrds/__SummaryInfo__ 493 -17".split()),
                 "65534 1856 1856 (gmetad) mkdir 1318615768915818-17 /var/lib/ganglia/rrds/__SummaryInfo__ 493 -17")
 
+    def test_clean_stat(self):#FIXME test fullpath manipulation for each operation
+         self.assertEquals(
+           clean_stat(
+              "65534 1856 1867 (gmetad) sys_stat64 1319227151896626-113 / /var/lib/ganglia/rrds/BeeFS/__SummaryInfo__/cpu_idle.rrd 0".split()),
+              "65534 1856 1867 (gmetad) stat 1319227151896626-113 /var/lib/ganglia/rrds/BeeFS/__SummaryInfo__/cpu_idle.rrd 0")
+
 if __name__ == '__main__':
     unittest.main()

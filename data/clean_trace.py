@@ -6,7 +6,6 @@ HOME = "/home"
 
 #"vfs_unlink",
  #        "vfs_rmdir",
-  #       "vfs_mknod",
    #      "vfs_getattr",
     #     "sys_stat",#sys_stat64
      #    "sys_lstat",#sys_lstat64
@@ -19,6 +18,15 @@ def full_path(pwdir, basepath):
     if not basepath.startswith('/'):
         return pwdir + basepath
     return basepath
+
+def clean_stat(tokens):
+    """
+     when
+     65534 1856 1867 (gmetad) sys_stat64 1319227151896626-113 / /var/lib/ganglia/rrds/BeeFS/__SummaryInfo__/cpu_idle.rrd 0
+     returns
+     65534 1856 1867 (gmetad) stat 1319227151896626-113 /var/lib/ganglia/rrds/BeeFS/__SummaryInfo__/cpu_idle.rrd 0
+    """
+    return " ".join(tokens[:4] + ["stat"] + [tokens[5]] + [full_path(tokens[6], tokens[7])] + [tokens[-1]])
 
 def clean_mkdir(tokens):
     """

@@ -55,7 +55,10 @@ class TestCleanTrace(unittest.TestCase):
                          "65534 1856 1856 (gmetad) sys_mkdir 1318615768915818-17 / /var/lib/ganglia/rrds/__SummaryInfo__ 493 -17",
                          "65534 1856 1856 (gmetad) sys_mkdir 1318615768915818-17 /var/lib/ ganglia/rrds/__SummaryInfo__ 493 -17",
                          "65534 1856 1867 (gmetad) sys_stat64 1319227151896626-113 / /var/lib/ganglia/rrds/BeeFS/__SummaryInfo__/cpu_idle.rrd 0",
-                         "65534 1856 1867 (gmetad) sys_stat64 1319227151896626-113 /var/lib/ ganglia/rrds/BeeFS/__SummaryInfo__/cpu_idle.rrd 0"]]
+                         "65534 1856 1867 (gmetad) sys_stat64 1319227151896626-113 /var/lib/ ganglia/rrds/BeeFS/__SummaryInfo__/cpu_idle.rrd 0",
+                         "0 940 940 (tar) sys_open 1319227153693893-147 /local/ourgrid/vserver_images/worker.lsd.ufcg.edu.br_2/ usr/lib/python2.5/encodings/euc_jp.pyc 32961 384 5",
+                         "0 940 940 (tar) sys_open 1319227153693893-147 /local/ourgrid/vserver_images/worker.lsd.ufcg.edu.br_2/ /usr/lib/python2.5/encodings/euc_jp.pyc 32961 384 5", 
+                         "0 2413 2413 (udisks-daemon) sys_close 1319227059005785-541 7 0"]]
 
         cleaned_lines = clean(lines_tokens)
 
@@ -71,7 +74,12 @@ class TestCleanTrace(unittest.TestCase):
                            "65534 1856 1867 (gmetad) stat 1319227151896626-113 /var/lib/ganglia/rrds/BeeFS/__SummaryInfo__/cpu_idle.rrd 0")
         self.assertEquals(cleaned_lines[5],
                            "65534 1856 1867 (gmetad) stat 1319227151896626-113 /var/lib/ganglia/rrds/BeeFS/__SummaryInfo__/cpu_idle.rrd 0")
-
+        self.assertEquals(cleaned_lines[6],
+                           "0 940 940 (tar) open 1319227153693893-147 /local/ourgrid/vserver_images/worker.lsd.ufcg.edu.br_2/usr/lib/python2.5/encodings/euc_jp.pyc 32961 384 5")
+        self.assertEquals(cleaned_lines[7],
+                           "0 940 940 (tar) open 1319227153693893-147 /usr/lib/python2.5/encodings/euc_jp.pyc 32961 384 5")
+        self.assertEquals(cleaned_lines[8],
+                           "0 2413 2413 (udisks-daemon) close 1319227059005785-541 7 0")
 
 if __name__ == '__main__':
     unittest.main()

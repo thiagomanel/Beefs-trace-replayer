@@ -22,6 +22,10 @@ def clean(lines_tokens):
             cleaned.append(clean_mkdir(tokens))
         elif _call == "sys_unlink":
             cleaned.append(clean_unlink(tokens))
+        elif _call == "sys_open":
+            cleaned.append(clean_open(tokens))
+        elif _call == "sys_close":
+            cleaned.append(clean_close(tokens))
     return cleaned
 
 def full_path(pwdir, basepath):

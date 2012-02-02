@@ -32,6 +32,15 @@ def full_path(pwdir, basepath):
         return pwdir + basepath
     return basepath
 
+def clean_close(tokens):
+    """
+     when
+    0 2413 2413 (udisks-daemon) sys_close 1319227059005785-541 7 0
+    returns
+    0 2413 2413 (udisks-daemon) sys_close 1319227059005785-541 7 0
+    """
+    return " ".join(tokens[:4] + ["close"] + tokens[5:])
+
 def clean_open(tokens):
     #interesting line -> 0 940 940 (tar) sys_open 1319227153693893-147 /local/ourgrid/vserver_images/worker.lsd.ufcg.edu.br_2/ usr/lib/python2.5/encodings/euc_jp.pyc 32961 384 5
     """

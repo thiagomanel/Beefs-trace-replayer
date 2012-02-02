@@ -43,6 +43,10 @@ class TestCleanTrace(unittest.TestCase):
             clean_open("0 940 940 (tar) sys_open 1319227153693893-147 /local/ourgrid/vserver_images/worker.lsd.ufcg.edu.br_2/ /usr/lib/python2.5/encodings/euc_jp.pyc 32961 384 5".split()),
                        "0 940 940 (tar) open 1319227153693893-147 /usr/lib/python2.5/encodings/euc_jp.pyc 32961 384 5")
 
+    def clean_close(self):
+        self.assertEquals(
+             clean_close("0 2413 2413 (udisks-daemon) sys_close 1319227059005785-541 7 0"),
+             "0 2413 2413 (udisks-daemon) close 1319227059005785-541 7 0")
 
     def test_clean_lines(self):
         lines_tokens = [ line.split() for line in 

@@ -5,13 +5,8 @@ class TestCleanTrace(unittest.TestCase):
 
     def test_clean_unlink(self):
         self.assertEquals(
-                          clean_unlink("1159 2364 32311 (eclipse) sys_unlink 1318539134533662-8118 /home/thiagoepdc/ /home/thiagoepdc/workspace_beefs/.metadata/.plugins/org.eclipse.jdt.ui/jdt-images/1.png 0".split()), 
-                          "1159 2364 32311 (eclipse) unlink 1318539134533662-8118 /home/thiagoepdc/workspace_beefs/.metadata/.plugins/org.eclipse.jdt.ui/jdt-images/1.png 0")
-
-    def test_clean_unlink_No_home_is_None(self):
-        #assertIsNone is just python 2.7
-        self.assertFalse(clean_unlink("1159 2364 32311 (eclipse) sys_unlink 1318539134533662-8118 /local/thiagoepdc/ 1.png 0".split()))
-        self.assertFalse(clean_unlink("1159 2364 32311 (eclipse) sys_unlink 1318539134533662-8118 /home/thiagoepdc/ /local/thiagoepdc/workspace_beefs/.metadata/.plugins/org.eclipse.jdt.ui/jdt-images/1.png 0".split()))
+            clean_unlink("1159 2364 32311 (eclipse) sys_unlink 1318539134533662-8118  (/ /local/ourgrid/worker_N2/ ourgrid/vserver_images/worker.lsd.ufcg.edu.br_2/usr/include/c++/4.3/ext/pb_ds/detail/gp_hash_table_map_/debug_no_store_hash_fn_imps.hpp -1 null -1) 0".split()), 
+                         "1159 2364 32311 (eclipse) unlink 1318539134533662-8118 /local/ourgrid/worker_N2/ourgrid/vserver_images/worker.lsd.ufcg.edu.br_2/usr/include/c++/4.3/ext/pb_ds/detail/gp_hash_table_map_/debug_no_store_hash_fn_imps.hpp 0")
 
 if __name__ == '__main__':
     unittest.main()

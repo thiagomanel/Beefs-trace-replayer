@@ -46,10 +46,15 @@ def clean(lines_tokens):
         elif _call == "sys_close":
             cleaned.append(clean_close(tokens))
         elif _call == "sys_write":
-           pid_fd = (pid(tokens), rw_fd(tokens))
-           pid_fd2fullpath[pid_fd] = open_call
-           write_call = clean_write(tokens, open_full_path(open_call))
-           cleaned.append(write_call)
+            pid_fd = (pid(tokens), rw_fd(tokens))
+            pid_fd2fullpath[pid_fd] = open_call
+            write_call = clean_rw(tokens, "write", open_full_path(open_call))
+            cleaned.append(write_call)
+        elif _call == "sys_read":
+            pid_fd = (pid(tokens), rw_fd(tokens))
+            pid_fd2fullpath[pid_fd] = open_call
+            write_call = clean_rw(tokens, "read", open_full_path(open_call))
+            cleaned.append(write_call)
 
     return cleaned
 
@@ -70,14 +75,14 @@ def clean_close(tokens):
     """
     return " ".join(tokens[:4] + ["close"] + tokens[5:])
 
-def clean_write(tokens, fullpath):
+def clean_rw(tokens, _call, fullpath):
     """
     when
     0 18462 18475 (java) sys_write 1319227079842169-123 (/ /local/pjd_test_beefs_version/bin/ /tmp/Queenbee.lg/ 11525 S_IFREG|S_IROTH|S_IRGRP|S_IWUSR|S_IRUSR 156812) 25 5 5
     returns
     0 18462 18475 (java) write 1319227079842169-123 25 5 5
     """
-    return " ".join(tokens[:4] + ["write"] + [tokens[5]] + [fullpath] + tokens[-3:])
+    return " ".join(tokens[:4] + [_call] + [tokens[5]] + [fullpath] + tokens[-3:])
 
 def clean_open(tokens):
     #interesting line -> 0 940 940 (tar) sys_open 1319227153693893-147 /local/ourgrid/vserver_images/worker.lsd.ufcg.edu.br_2/ usr/lib/python2.5/encodings/euc_jp.pyc 32961 384 5

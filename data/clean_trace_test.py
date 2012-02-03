@@ -80,6 +80,19 @@ class TestCleanTrace(unittest.TestCase):
               "0 940 940 (tar) write 1319227082315340-189 /local/ourgrid/vserver_images/worker.lsd.ufcg.edu.br_2/bin/sync 5 5120 5120")
         self.assertEquals(cleaned_lines[2], "0 940 940 (tar) close 1319227082316153-73 5 0")
 
+    def test_process_open_read_close(self):
+        lines = [
+                 "0 1079 921 (automount) sys_open 1319227058853999-612 / /proc/1079/mounts 32768 438 5".split(),
+                 "0 1079 921 (automount) sys_read 1319227058854877-191 (/ / /proc/1079/mounts/ 0 S_IFREG|S_IROTH|S_IRGRP|S_IRUSR 6496077) 5 1024 1024".split()
+                ]
+
+        cleaned_lines = clean(lines)
+        self.assertEquals(len(cleaned_lines), 2)
+        self.assertEquals(cleaned_lines[0],
+                 "0 1079 921 (automount) open 1319227058853999-612 /proc/1079/mounts 32768 438 5")
+        self.assertEquals(cleaned_lines[1],
+                 "0 1079 921 (automount) read 1319227058854877-191 /proc/1079/mounts 5 1024 1024")
+
     def test_clean_lines(self):
         lines_tokens = [ line.split() for line in 
                         ["1159 2364 32311 (eclipse) sys_unlink 1318539134533662-8118  (/ /local/ourgrid/worker_N2/ ourgrid/vserver_images/worker.lsd.ufcg.edu.br_2/usr/include/c++/4.3/ext/pb_ds/detail/gp_hash_table_map_/debug_no_store_hash_fn_imps.hpp -1 null -1) 0", 

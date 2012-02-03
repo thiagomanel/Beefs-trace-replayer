@@ -3,11 +3,30 @@ import sys
 
 HOME = "/home"
 
-#"vfs_rmdir",
-#"vfs_getattr",
-#"sys_lstat",#sys_lstat64
-#"sys_fstat", #sys_fstat64
+#"sys_lstat",
+#sys_lstat64
 
+#"sys_fstat", #sys_fstat64
+#llseek
+"""
+  25 sys_readlink
+     33 sys_statfs
+    123 sys_lstat64
+    491 sys_llseek
+    798 generic_file_llseek -> it is important to us because write and read operation does not have the offset. llseek can change it
+   1375 sys_stat64
+   2260 vfs_rmdir
+   7532 vfs_readdir
+  11078 sys_fstat64 -> the most of calls is related to fd=3, the standard error stream. I not sure if it goes on fs path, if not, it doesn't need to be replayed. A problem raises if the error streamwas redirect (dup'ed) to a file. If so, it seems we need to keep state to discover where this file is stored
+  12257 vfs_getattr
+  24517 sys_open
+  25367 vfs_unlink -> at least of the excerpt I've processedm, vfs_unlink is done very often. but sys_unlink doesn't. It's odd. who's calling vfs_unlink
+  28939 do_filp_open
+  29313 filp_close
+  29359 sys_close
+  33193 sys_read
+  50483 sys_write
+"""
 def clean(lines_tokens):
 
     def call(tokens):
@@ -24,6 +43,9 @@ def clean(lines_tokens):
 
     def rw_fd(tokens):
         return tokens[-3]
+
+    def llseek_fd(tokens):
+        return tokens[6]
 
     pid_fd2fullpath = {}
     cleaned = []
@@ -55,6 +77,11 @@ def clean(lines_tokens):
             pid_fd2fullpath[pid_fd] = open_call
             write_call = clean_rw(tokens, "read", open_full_path(open_call))
             cleaned.append(write_call)
+        elif _call == "sys_llseek":
+            pid_fd = (pid(tokens), llseek_fd(tokens))
+            pid_fd2fullpath[pid_fd] = open_call
+            llseek_call = clean_llseek(tokens, open_full_path(open_call))
+            cleaned.append(llseek_call)
 
     return cleaned
 
@@ -65,6 +92,12 @@ def full_path(pwdir, basepath):
     if not basepath.startswith('/'):
         return pwdir + basepath
     return basepath
+
+def clean_llseek(tokens, fullpath):
+    """
+    0 1079 920 (automount) llseek 1319227057004196-37 5 0 2238 SEEK_SET 2238
+    """
+    return " ".join(tokens[:4] + ["llseek"] + [tokens[5]] + [fullpath] + tokens[7:])
 
 def clean_close(tokens):
     """

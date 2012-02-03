@@ -54,7 +54,7 @@ class TestCleanTrace(unittest.TestCase):
                  "0 940 940 (tar) sys_write 1319227082315340-189 (/ /local/ourgrid/vserver_images/worker.lsd.ufcg.edu.br_2/ /local/ourgrid/vserver_images/worker.lsd.ufcg.edu.br_2/bin/sync/ 0 S_IFREG|S_IRWXU 1376472) 5 5120 5120".split(),
                  "0 940 940 (tar) sys_close 1319227082316153-73 5 0".split()]
 
-        cleaned_lines = clean(lines)
+        cleaned_lines = clean(lines)[0]
         self.assertEquals(len(cleaned_lines), 3)
         self.assertEquals(cleaned_lines[0],
               "0 940 940 (tar) open 1319227082315205-101 /local/ourgrid/vserver_images/worker.lsd.ufcg.edu.br_2/bin/sync 32961 448 5")
@@ -72,7 +72,7 @@ class TestCleanTrace(unittest.TestCase):
                  "0 940 940 (tar) sys_write 1319227082315340-189 5 5120 5120".split(),
                  "0 940 940 (tar) sys_close 1319227082316153-73 5 0".split()]
 
-        cleaned_lines = clean(lines)
+        cleaned_lines = clean(lines)[0]
         self.assertEquals(len(cleaned_lines), 3)
         self.assertEquals(cleaned_lines[0],
               "0 940 940 (tar) open 1319227082315205-101 /local/ourgrid/vserver_images/worker.lsd.ufcg.edu.br_2/bin/sync 32961 448 5")
@@ -86,7 +86,7 @@ class TestCleanTrace(unittest.TestCase):
                  "0 1079 921 (automount) sys_read 1319227058854877-191 (/ / /proc/1079/mounts/ 0 S_IFREG|S_IROTH|S_IRGRP|S_IRUSR 6496077) 5 1024 1024".split()
                 ]
 
-        cleaned_lines = clean(lines)
+        cleaned_lines = clean(lines)[0]
         self.assertEquals(len(cleaned_lines), 2)
         self.assertEquals(cleaned_lines[0],
                  "0 1079 921 (automount) open 1319227058853999-612 /proc/1079/mounts 32768 438 5")
@@ -99,7 +99,7 @@ class TestCleanTrace(unittest.TestCase):
                  "0 1079 920 (automount) sys_llseek 1319227057004196-37 5 0 2238 SEEK_SET 2238".split()
                 ]
 
-        cleaned_lines = clean(lines)
+        cleaned_lines = clean(lines)[0]
         self.assertEquals(len(cleaned_lines), 2)
         self.assertEquals(cleaned_lines[0],
                  "0 1079 920 (automount) open 1319227057004335-38 /etc/group 524288 438 5")
@@ -118,7 +118,7 @@ class TestCleanTrace(unittest.TestCase):
                          "0 940 940 (tar) sys_open 1319227153693893-147 /local/ourgrid/vserver_images/worker.lsd.ufcg.edu.br_2/ /usr/lib/python2.5/encodings/euc_jp.pyc 32961 384 6", 
                          "0 2413 2413 (udisks-daemon) sys_close 1319227059005785-541 7 0"]]
 
-        cleaned_lines = clean(lines_tokens)
+        cleaned_lines = clean(lines_tokens)[0]
 
         self.assertEquals(cleaned_lines[0],
                           "1159 2364 32311 (eclipse) unlink 1318539134533662-8118 /local/ourgrid/worker_N2/ourgrid/vserver_images/worker.lsd.ufcg.edu.br_2/usr/include/c++/4.3/ext/pb_ds/detail/gp_hash_table_map_/debug_no_store_hash_fn_imps.hpp 0")

@@ -6,8 +6,6 @@ HOME = "/home"
 #"sys_lstat",
 #sys_lstat64
 
-#"sys_fstat", #sys_fstat64
-#llseek
 """
   25 sys_readlink
      33 sys_statfs
@@ -49,6 +47,7 @@ def clean(lines_tokens):
 
     pid_fd2fullpath = {}
     cleaned = []
+    errors = []
 
     for tokens in lines_tokens:
         _call = call(tokens)
@@ -59,31 +58,41 @@ def clean(lines_tokens):
         elif _call == "sys_unlink":
             cleaned.append(clean_unlink(tokens))
         elif _call == "sys_open":
-            open_call = clean_open(tokens)
-            pid_fd = (pid(open_call), open_fd(open_call))
+            pid_fd = (pid(tokens), open_fd(tokens))
             if pid_fd in pid_fd2fullpath:
-                raise Exception(pid_fd, "is alread in use")
-            pid_fd2fullpath[pid_fd] = open_call
-            cleaned.append(open_call)
+                errors.append((tokens, "File descriptor is alread in use"))
+            else:
+                open_call = clean_open(tokens)
+                pid_fd2fullpath[pid_fd] = open_call
+                cleaned.append(open_call)
         elif _call == "sys_close":
             cleaned.append(clean_close(tokens))
         elif _call == "sys_write":
             pid_fd = (pid(tokens), rw_fd(tokens))
-            pid_fd2fullpath[pid_fd] = open_call
-            write_call = clean_rw(tokens, "write", open_full_path(open_call))
-            cleaned.append(write_call)
+            if pid_fd in pid_fd2fullpath:
+                open_call = pid_fd2fullpath[pid_fd]
+                write_call = clean_rw(tokens, "write", open_full_path(open_call))
+                cleaned.append(write_call)
+            else:
+                errors.append((tokens, "file descriptor not found")) 
         elif _call == "sys_read":
             pid_fd = (pid(tokens), rw_fd(tokens))
-            pid_fd2fullpath[pid_fd] = open_call
-            write_call = clean_rw(tokens, "read", open_full_path(open_call))
-            cleaned.append(write_call)
+            if pid_fd in pid_fd2fullpath:
+                open_call = pid_fd2fullpath[pid_fd]
+                write_call = clean_rw(tokens, "read", open_full_path(open_call))
+                cleaned.append(write_call)
+            else:
+                errors.append((tokens, "file descriptor not found")) 
         elif _call == "sys_llseek":
             pid_fd = (pid(tokens), llseek_fd(tokens))
-            pid_fd2fullpath[pid_fd] = open_call
-            llseek_call = clean_llseek(tokens, open_full_path(open_call))
-            cleaned.append(llseek_call)
+            if pid_fd in pid_fd2fullpath:
+                open_call = pid_fd2fullpath[pid_fd]
+                llseek_call = clean_llseek(tokens, open_full_path(open_call))
+                cleaned.append(llseek_call)
+            else:
+                errors.append((tokens, "file descriptor not found")) 
 
-    return cleaned
+    return (cleaned, errors)
 
 def full_path(pwdir, basepath):
     """
@@ -153,3 +162,10 @@ def clean_unlink(tokens):
     1159 2364 32311 (eclipse) unlink 1318539134533662-8118 /local/ourgrid/worker_N2/ourgrid/vserver_images/worker.lsd.ufcg.edu.br_2/usr/include/c++/4.3/ext/pb_ds/detail/gp_hash_table_map_/debug_no_store_hash_fn_imps.hpp 0
     """
     return " ".join(tokens[:4] + ["unlink"] + [tokens[5]] + [full_path(tokens[7], tokens[8])] + [tokens[-1]])
+
+if __name__ == "__main__":
+    tokens = [line.split() for line in sys.stdin]
+    (cleaned, errors) = clean(tokens)
+    sys.stdout.writelines([str(op) + "\n" for op in cleaned])
+    sys.stderr.writelines([str(error) + "\n" for error in errors])
+    

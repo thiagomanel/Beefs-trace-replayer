@@ -3,6 +3,11 @@ from clean_trace import *
 
 class TestCleanTrace(unittest.TestCase):
 
+    def test_fstat(self):
+        self.assertEquals(
+             clean_fstat("65534 1856 1867 (gmetad) sys_fstat64 1319227151912074-154 5 0".split(), None),
+                         "65534 1856 1867 (gmetad) fstat 1319227151912074-154 5 0")
+
     def test_clean_unlink(self):
         self.assertEquals(
             clean_unlink("1159 2364 32311 (eclipse) sys_unlink 1318539134533662-8118  (/ /local/ourgrid/worker_N2/ ourgrid/vserver_images/worker.lsd.ufcg.edu.br_2/usr/include/c++/4.3/ext/pb_ds/detail/gp_hash_table_map_/debug_no_store_hash_fn_imps.hpp -1 null -1) 0".split()), 
@@ -105,6 +110,19 @@ class TestCleanTrace(unittest.TestCase):
                  "0 1079 920 (automount) open 1319227057004335-38 /etc/group 524288 438 5")
         self.assertEquals(cleaned_lines[1],
                  "0 1079 920 (automount) llseek 1319227057004196-37 /etc/group 0 2238 SEEK_SET 2238")
+
+    def test_process_open_fstat(self):
+        lines = [
+                "0 940 940 (tar) sys_open 1319227152428649-145 /local/ourgrid/vserver_images/worker.lsd.ufcg.edu.br_2/ usr/lib/libg.a 32961 384 5".split(),
+                "0 940 940 (tar) sys_fstat64 1319227152430169-186 5 0".split()
+                ]
+
+        cleaned_lines = clean(lines)[0]
+        self.assertEquals(len(cleaned_lines), 2)
+        self.assertEquals(cleaned_lines[0],
+                "0 940 940 (tar) open 1319227152428649-145 /local/ourgrid/vserver_images/worker.lsd.ufcg.edu.br_2/usr/lib/libg.a 32961 384 5")
+        self.assertEquals(cleaned_lines[1],
+                "0 940 940 (tar) fstat 1319227152430169-186 /local/ourgrid/vserver_images/worker.lsd.ufcg.edu.br_2/usr/lib/libg.a 5 0")
 
     def test_clean_lines(self):
         lines_tokens = [ line.split() for line in 

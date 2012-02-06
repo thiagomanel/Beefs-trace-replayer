@@ -45,6 +45,9 @@ def clean(lines_tokens):
     def llseek_fd(tokens):
         return tokens[6]
 
+    def fstat_fd(tokens):
+        return tokens[-2]
+
     def error(tokens, error_msg):
         return " ".join(tokens) + " error: " + error_msg
 
@@ -56,6 +59,12 @@ def clean(lines_tokens):
         _call = call(tokens)
         if _call == "sys_stat64":
             cleaned.append(clean_stat(tokens))
+        elif _call == "sys_fstat64":
+            pid_fd = (pid(tokens), fstat_fd(tokens))
+            fullpath = None
+            if pid_fd in pid_fd2fullpath:
+                fullpath = open_full_path(pid_fd2fullpath[pid_fd])
+            cleaned.append(clean_fstat(tokens, fullpath))
         elif _call == "sys_mkdir":
             cleaned.append(clean_mkdir(tokens))
         elif _call == "sys_unlink":
@@ -68,7 +77,7 @@ def clean(lines_tokens):
                 open_call = clean_open(tokens)
                 pid_fd2fullpath[pid_fd] = open_call
                 cleaned.append(open_call)
-        elif _call == "sys_close":
+        elif _call == "sys_close":#we should remove pid_fd from map
             cleaned.append(clean_close(tokens))
         elif _call == "sys_write":
             pid_fd = (pid(tokens), rw_fd(tokens))
@@ -101,11 +110,27 @@ def clean(lines_tokens):
 
 def full_path(pwdir, basepath):
     """
-    fullpath is not mandatory at syscall level. but we can create fullpaths using pwd when basepath points to basenames
+    fullpath is not mandatory at syscall level. we can create fullpaths using pwd when basepath points to basenames
     """
     if not basepath.startswith('/'):
         return pwdir + basepath
     return basepath
+
+def clean_fstat(tokens, fullpath):
+    """
+    when 
+    65534 1856 1867 (gmetad) sys_fstat64 1319227151912074-154 5 0
+    returns
+    65534 1856 1867 (gmetad) fstat 1319227151912074-154 5 0
+    or 
+    65534 1856 1867 (gmetad) fstat 1319227151912074-154 fullpath 5 0
+    if fullpath is available. Note that we keep fd anyway
+    """
+    if fullpath:
+        return " ".join(tokens[:4] + ["fstat"] + [tokens[5]] + [fullpath] + tokens[6:])
+    else:
+        return " ".join(tokens[:4] + ["fstat"] + [tokens[5]] + tokens[6:])
+        
 
 def clean_llseek(tokens, fullpath):
     """

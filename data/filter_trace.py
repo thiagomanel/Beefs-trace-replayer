@@ -50,10 +50,8 @@ import re
 #syscall.munmap
 
 CALLS = ["vfs_readdir",
-         "vfs_unlink", 
          "vfs_rmdir", 
          "vfs_mknod", 
-         "vfs_getattr", 
          "sys_stat",#sys_stat64
          "sys_lstat",#sys_lstat64
          "sys_fstat", #sys_fstat64

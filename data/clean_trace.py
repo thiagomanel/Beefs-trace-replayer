@@ -95,14 +95,8 @@ def clean(lines_tokens):
                 cleaned.append(write_call)
             else:
                 errors.append(error(tokens, "file descriptor not found")) 
-        elif _call == "sys_llseek":
-            pid_fd = (pid(tokens), llseek_fd(tokens))
-            if pid_fd in pid_fd2fullpath:
-                open_call = pid_fd2fullpath[pid_fd]
-                llseek_call = clean_llseek(tokens, open_full_path(open_call))
-                cleaned.append(llseek_call)
-            else:
-                errors.append(error(tokens, "file descriptor not found"))
+        elif _call == "generic_file_llseek":
+            cleaned.append(clean_llseek(tokens))
         else:
             errors.append(error(tokens, "unknow operation"))
 
@@ -141,12 +135,24 @@ def clean_fstat(tokens, fullpath):
     else:
         return " ".join(tokens[:4] + ["fstat"] + [tokens[5]] + tokens[6:])
         
+def is_reg(tokens):
+    for token in tokens:
+        if "S_IFREG" in token:
+            return True
+    return False
 
-def clean_llseek(tokens, fullpath):
+def clean_llseek(tokens):
     """
-    0 1079 920 (automount) llseek 1319227057004196-37 5 0 2238 SEEK_SET 2238
+    when
+    0 940 940 (tar) generic_file_llseek 1319227140807676-6 (/ /local/ourgrid/vserver_images/worker.lsd.ufcg.edu.br_2/ /etc/group/ 1006 S_IFREG|S_IROTH|S_IRGRP|S_IWUSR|S_IRUSR 384707) 0 SEEK_CUR 0
+    returns
+    0 940 940 (tar) llseek 1319227140807676-6 /etc/group 1006 0 SEEK_CUR 0
     """
-    return " ".join(tokens[:4] + ["llseek"] + [tokens[5]] + [fullpath] + tokens[7:])
+    _fullpath = full_path(tokens[7], tokens[8])
+    if is_reg(tokens):#it seems we are adding a extra "/" to files. if we are sure if is a regular file we remove this
+        if _fullpath.endswith("/"):
+            _fullpath = _fullpath[:-1]
+    return " ".join(tokens[:4] + ["llseek"] + [tokens[5]] + [_fullpath] + tokens[-3:])
 
 def clean_close(tokens):
     """

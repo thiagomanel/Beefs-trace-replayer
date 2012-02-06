@@ -103,18 +103,19 @@ class TestCleanTrace(unittest.TestCase):
         self.assertEquals(cleaned_lines[1],
                  "0 1079 921 (automount) read 1319227058854877-191 /proc/1079/mounts 5 1024 1024")
 
-    def test_process_open_llseek(self):
+    def test_clean_llseek(self):
         lines = [
-                 "0 1079 920 (automount) sys_open 1319227057004335-38 / /etc/group 524288 438 5".split(), 
-                 "0 1079 920 (automount) sys_llseek 1319227057004196-37 5 0 2238 SEEK_SET 2238".split()
+                 "0 940 940 (tar) generic_file_llseek 1319227140807676-6 (/ /local/ourgrid/vserver_images/worker.lsd.ufcg.edu.br_2/ /etc/group/ 1006 S_IFREG|S_IROTH|S_IRGRP|S_IWUSR|S_IRUSR 384707) 0 SEEK_CUR 0".split(),
+                 "0 916 916 (rm) generic_file_llseek 1319227065620757-4 (/ /local/ourgrid/worker_N2/ /local/ourgrid/vserver_images/worker.lsd.ufcg.edu.br_2/usr/lib/R/library/datasets/R-ex/ 4096  2482247) 0 SEEK_SET 0".split()
                 ]
 
         cleaned_lines = clean(lines)[0]
         self.assertEquals(len(cleaned_lines), 2)
         self.assertEquals(cleaned_lines[0],
-                 "0 1079 920 (automount) open 1319227057004335-38 /etc/group 524288 438 5")
+                 "0 940 940 (tar) llseek 1319227140807676-6 /etc/group 0 SEEK_CUR 0")
         self.assertEquals(cleaned_lines[1],
-                 "0 1079 920 (automount) llseek 1319227057004196-37 /etc/group 0 2238 SEEK_SET 2238")
+                 "0 916 916 (rm) llseek 1319227065620757-4 /local/ourgrid/vserver_images/worker.lsd.ufcg.edu.br_2/usr/lib/R/library/datasets/R-ex/ 0 SEEK_SET 0")
+
 
     def test_process_open_fstat(self):
         lines = [

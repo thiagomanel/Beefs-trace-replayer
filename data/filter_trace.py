@@ -49,19 +49,20 @@ import re
 #syscall.mmap2
 #syscall.munmap
 
-CALLS = ["vfs_readdir",
+CALLS = [
+         #"vfs_readdir",
          "vfs_rmdir", 
-         "vfs_mknod",
+         #"vfs_mknod",
          "vfs_unlink"
          "sys_stat",#sys_stat64
-         "sys_lstat",#sys_lstat64
+         #"sys_lstat",#sys_lstat64
          "sys_fstat", #sys_fstat64
          "llseek", #we have both generic_file_llseek and sys_llseek
          "sys_read", 
          "sys_write", 
-         "filp_close", 
+         #"filp_close", 
          "sys_close", 
-         "do_filp_open",
+         #"do_filp_open",
          "sys_open"]
 
 if __name__ == "__main__":

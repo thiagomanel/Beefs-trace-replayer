@@ -45,6 +45,9 @@ def clean(lines_tokens):
     def llseek_fd(tokens):
         return tokens[6]
 
+    def error(tokens, error_msg):
+        return " ".join(tokens) + " error: " + error_msg
+
     pid_fd2fullpath = {}
     cleaned = []
     errors = []
@@ -60,7 +63,7 @@ def clean(lines_tokens):
         elif _call == "sys_open":
             pid_fd = (pid(tokens), open_fd(tokens))
             if pid_fd in pid_fd2fullpath:
-                errors.append((tokens, "File descriptor is alread in use"))
+                errors.append(error(tokens, "File descriptor is alread in use"))
             else:
                 open_call = clean_open(tokens)
                 pid_fd2fullpath[pid_fd] = open_call
@@ -74,7 +77,7 @@ def clean(lines_tokens):
                 write_call = clean_rw(tokens, "write", open_full_path(open_call))
                 cleaned.append(write_call)
             else:
-                errors.append((tokens, "file descriptor not found")) 
+                errors.append(error(tokens, "file descriptor not found")) 
         elif _call == "sys_read":
             pid_fd = (pid(tokens), rw_fd(tokens))
             if pid_fd in pid_fd2fullpath:
@@ -82,7 +85,7 @@ def clean(lines_tokens):
                 write_call = clean_rw(tokens, "read", open_full_path(open_call))
                 cleaned.append(write_call)
             else:
-                errors.append((tokens, "file descriptor not found")) 
+                errors.append(error(tokens, "file descriptor not found")) 
         elif _call == "sys_llseek":
             pid_fd = (pid(tokens), llseek_fd(tokens))
             if pid_fd in pid_fd2fullpath:
@@ -90,7 +93,9 @@ def clean(lines_tokens):
                 llseek_call = clean_llseek(tokens, open_full_path(open_call))
                 cleaned.append(llseek_call)
             else:
-                errors.append((tokens, "file descriptor not found")) 
+                errors.append(error(tokens, "file descriptor not found"))
+        else:
+            errors.append(error(tokens, "unknow operation"))
 
     return (cleaned, errors)
 
@@ -167,5 +172,4 @@ if __name__ == "__main__":
     tokens = [line.split() for line in sys.stdin]
     (cleaned, errors) = clean(tokens)
     sys.stdout.writelines([str(op) + "\n" for op in cleaned])
-    sys.stderr.writelines([str(error) + "\n" for error in errors])
-    
+    sys.stderr.writelines([error + "\n" for error in errors])

@@ -2,10 +2,8 @@
 import sys
 
 HOME = "/home"
-
 #"sys_lstat",
 #sys_lstat64
-
 """
   25 sys_readlink
      33 sys_statfs
@@ -13,12 +11,12 @@ HOME = "/home"
     491 sys_llseek
     798 generic_file_llseek -> it is important to us because write and read operation does not have the offset. llseek can change it
    1375 sys_stat64
-   2260 vfs_rmdir
+   2260 vfs_rmdir -> it is moro common than sys_rmdir, so I use it.
    7532 vfs_readdir
   11078 sys_fstat64 -> the most of calls is related to fd=3, the standard error stream. I not sure if it goes on fs path, if not, it doesn't need to be replayed. A problem raises if the error streamwas redirect (dup'ed) to a file. If so, it seems we need to keep state to discover where this file is stored
   12257 vfs_getattr
   24517 sys_open
-  25367 vfs_unlink -> at least of the excerpt I've processedm, vfs_unlink is done very often. but sys_unlink doesn't. It's odd. who's calling vfs_unlink
+  25367 vfs_unlink
   28939 do_filp_open
   29313 filp_close
   29359 sys_close
@@ -65,9 +63,11 @@ def clean(lines_tokens):
             if pid_fd in pid_fd2fullpath:
                 fullpath = open_full_path(pid_fd2fullpath[pid_fd])
             cleaned.append(clean_fstat(tokens, fullpath))
+        elif _call == "vfs_rmdir":
+            cleaned.append(clean_rmdir(tokens))
         elif _call == "sys_mkdir":
             cleaned.append(clean_mkdir(tokens))
-        elif _call == "sys_unlink":
+        elif _call == "vfs_unlink":#always we have a sys_unlink we have a vfs_unlink, the converse it is true, so we choose to use just vfs_unlink
             cleaned.append(clean_unlink(tokens))
         elif _call == "sys_open":
             pid_fd = (pid(tokens), open_fd(tokens))
@@ -115,6 +115,16 @@ def full_path(pwdir, basepath):
     if not basepath.startswith('/'):
         return pwdir + basepath
     return basepath
+
+def clean_rmdir(tokens):
+    """
+    when
+    0 916 916 (rm) vfs_rmdir 1319227056527181-26 (/ /local/ourgrid/worker_N2/ ourgrid/vserver_images/worker.lsd.ufcg.edu.br_2/usr/include/c++/4.3/ext/pb_ds/detail/gp_hash_table_map_ 0  2982629) 0
+    returns
+    0 916 916 (rm) rmdir 1319227056527181-26 /local/ourgrid/worker_N2/ourgrid/vserver_images/worker.lsd.ufcg.edu.br_2/usr/include/c++/4.3/ext/pb_ds/detail/gp_hash_table_map_ 0
+    """
+    return " ".join(tokens[:4] + ["rmdir"] + [tokens[5]] + [full_path(tokens[7], tokens[8])] + [tokens[-1]])
+
 
 def clean_fstat(tokens, fullpath):
     """
@@ -187,9 +197,9 @@ def clean_mkdir(tokens):
 def clean_unlink(tokens):
     """
     when
-    1159 2364 32311 (eclipse) sys_unlink 1318539134533662-8118  (/ /local/ourgrid/worker_N2/ ourgrid/vserver_images/worker.lsd.ufcg.edu.br_2/usr/include/c++/4.3/ext/pb_ds/detail/gp_hash_table_map_/debug_no_store_hash_fn_imps.hpp -1 null -1) 0
+    0 916 916 (rm) vfs_unlink 1319227061187713-10 (/ /local/ourgrid/worker_N2/ ourgrid/vserver_images/worker.lsd.ufcg.edu.br_2/usr/lib/python2.5/lib-dynload/pyexpat.so -1 null -1) 0
     returns
-    1159 2364 32311 (eclipse) unlink 1318539134533662-8118 /local/ourgrid/worker_N2/ourgrid/vserver_images/worker.lsd.ufcg.edu.br_2/usr/include/c++/4.3/ext/pb_ds/detail/gp_hash_table_map_/debug_no_store_hash_fn_imps.hpp 0
+    0 916 916 (rm) unlink 1319227061187713-10 /local/ourgrid/worker_N2/ourgrid/vserver_images/worker.lsd.ufcg.edu.br_2/usr/lib/python2.5/lib-dynload/pyexpat.so 0
     """
     return " ".join(tokens[:4] + ["unlink"] + [tokens[5]] + [full_path(tokens[7], tokens[8])] + [tokens[-1]])
 

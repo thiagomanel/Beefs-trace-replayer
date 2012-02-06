@@ -51,7 +51,8 @@ import re
 
 CALLS = ["vfs_readdir",
          "vfs_rmdir", 
-         "vfs_mknod", 
+         "vfs_mknod",
+         "vfs_unlink"
          "sys_stat",#sys_stat64
          "sys_lstat",#sys_lstat64
          "sys_fstat", #sys_fstat64

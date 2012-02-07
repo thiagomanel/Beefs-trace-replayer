@@ -25,7 +25,7 @@ def order_by_pidfid(lines):
         pfp = pidfidprocess(line.split())
         if not pfp in lines_by_fidpidprocess:
             lines_by_fidpidprocess[pfp] = []
-        lines_by_fidpidprocess[pfp].append([_id, 0, [], 0, [], line])
+        lines_by_fidpidprocess[pfp].append([_id + 1, 0, [], 0, [], line])
 
     for lines in lines_by_fidpidprocess.values():
         for (father, son) in pairwise(lines):

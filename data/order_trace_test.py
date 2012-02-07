@@ -1,5 +1,6 @@
 import unittest
 from order_trace import *
+from itertools import chain
 
 class TestOrderTrace(unittest.TestCase):
 
@@ -15,7 +16,13 @@ class TestOrderTrace(unittest.TestCase):
 	first_tid = o_lines.next()
 	second_tid = o_lines.next()
 
-        (_id, n_parents, parents, n_children, children, line) = first_tid[0]
+        self.assertEquals(len(first_tid), 2)
+        self.assertEquals(len(second_tid), 2)
+
+        all_lines = list(chain(first_tid, second_tid))
+        all_lines = sorted(all_lines, key=lambda line: line[0])#sort by _id
+
+        (_id, n_parents, parents, n_children, children, line) = all_lines[0]
         self.assertEquals(line, lines[0])
         self.assertEquals(_id, 1)
         self.assertEquals(n_parents, 0)
@@ -23,7 +30,7 @@ class TestOrderTrace(unittest.TestCase):
         self.assertEquals(n_children, 1)
         self.assertEquals(children, [3])
 
-        (_id, n_parents, parents, n_children, children, line) = second_tid[0]
+        (_id, n_parents, parents, n_children, children, line) = all_lines[1]
         self.assertEquals(line, lines[1])
         self.assertEquals(_id, 2)
         self.assertEquals(n_parents, 0)
@@ -31,7 +38,7 @@ class TestOrderTrace(unittest.TestCase):
         self.assertEquals(n_children, 1)
         self.assertEquals(children, [4])
 
-        (_id, n_parents, parents, n_children, children, line) = first_tid[1]
+        (_id, n_parents, parents, n_children, children, line) = all_lines[2]
         self.assertEquals(line, lines[2])
         self.assertEquals(_id, 3)
         self.assertEquals(n_parents, 1)
@@ -39,7 +46,7 @@ class TestOrderTrace(unittest.TestCase):
         self.assertEquals(n_children, 0)
         self.assertEquals(children, [])
 
-        (_id, n_parents, parents, n_children, children, line) = second_tid[3]
+        (_id, n_parents, parents, n_children, children, line) = all_lines[3]
         self.assertEquals(line, lines[3])
         self.assertEquals(_id, 4)
         self.assertEquals(n_parents, 1)

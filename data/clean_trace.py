@@ -4,6 +4,10 @@ import sys
 HOME = "/home"
 #"sys_lstat",
 #sys_lstat64
+
+def call(tokens):
+    return tokens[4]
+
 """
   25 sys_readlink
      33 sys_statfs
@@ -24,9 +28,6 @@ HOME = "/home"
   50483 sys_write
 """
 def clean(lines_tokens):
-
-    def call(tokens):
-        return tokens[4]
 
     def pid(open_tokens):
         return open_tokens[1]

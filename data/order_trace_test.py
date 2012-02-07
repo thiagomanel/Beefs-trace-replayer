@@ -4,6 +4,41 @@ from itertools import chain
 
 class TestOrderTrace(unittest.TestCase):
 
+    def test_fs_order_stat(self):
+        #stat is a read type operation, so no changes
+        lines = [
+                 [1, 0, [], 1, [3], "65534 1856 1867 (gmetad) stat 1319227151896626-113 /home/user/bla1.rrd 0"],
+                 [2, 0, [], 1, [4], "65534 1856 1868 (gmetad) stat 1319227151896626-114 /home/user/bla1.rrd 0"],
+                 [3, 1, [1], 0, [], "65534 1856 1867 (gmetad) stat 1319227151896626-115 /home/user/bla1.rrd 0"],
+                 [4, 1, [2], 0, [], "65534 1856 1868 (gmetad) stat 1319227151896626-116 /home/user/bla1.rrd 0"],
+                ]
+
+        fs_dep_lines = fs_dependency_order(lines)
+        fs_dep_lines = sorted(fs_dep_lines, key=lambda line: line[0])#sort by _id
+
+        self.assertEquals(fs_dep_lines[0], lines[0])
+        self.assertEquals(fs_dep_lines[1], lines[1])
+        self.assertEquals(fs_dep_lines[2], lines[2])
+        self.assertEquals(fs_dep_lines[3], lines[3])
+
+    def test_fs_order_mkdir_and_stat(self):
+        #mkdir is a write type operation, it blocks both parent and the new directory but I'll give from blocking parent
+        lines = [
+                 [1, 0, [], 0, [], "65534 1856 1856 (gmetad) mkdir 1318615768915818-17 /home/user/__SummaryInfo__ 493 0"],
+                 [2, 0, [], 0, [], "65534 1850 1850 (gmetad) stat 1318615768915818-18 /home/user/ 0"],
+                 [3, 0, [], 0, [], "65534 1860 1860 (gmetad) stat 1318615768915818-19 /home/user/__SummaryInfo__ 0"],
+                ]
+
+        fs_dep_lines = fs_dependency_order(lines)
+        fs_dep_lines = sorted(fs_dep_lines, key=lambda line: line[0])#sort by _id
+
+        self.assertEquals(fs_dep_lines[0],
+                          [1, 0, [], 1, [3], "65534 1856 1856 (gmetad) mkdir 1318615768915818-17 /home/user/__SummaryInfo__ 493 0"])
+        self.assertEquals(fs_dep_lines[1],
+                          [2, 0, [], 0, [], "65534 1850 1850 (gmetad) stat 1318615768915818-18 /home/user/ 0"])
+        self.assertEquals(fs_dep_lines[2],
+                          [3, 1, [1], 0, [], "65534 1860 1860 (gmetad) stat 1318615768915818-19 /home/user/__SummaryInfo__ 0"])
+
     def test_order_pid_tid(self):
         lines = [
                  "65534 1856 1867 (gmetad) stat 1319227151896626-113 /home/user/bla1.rrd 0",

@@ -10,7 +10,11 @@ def pidfidprocess(tokens):
 def fs_dependency_order(lines):#do we assume _id or timestamp order ?
 
     def fs_obj(line_tokens):
-        if (call(line_tokens) == "mkdir") or (call(line_tokens) == "stat"):
+        if call(line_tokens) == "mkdir":
+            filepath = line_tokens[6]
+            parent = filepath[:filepath.rfind("/")]
+            return [filepath, parent]
+        if call(line_tokens) == "stat":
             return line_tokens[6]
         else: raise Exception("unsupported operation " + str(line_tokens))
 
@@ -45,15 +49,16 @@ def fs_dependency_order(lines):#do we assume _id or timestamp order ?
     """
     lines_by_fs_obj = {}
     for line in lines:
-        _fs_obj = fs_obj(line[-1].split())
-        if not _fs_obj in lines_by_fs_obj:
-            lines_by_fs_obj[_fs_obj] = []
-        lines_by_fs_obj[_fs_obj].append(line)
+        syscall = line[-1]
+        _fs_objs = fs_obj(syscall.split())
+        for obj in _fs_objs:
+            if not obj in lines_by_fs_obj:
+                lines_by_fs_obj[obj] = []
+            lines_by_fs_obj[obj].append(line)
 
-    for (_fs_obj, obj_lines) in lines_by_fs_obj.iteritems():
-        for i in range(len(obj_lines)):
-            reverse_index = len(obj_lines) - i - 1
-            update_dependency(obj_lines[reverse_index], obj_lines[:reverse_index])
+    for (obj, obj_lines) in lines_by_fs_obj.iteritems():
+        for i in reversed(range(len(obj_lines))):
+            update_dependency(obj_lines[i], obj_lines[:i])
 
     return lines
 

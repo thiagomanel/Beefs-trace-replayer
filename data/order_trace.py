@@ -5,6 +5,8 @@ from clean_trace import call
 
 #if things start to get complicated we should try using ReplayInput class from match_syscall.py
 
+#TODO: open with creation semantics is different
+
 def pidfidprocess(tokens):
     return (tokens[1], tokens[2], tokens[3])
 

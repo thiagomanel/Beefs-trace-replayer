@@ -39,6 +39,15 @@ class TestOrderTrace(unittest.TestCase):
         self.assertEquals(fs_dep_lines[2],
                           [3, 1, [1], 0, [], "65534 1860 1860 (gmetad) stat 1318615768915818-19 /home/user/__SummaryInfo__ 0"])
 
+    def assertLine(self, actual, expected):
+        self.assertEquals(actual[0], expected[0])#id
+        self.assertEquals(actual[1], expected[1])#n_parents
+        self.assertEquals(set(actual[2]), set(expected[2]))#parents
+        self.assertEquals(actual[3], expected[3])#n_children
+        self.assertEquals(set(actual[4]), set(expected[4]))#children
+        self.assertEquals(actual[5], expected[5])#sycall
+        
+
     def test_fs_order_mkdir_and_stat_short_circuit(self):
         lines = [
                  [1, 0, [], 0, [], "65534 1856 1856 (gmetad) mkdir 1318615768915818-17 /home/user/d1 493 0"],
@@ -51,14 +60,14 @@ class TestOrderTrace(unittest.TestCase):
         fs_dep_lines = sorted(fs_dep_lines, key=lambda line: line[0])#sort by _id
 
         #if 2 and 3 depends on 1, we set 1 -> 2 -> 3
-        self.assertEquals(fs_dep_lines[0],
+        self.assertLine(fs_dep_lines[0],
                           [1, 0, [], 1, [2], "65534 1856 1856 (gmetad) mkdir 1318615768915818-17 /home/user/d1 493 0"])
-        self.assertEquals(fs_dep_lines[1],
-                      [2, 1, [1], 1, [3], "65534 1856 1857 (gmetad) mkdir 1318615768915818-18 /home/user/d1/d2 493 0"])
-        self.assertEquals(fs_dep_lines[2],
-                          [3, 1, [2], 0, [], "65534 1860 1858 (gmetad) stat 1318615768915818-19 /home/user/d1/d2 0"])
-        self.assertEquals(fs_dep_lines[2],
-                          [4, 1, [2], 0, [], "65534 1860 1859 (gmetad) mkdir 1318615768915818-20 /home/user/d1/d2/d3 493 0"])
+        self.assertLine(fs_dep_lines[1],
+                      [2, 1, [1], 2, [3, 4], "65534 1856 1857 (gmetad) mkdir 1318615768915818-18 /home/user/d1/d2 493 0"])
+        self.assertLine(fs_dep_lines[2],
+                          [3, 1, [2], 0, [], "65534 1856 1858 (gmetad) stat 1318615768915818-19 /home/user/d1/d2 0"])
+        self.assertLine(fs_dep_lines[3],
+                          [4, 1, [2], 0, [], "65534 1856 1859 (gmetad) mkdir 1318615768915818-20 /home/user/d1/d2/d3 493 0"])
 
     def test_order_pid_tid(self):
         lines = [

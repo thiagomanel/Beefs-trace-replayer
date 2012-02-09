@@ -37,13 +37,41 @@ def fs_dependency_order(lines):#do we assume _id or timestamp order ?
         def __contains__(self, item):
             return item[0] in self.ids
 
-    def fs_obj(line_tokens):
+    #FIXME maybe we should move this an util module, in this module we handle input and output and 
+    #code this fs_obj methods. Timestamp methods also. In summary, any method manipulating input and output
+    def fs_obj(line_tokens, pid_fd2obj):
+
+        #we should move this to an auxiliar code FIXME
+        def pid(open_tokens):
+            return open_tokens[1]
+
+        def open_fd(open_tokens):
+            return open_tokens[-1]
+
+        def fstat_fd(tokens):
+            return tokens[-2]
+
+        def open_full_path(open_tokens):
+            return open_tokens[6]
+
         if call(line_tokens) == "mkdir":
             filepath = line_tokens[6]
             parent = filepath[:filepath.rfind("/")]
             return [filepath, parent]
-        if call(line_tokens) == "stat":
+        elif call(line_tokens) == "stat":
             return [line_tokens[6]]
+        elif call(line_tokens) == "open":
+            pid_fd = (pid(line_tokens), open_fd(line_tokens))
+            if pid_fd in pid_fd2obj:
+                raise Exception("fd:" + pid_fd[0] + " is already in by the process: " + pid_fd[1])
+            fullpath = open_full_path(line_tokens)
+            pid_fd2obj[pid_fd] = fullpath#FIXME it should be remove at close, test
+            return [fullpath]
+        elif call(line_tokens) == "fstat":
+            pid_fd = (pid(line_tokens), fstat_fd(line_tokens))
+            if not pid_fd in pid_fd2obj:
+                raise Exception("we miss fd: " + pid_fd[1] + " for pid " + pid_fd[0])
+            return pid_fd2obj[pid_fd]
         else: 
             raise Exception("unsupported operation " + str(line_tokens))
 
@@ -77,9 +105,11 @@ def fs_dependency_order(lines):#do we assume _id or timestamp order ?
     -----------------------------------------------
     """
     lines_by_fs_obj = {}
+    pid_fd2fs_obj = {}
+#FIXME modularize this. create a method likewise, map_by_fsobt and after that a serialize method (or order
     for line in lines:
         syscall = line[-1]
-        _fs_objs = fs_obj(syscall.split())
+        _fs_objs = fs_obj(syscall.split(), pid_fd2fs_obj)
         for obj in _fs_objs:
             if not obj in lines_by_fs_obj:
                 lines_by_fs_obj[obj] = Operations()

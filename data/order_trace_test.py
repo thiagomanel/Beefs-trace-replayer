@@ -4,6 +4,44 @@ from itertools import chain
 
 class TestOrderTrace(unittest.TestCase):
 
+#Test cases
+#1. r(A)
+#2. w(A)
+#3. w(A)
+
+#1. r(A)
+#2. w(A)
+#3. r(A)
+
+#1. r(A)
+#2. r(A)
+#3. r(A)
+
+#1. w(A)
+#2. r(A)
+#3. r(A)
+
+    def test_all_read_type_ops(self):
+        #it tests the following case:
+        #1. r(A)
+        #2. r(A)
+        #3. r(A)
+        lines = [
+                 [1, 0, [], 1, [2], "0 940 940 (tar) open 1319227151896624-20 /home/user/bla1.rdd 32961 384 5"],
+                 [2, 1, [1], 0, [], "0 940 940 (tar) fstat 1319227151896625-20 /home/user/bla1.rrd 5 0"],#what is has a diff tid from open ?
+                 [3, 0, [], 0, [], "65534 1856 1867 (gmetad) stat 1319227151896626-20 /home/user/bla1.rrd 0"],
+                 [4, 0, [], 0, [], "65534 1856 1868 (gmetad) stat 1319227151896627-20 /home/user/bla1.rrd 0"],
+                 [5, 0, [], 0, [], "65534 1856 1869 (gmetad) stat 1319227151896628-20 /home/user/bla1.rrd 0"],
+                 [6, 0, [], 0, [], "65534 1856 1870 (gmetad) stat 1319227151896629-20 /home/user/bla1.rrd 0"],
+                ]
+
+        fs_dep_lines = fs_dependency_order(lines)
+        fs_dep_lines = sorted(fs_dep_lines, key=lambda line: line[0])#sort by _id
+
+	#all read type operations, all operations remains independent
+        for (actual, expected) in zip(fs_dep_lines, lines):
+            self.assertLine(actual, expected)
+
     def test_fs_order_stat(self):
         #stat is a read type operation, so no changes
         lines = [

@@ -55,9 +55,9 @@ def fs_dependency_order(lines):#do we assume _id or timestamp order ?
         elif call(line_tokens) == "stat":
             return [line_tokens[6]]
         elif call(line_tokens) == "open":
-            return  [(pid(line_tokens), open_fd(line_tokens))]
+            return  [(pid(line_tokens), open_fd(line_tokens), open_full_path(line_tokens))]
         elif call(line_tokens) == "fstat":
-            return [(pid(line_tokens), fstat_fd(line_tokens))]
+            return [(pid(line_tokens), fstat_fd(line_tokens), llseek_fullpath(line_tokens))]
         elif call(line_tokens) == "llseek":
             return [llseek_fullpath(line_tokens)]
         elif call(line_tokens) == "rmdir":

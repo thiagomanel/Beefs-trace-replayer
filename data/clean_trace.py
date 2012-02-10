@@ -8,6 +8,36 @@ HOME = "/home"
 def call(tokens):
     return tokens[4]
 
+def pid(tokens):
+    return tokens[1]
+
+def parent_path(fullpath):
+    return fullpath[:fullpath.rfind("/")]
+
+def open_fd(tokens):
+    return tokens[-1]
+
+def fstat_fd(tokens):
+    return tokens[-2]
+
+def rw_fd(tokens):
+    return tokens[-3]
+
+def close_fd(tokens):
+    return tokens[-2]
+
+def llseek_fullpath(tokens):
+    return tokens[6]
+
+def llseek_fd(tokens):
+    return tokens[6]
+
+def rmdir_fullpath(tokens):
+    return tokens[6]
+
+def unlink_fullpath(tokens):
+    return tokens[6]
+
 """
   25 sys_readlink
      33 sys_statfs
@@ -29,23 +59,8 @@ def call(tokens):
 """
 def clean(lines_tokens):
 
-    def pid(open_tokens):
-        return open_tokens[1]
-
-    def open_fd(open_tokens):
-        return open_tokens[-1]
-
     def open_full_path(cleaned_open):
         return cleaned_open.split()[6]
-
-    def rw_fd(tokens):
-        return tokens[-3]
-
-    def llseek_fd(tokens):
-        return tokens[6]
-
-    def fstat_fd(tokens):
-        return tokens[-2]
 
     def error(tokens, error_msg):
         return " ".join(tokens) + " error: " + error_msg

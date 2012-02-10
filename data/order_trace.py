@@ -1,7 +1,7 @@
 from itertools import tee
 from itertools import izip
 from itertools import chain
-from clean_trace import call
+from clean_trace import *
 
 #if things start to get complicated we should try using ReplayInput class from match_syscall.py
 
@@ -45,34 +45,7 @@ def fs_dependency_order(lines):#do we assume _id or timestamp order ?
     def fs_obj(line_tokens, pid_fd2obj):
 
         #we should move this to an auxiliar code FIXME
-        def pid(tokens):
-            return tokens[1]
-
-        def parent_path(fullpath):
-            return fullpath[:fullpath.rfind("/")]
-
-        def open_fd(tokens):
-            return tokens[-1]
-
-        def fstat_fd(tokens):
-            return tokens[-2]
-
-        def rw_fd(tokens):
-            return tokens[7]
-
-        def close_fd(tokens):
-            return tokens[-2]
-
         def open_full_path(tokens):
-            return tokens[6]
-
-        def llseek_fullpath(tokens):
-            return tokens[6]
-
-        def rmdir_fullpath(tokens):
-            return tokens[6]
-
-        def unlink_fullpath(tokens):
             return tokens[6]
 
         if call(line_tokens) == "mkdir":

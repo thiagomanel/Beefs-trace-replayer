@@ -5,29 +5,40 @@ from itertools import chain
 class TestOrderTrace(unittest.TestCase):
 
 #Test cases
-#1. r(A)
+#1. r(A) done
 #2. w(A)
 #3. w(A)
 
-#1. r(A)
+#1. r(A) done
 #2. w(A)
 #3. r(A)
 
-#1. r(A)
+#1. r(A) done
 #2. r(A)
 #3. r(A)
 
-#1. w(A)
+#1. w(A) done
 #2. r(A)
 #3. r(A)
+
+#stat ok
+#fstat ok
+#rmdir ok
+#mkdir ok
+#unlink ok
+#open
+#close
+#write
+#read
+#llseek ok
+#open/create
 
 #Open is a write operation within a process, we cannot perform write and read before open finish FIXME
 
-    def test_all_read_type_ops(self):
-        #it tests the following case:
-        #1. r(A)
-        #2. r(A)
-        #3. r(A)
+#FIXME take care to not add the same dependency twice, for example, due to both pid and tid ordering
+#FIXME fs_object creation sometimes do not handle directories properly, i saw both '/home/user/' '/home/user' in order_trace_test:TestOrderTrace.test_fs_order_mkdir_and_stat
+
+    def test_RRR_open_fstat_stat3x(self):
         lines = [
                  [1, 0, [], 1, [2], "0 940 940 (tar) open 1319227151896624-20 /home/user/bla1.rdd 32961 384 5"],
                  [2, 1, [1], 0, [], "0 940 940 (tar) fstat 1319227151896625-20 /home/user/bla1.rrd 5 0"],#what is has a diff tid from open ?
@@ -39,13 +50,11 @@ class TestOrderTrace(unittest.TestCase):
 
         fs_dep_lines = fs_dependency_order(lines)
         fs_dep_lines = sorted(fs_dep_lines, key=lambda line: line[0])#sort by _id
-
 	#all read type operations, all operations remains independent
         for (actual, expected) in zip(fs_dep_lines, lines):
             self.assertLine(actual, expected)
 
     def test_RWW_stat_llssek_llseek(self):
-
         lines = [
                  [1, 0, [], 0, [], "65534 1856 1867 (gmetad) stat 1319227151896626-20 /home/user/bla1.rrd 0"],
                  [2, 0, [], 0, [], "0 940 940 (tar) llseek 1319227151896627-20 /home/user/bla1.rrd 0 SEEK_CUR 0"],
@@ -59,6 +68,41 @@ class TestOrderTrace(unittest.TestCase):
                         [2, 0, [], 1, [3], "0 940 940 (tar) llseek 1319227151896627-20 /home/user/bla1.rrd 0 SEEK_CUR 0"])
         self.assertLine(actual[2],
                         [3, 1, [2], 0, [], "0 950 950 (tar) llseek 1319227151896628-20 /home/user/bla1.rrd 0 SEEK_CUR 0"])
+
+    def test_WRR_rmdir_stat_stat(self):
+        lines = [
+                 [1, 0, [], 0, [], "0 960 960 (tar) rmdir 1319227151896627-20 /home/user/bla1.rdd 0"],
+                 [2, 0, [], 0, [], "0 970 970 (tar) stat 1319227151896628-20 /home/user/bla1.rdd 0"],
+                 [3, 0, [], 0, [], "0 980 980 (tar) stat 1319227151896629-20 /home/user 0"],
+                ]
+
+        #rmdir get write lock both to object and its parent
+        actual = sorted(fs_dependency_order(lines), key=lambda line: line[0])#sort by _id
+
+        self.assertLine(actual[0],
+                        [1, 0, [], 2, [2, 3], "0 960 960 (tar) rmdir 1319227151896627-20 /home/user/bla1.rdd 0"])
+        self.assertLine(actual[1],
+                        [2, 1, [1], 0, [], "0 970 970 (tar) stat 1319227151896628-20 /home/user/bla1.rdd 0"])
+        self.assertLine(actual[2],
+                        [3, 1, [1], 0, [], "0 980 980 (tar) stat 1319227151896629-20 /home/user 0"])
+
+    def test_RWR_stat_unlink_stat(self):
+        lines = [
+                 [1, 0, [], 0, [], "0 950 950 (tar) stat 1319227151896626-20 /home/user/bla1.rdd 0"],
+                 [2, 0, [], 0, [], "0 960 960 (tar) unlink 1319227151896627-20 /home/user/bla1.rdd 0"],
+                 [3, 0, [], 0, [], "0 970 970 (tar) stat 1319227151896628-20 /home/user/bla1.rdd 0"],
+                 [4, 0, [], 0, [], "0 980 980 (tar) stat 1319227151896629-20 /home/user 0"],
+                ]
+
+        actual = sorted(fs_dependency_order(lines), key=lambda line: line[0])#sort by _id
+        self.assertLine(actual[0],
+                        [1, 0, [], 0, [], "0 950 950 (tar) stat 1319227151896626-20 /home/user/bla1.rdd 0"])
+        self.assertLine(actual[1],
+                        [2, 0, [], 2, [3, 4], "0 960 960 (tar) unlink 1319227151896627-20 /home/user/bla1.rdd 0"])
+        self.assertLine(actual[2],
+                        [3, 1, [2], 0, [], "0 970 970 (tar) stat 1319227151896628-20 /home/user/bla1.rdd 0"])
+        self.assertLine(actual[3],
+                        [4, 1, [2], 0, [], "0 980 980 (tar) stat 1319227151896629-20 /home/user 0"])
 
     def test_fs_order_stat(self):
         #stat is a read type operation, so no changes

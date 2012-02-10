@@ -57,6 +57,12 @@ def fs_dependency_order(lines):#do we assume _id or timestamp order ?
         def fstat_fd(tokens):
             return tokens[-2]
 
+        def rw_fd(tokens):
+            return tokens[7]
+
+        def close_fd(tokens):
+            return tokens[-2]
+
         def open_full_path(tokens):
             return tokens[6]
 
@@ -70,42 +76,69 @@ def fs_dependency_order(lines):#do we assume _id or timestamp order ?
             return tokens[6]
 
         if call(line_tokens) == "mkdir":
+
             filepath = line_tokens[6]
             parent = parent_path(filepath)
             return [filepath, parent]
+
         elif call(line_tokens) == "stat":
+
             return [line_tokens[6]]
+
         elif call(line_tokens) == "open":
-            pid_fd = (pid(line_tokens), open_fd(line_tokens))
+
+            pid_fd = (pid(line_tokens), open_fd(line_tokens))# we should take care of putting a -1 fd (other modules do the same) FIXME
             if pid_fd in pid_fd2obj:
                 raise Exception("fd:" + pid_fd[0] + " is already in by the process: " + pid_fd[1])
             fullpath = open_full_path(line_tokens)
             pid_fd2obj[pid_fd] = fullpath#FIXME it should be remove at close, test
             return [fullpath]
+
         elif call(line_tokens) == "fstat":
+
             pid_fd = (pid(line_tokens), fstat_fd(line_tokens))
             if not pid_fd in pid_fd2obj:
                 raise Exception("we miss fd: " + pid_fd[1] + " for pid " + pid_fd[0])
             return [pid_fd2obj[pid_fd]]
+
         elif call(line_tokens) == "llseek":
+
             return [llseek_fullpath(line_tokens)]
+
         elif call(line_tokens) == "rmdir":
+
             filepath = rmdir_fullpath(line_tokens)
             parent = parent_path(filepath)
             return [filepath, parent]
+
         elif call(line_tokens) == "unlink":
+
             filepath = unlink_fullpath(line_tokens)
             parent = parent_path(filepath)
             return [filepath, parent]
+
+        elif (call(line_tokens) == "write") or (call(line_tokens) == "read"):
+
+            pid_fd = (pid(line_tokens), rw_fd(line_tokens))
+            if not pid_fd in pid_fd2obj:
+                raise Exception("we miss fd: " + pid_fd[1] + " for pid " + pid_fd[0])
+            return [pid_fd2obj[pid_fd]]
+
+        elif (call(line_tokens) == "close"):
+
+            pid_fd = (pid(line_tokens), close_fd(line_tokens))
+            if not pid_fd in pid_fd2obj:
+                raise Exception("we miss fd: " + pid_fd[1] + " for pid " + pid_fd[0])
+            return [pid_fd2obj[pid_fd]]
+             
         else: 
             raise Exception("unsupported operation " + str(line_tokens))
 
     def write_semantics(call):
-        return (call == "rmdir") or (call == "mkdir") or (call == "unlink") or (call == "write") or (call == "llseek")
+        return (call == "rmdir") or (call == "mkdir") or (call == "unlink") or (call == "write") or (call == "llseek") or (call == "open")
 
     def update_dependency(to_update, target_parents):
         for parent in target_parents:
-            print "to_update", to_update, "parent", parent
             op_line = parent[-1]
             _call = call(op_line.split())
             if write_semantics(_call):
@@ -136,17 +169,13 @@ def fs_dependency_order(lines):#do we assume _id or timestamp order ?
     for line in lines:
         syscall = line[-1]
         _fs_objs = fs_obj(syscall.split(), pid_fd2fs_obj)
-        print "_fs_objds", _fs_objs
         for obj in _fs_objs:
             if not obj in lines_by_fs_obj:
                 lines_by_fs_obj[obj] = Operations()
             lines_by_fs_obj[obj].append(line)
 
-    print "lines_by_fs_obj", lines_by_fs_obj
-
     for (obj, operations) in lines_by_fs_obj.iteritems():
         for i in reversed(range(len(operations))):
-            print "i", i, "operations[i]", operations, "operations[:i]", operations[:i]
             update_dependency(operations[i], operations[:i])
 
     return lines

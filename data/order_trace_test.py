@@ -21,6 +21,8 @@ class TestOrderTrace(unittest.TestCase):
 #2. r(A)
 #3. r(A)
 
+#Open is a write operation within a process, we cannot perform write and read before open finish FIXME
+
     def test_all_read_type_ops(self):
         #it tests the following case:
         #1. r(A)
@@ -41,6 +43,22 @@ class TestOrderTrace(unittest.TestCase):
 	#all read type operations, all operations remains independent
         for (actual, expected) in zip(fs_dep_lines, lines):
             self.assertLine(actual, expected)
+
+    def test_RWW_stat_llssek_llseek(self):
+
+        lines = [
+                 [1, 0, [], 0, [], "65534 1856 1867 (gmetad) stat 1319227151896626-20 /home/user/bla1.rrd 0"],
+                 [2, 0, [], 0, [], "0 940 940 (tar) llseek 1319227151896627-20 /home/user/bla1.rrd 0 SEEK_CUR 0"],
+                 [3, 0, [], 0, [], "0 950 950 (tar) llseek 1319227151896628-20 /home/user/bla1.rrd 0 SEEK_CUR 0"],
+                ]
+
+        actual = sorted(fs_dependency_order(lines), key=lambda line: line[0])#sort by _id
+
+        self.assertLine(actual[0], lines[0])
+        self.assertLine(actual[1], 
+                        [2, 0, [], 1, [3], "0 940 940 (tar) llseek 1319227151896627-20 /home/user/bla1.rrd 0 SEEK_CUR 0"])
+        self.assertLine(actual[2],
+                        [3, 1, [2], 0, [], "0 950 950 (tar) llseek 1319227151896628-20 /home/user/bla1.rrd 0 SEEK_CUR 0"])
 
     def test_fs_order_stat(self):
         #stat is a read type operation, so no changes

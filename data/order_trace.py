@@ -42,17 +42,20 @@ def fs_dependency_order(lines):#do we assume _id or timestamp order ?
     def fs_obj(line_tokens, pid_fd2obj):
 
         #we should move this to an auxiliar code FIXME
-        def pid(open_tokens):
-            return open_tokens[1]
+        def pid(tokens):
+            return tokens[1]
 
-        def open_fd(open_tokens):
-            return open_tokens[-1]
+        def open_fd(tokens):
+            return tokens[-1]
 
         def fstat_fd(tokens):
             return tokens[-2]
 
-        def open_full_path(open_tokens):
-            return open_tokens[6]
+        def open_full_path(tokens):
+            return tokens[6]
+
+        def llseek_fullpath(tokens):
+            return tokens[6]
 
         if call(line_tokens) == "mkdir":
             filepath = line_tokens[6]
@@ -72,6 +75,8 @@ def fs_dependency_order(lines):#do we assume _id or timestamp order ?
             if not pid_fd in pid_fd2obj:
                 raise Exception("we miss fd: " + pid_fd[1] + " for pid " + pid_fd[0])
             return pid_fd2obj[pid_fd]
+        elif call(line_tokens) == "llseek":
+            return [llseek_fullpath(line_tokens)]
         else: 
             raise Exception("unsupported operation " + str(line_tokens))
 

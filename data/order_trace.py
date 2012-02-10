@@ -3,21 +3,24 @@ from itertools import izip
 from itertools import chain
 from clean_trace import *
 
-#if things start to get complicated we should try using ReplayInput class from match_syscall.py
-
+# if things start to get complicated we should try using ReplayInput class from match_syscall.py
 #TODO: open with creation semantics is different
+#FIXME maybe we should move this an util module, in this module we handle input and output and 
+#code this fs_obj methods. Timestamp methods also. In summary, any method manipulating input and output
 
 def pidfidprocess(tokens):
     return (tokens[1], tokens[2], tokens[3])
 
 def fs_dependency_order(lines):#do we assume _id or timestamp order ?
-
+    """
+    We assume:
+        - there are not operations over a fd that was not properly opened before
+    """
     class Operations():
         """
-        this class groups a collection of operations which have a particular
-        relationship. For example, operation over the same file system object.
-        We do not allow duplicated lines and expose a list to iterate over the
-        same append order
+        Operations which have a particular relationship. For example, operations
+        over the same file system object.  We do not allow duplicated lines and 
+        expose a list to iterate over the same append order
         """
         def __init__(self):
             self.ids = set()
@@ -40,70 +43,35 @@ def fs_dependency_order(lines):#do we assume _id or timestamp order ?
         def __str__(self):
             return str(self.lines)
 
-    #FIXME maybe we should move this an util module, in this module we handle input and output and 
-    #code this fs_obj methods. Timestamp methods also. In summary, any method manipulating input and output
-    def fs_obj(line_tokens, pid_fd2obj):
+    def fs_obj(line_tokens):
 
-        #we should move this to an auxiliar code FIXME
         def open_full_path(tokens):
             return tokens[6]
 
         if call(line_tokens) == "mkdir":
-
             filepath = line_tokens[6]
             parent = parent_path(filepath)
             return [filepath, parent]
-
         elif call(line_tokens) == "stat":
-
             return [line_tokens[6]]
-
         elif call(line_tokens) == "open":
-
-            pid_fd = (pid(line_tokens), open_fd(line_tokens))# we should take care of putting a -1 fd (other modules do the same) FIXME
-            if pid_fd in pid_fd2obj:
-                raise Exception("fd:" + pid_fd[0] + " is already in by the process: " + pid_fd[1])
-            fullpath = open_full_path(line_tokens)
-            pid_fd2obj[pid_fd] = fullpath#FIXME it should be remove at close, test
-            return [fullpath]
-
+            return  [(pid(line_tokens), open_fd(line_tokens))]
         elif call(line_tokens) == "fstat":
-
-            pid_fd = (pid(line_tokens), fstat_fd(line_tokens))
-            if not pid_fd in pid_fd2obj:
-                raise Exception("we miss fd: " + pid_fd[1] + " for pid " + pid_fd[0])
-            return [pid_fd2obj[pid_fd]]
-
+            return [(pid(line_tokens), fstat_fd(line_tokens))]
         elif call(line_tokens) == "llseek":
-
             return [llseek_fullpath(line_tokens)]
-
         elif call(line_tokens) == "rmdir":
-
             filepath = rmdir_fullpath(line_tokens)
             parent = parent_path(filepath)
             return [filepath, parent]
-
         elif call(line_tokens) == "unlink":
-
             filepath = unlink_fullpath(line_tokens)
             parent = parent_path(filepath)
             return [filepath, parent]
-
         elif (call(line_tokens) == "write") or (call(line_tokens) == "read"):
-
-            pid_fd = (pid(line_tokens), rw_fd(line_tokens))
-            if not pid_fd in pid_fd2obj:
-                raise Exception("we miss fd: " + pid_fd[1] + " for pid " + pid_fd[0])
-            return [pid_fd2obj[pid_fd]]
-
+            return (pid(line_tokens), rw_fd(line_tokens))
         elif (call(line_tokens) == "close"):
-
-            pid_fd = (pid(line_tokens), close_fd(line_tokens))
-            if not pid_fd in pid_fd2obj:
-                raise Exception("we miss fd: " + pid_fd[1] + " for pid " + pid_fd[0])
-            return [pid_fd2obj[pid_fd]]
-             
+            return [(pid(line_tokens), close_fd(line_tokens))]
         else: 
             raise Exception("unsupported operation " + str(line_tokens))
 
@@ -138,7 +106,7 @@ def fs_dependency_order(lines):#do we assume _id or timestamp order ?
     """
     lines_by_fs_obj = {}
     pid_fd2fs_obj = {}
-#FIXME modularize this. create a method likewise, map_by_fsobt and after that a serialize method (or order
+    #FIXME we can create a map_by_fsobt method and after that the order method
     for line in lines:
         syscall = line[-1]
         _fs_objs = fs_obj(syscall.split(), pid_fd2fs_obj)

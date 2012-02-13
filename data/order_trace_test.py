@@ -47,19 +47,20 @@ class TestOrderTrace(unittest.TestCase):
                  [2, 0, [], 0, [], "0 940 941 (tar) fstat 1319227151896625-20 /home/user/bla1.rrd 5 0"],
                  [3, 0, [], 0, [], "0 940 942 (tar) write 1319227151896626-20 /home/user/bla1.rrd 5 5120 5120"],
                  [4, 0, [], 0, [], "0 940 943 (tar) read 1319227151896627-20 /home/user/bla1.rrd 5 5120 5120"],
-                 [5, 0, [], 0, [], "0 940 944 (tar) close 1319227151896628-20 /home/user/bla1.rrd 5 0"],
+                 [5, 0, [], 0, [], "0 940 944 (tar) close 1319227151896628-20 5 0"],
 
                  [6, 0, [], 0, [], "0 941 945 (tar) open 1319227151896625-20 /home/user/bla1.rrd 32961 384 5"],
                  [7, 0, [], 0, [], "0 941 946 (tar) fstat 1319227151896626-20 /home/user/bla1.rrd 5 0"],
                  [8, 0, [], 0, [], "0 941 947 (tar) write 1319227151896627-20 /home/user/bla1.rrd 5 5120 5120"],
                  [9, 0, [], 0, [], "0 941 948 (tar) read 1319227151896628-20 /home/user/bla1.rrd 5 5120 5120"],
-                 [10, 0, [], 0, [], "0 941 949 (tar) close 1319227151896629-20 /home/user/bla1.rrd 5 0"],
+                 [10, 0, [], 0, [], "0 941 949 (tar) close 1319227151896629-20 5 0"],
                 ]
 
         actual = sorted(fs_dependency_order(lines), key=lambda line: line[0])
 
         self.assertLine(actual[0],
                         [1, 0, [], 5, [2, 3, 4, 5, 6], "0 940 940 (tar) open 1319227151896624-20 /home/user/bla1.rrd 32961 384 5"])
+        self.assertLine(actual[1], #TODO:
 
     def test_RRR_open_fstat_stat3x(self):
         lines = [

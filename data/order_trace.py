@@ -31,17 +31,13 @@ def fs_dependency_order(lines):#do we assume _id or timestamp order ?
                 self.lines.append(line)
 	        self.ids.add(line[0])		
 
-        def __len__(self):
-            return len(self.lines)
+        def __len__(self): return len(self.lines)
 
-        def __getitem__(self, item):
-            return self.lines[item]
+        def __getitem__(self, item): return self.lines[item]
 
-        def __contains__(self, item):
-            return item[0] in self.ids
+        def __contains__(self, item): return item[0] in self.ids
 
-        def __str__(self):
-            return str(self.lines)
+        def __str__(self): return str(self.lines)
 
     def fs_obj(line_tokens):
 
@@ -55,9 +51,9 @@ def fs_dependency_order(lines):#do we assume _id or timestamp order ?
         elif call(line_tokens) == "stat":
             return [line_tokens[6]]
         elif call(line_tokens) == "open":
-            return  [(pid(line_tokens), open_fd(line_tokens), open_full_path(line_tokens))]
+            return  [(pid(line_tokens), open_fd(line_tokens)), open_full_path(line_tokens)]
         elif call(line_tokens) == "fstat":
-            return [(pid(line_tokens), fstat_fd(line_tokens), llseek_fullpath(line_tokens))]
+            return [(pid(line_tokens), fstat_fd(line_tokens))]
         elif call(line_tokens) == "llseek":
             return [llseek_fullpath(line_tokens)]
         elif call(line_tokens) == "rmdir":
@@ -69,7 +65,7 @@ def fs_dependency_order(lines):#do we assume _id or timestamp order ?
             parent = parent_path(filepath)
             return [filepath, parent]
         elif (call(line_tokens) == "write") or (call(line_tokens) == "read"):
-            return (pid(line_tokens), rw_fd(line_tokens))
+            return [(pid(line_tokens), rw_fd(line_tokens))]
         elif (call(line_tokens) == "close"):
             return [(pid(line_tokens), close_fd(line_tokens))]
         else: 
@@ -109,7 +105,7 @@ def fs_dependency_order(lines):#do we assume _id or timestamp order ?
     #FIXME we can create a map_by_fsobt method and after that the order method
     for line in lines:
         syscall = line[-1]
-        _fs_objs = fs_obj(syscall.split(), pid_fd2fs_obj)
+        _fs_objs = fs_obj(syscall.split())
         for obj in _fs_objs:
             if not obj in lines_by_fs_obj:
                 lines_by_fs_obj[obj] = Operations()
@@ -117,7 +113,7 @@ def fs_dependency_order(lines):#do we assume _id or timestamp order ?
 
     for (obj, operations) in lines_by_fs_obj.iteritems():
         for i in reversed(range(len(operations))):
-            update_dependency(operations[i], operations[:i])
+            update_dependency(operations[i], operations[:i])#these list creation can hurt our performance
 
     return lines
 

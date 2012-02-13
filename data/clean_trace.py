@@ -23,6 +23,9 @@ def fstat_fd(tokens):
 def rw_fd(tokens):
     return tokens[-3]
 
+def rw_fullpath(token):
+    return tokens[-4]
+
 def close_fd(tokens):
     return tokens[-2]
 

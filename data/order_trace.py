@@ -75,7 +75,7 @@ def fs_dependency_order(lines):#do we assume _id or timestamp order ?
         return (call == "rmdir") or (call == "mkdir") or (call == "unlink") or (call == "write") or (call == "llseek") or (call == "open")
 
     def update_dependency(to_update, target_parents):
-        for parent in target_parents:
+        for parent in reversed(target_parents):
             op_line = parent[-1]
             _call = call(op_line.split())
             if write_semantics(_call):

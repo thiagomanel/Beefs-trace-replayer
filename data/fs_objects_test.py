@@ -111,5 +111,28 @@ class TestCleanTrace(unittest.TestCase):
         self.assertEquals([], cr_dirs)
         self.assertEquals([], cr_files)
 
+    def test_accessed_and_created_llseek(self):
+        #FIXME LLSEEK run for both files and directories
+        ac_dirs, ac_files, cr_dirs, cr_files = accessed_and_created("0 916 916 (rm) llseek 1319227065620757-4 /local/ourgrid/R-ex/file 20 SEEK_SET 20".split())
+        self.assertEquals(
+                          [
+                           "/local/ourgrid/R-ex",
+                           "/local/ourgrid",
+                           "/local"
+                          ],
+                          ac_dirs
+                         )
+        self.assertEquals(["file"], ac_files)
+        self.assertEquals([], cr_dirs)
+        self.assertEquals([], cr_files)
+
+    def test_accessed_and_created_empty_response_error_llseeek(self):
+        #FIXME check if our systap scripts is really outputing return value
+        ac_dirs, ac_files, cr_dirs, cr_files = accessed_and_created("0 916 916 (rm) llseek 1319227065620757-4 /local/ourgrid/R-ex/file 0 SEEK_SET -1".split())
+        self.assertEquals([], ac_dirs )
+        self.assertEquals([], ac_files)
+        self.assertEquals([], cr_dirs)
+        self.assertEquals([], cr_files)
+
 if __name__ == '__main__':
     unittest.main()

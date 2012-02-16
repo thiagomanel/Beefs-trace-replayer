@@ -91,5 +91,25 @@ class TestCleanTrace(unittest.TestCase):
         self.assertEquals([], cr_dirs)
         self.assertEquals([], cr_files)
 
+    def test_accessed_and_created_write(self):
+        ac_dirs, ac_files, cr_dirs, cr_files = accessed_and_created("0 1079 921 (automount) write 1319227058854877-191 /proc/1079/mounts 5 1024 1024".split())
+        self.assertEquals(
+                          [
+                           "/proc/1079",
+                           "/proc",
+                          ],
+                          ac_dirs
+                         )
+        self.assertEquals(["mounts"], ac_files)
+        self.assertEquals([], cr_dirs)
+        self.assertEquals([], cr_files)
+
+    def test_accessed_and_created_empty_response_error_write(self):
+        ac_dirs, ac_files, cr_dirs, cr_files = accessed_and_created("0 1079 921 (automount) write 1319227058854877-191 /proc/1079/mounts 5 1024 -3".split())
+        self.assertEquals([], ac_dirs )
+        self.assertEquals([], ac_files)
+        self.assertEquals([], cr_dirs)
+        self.assertEquals([], cr_files)
+
 if __name__ == '__main__':
     unittest.main()

@@ -21,7 +21,7 @@ def accessed_and_created(tokens):
     if success(tokens):
         _fullpath = fullpath(tokens)
         _call = call(tokens)
-        if (_call == "unlink" or _call == "stat" or _call == "read"):#FIXME we can make basename and dirs to manage this
+        if (_call == "unlink" or _call == "stat" or _call == "read" or _call == "write"):#FIXME we can make basename and dirs to manage this
             parent = parent_path(_fullpath)
             return (dirs(parent), [basename(_fullpath)], [], [])
         return (dirs(_fullpath), [], [], [])

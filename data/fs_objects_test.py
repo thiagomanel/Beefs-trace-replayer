@@ -134,7 +134,6 @@ class TestCleanTrace(unittest.TestCase):
         self.assertEquals([], cr_dirs)
         self.assertEquals([], cr_files)
 
-# "65534 1856 1856 (gmetad) mkdir 1318615768915818-17 /var/lib/ganglia/rrds/__SummaryInfo__ 493 -17
     def test_accessed_and_created_mkdir(self):
         ac_dirs, ac_files, cr_dirs, cr_files = accessed_and_created("65534 1856 1856 (gmetad) mkdir 1318615768915818-17 /var/lib/ganglia/rrds/__SummaryInfo__ 493 0".split())
         self.assertEquals(
@@ -150,8 +149,29 @@ class TestCleanTrace(unittest.TestCase):
         self.assertEquals(["__SummaryInfo__"], cr_dirs)
         self.assertEquals([], cr_files)
 
-    def test_accessed_and_created_empty_response_error_llseeek(self):
+    def test_accessed_and_created_empty_response_error_lls(self):
         ac_dirs, ac_files, cr_dirs, cr_files = accessed_and_created("65534 1856 1856 (gmetad) mkdir 1318615768915818-17 /var/lib/ganglia/rrds/__SummaryInfo__ 493 -17".split())
+        self.assertEquals([], ac_dirs )
+        self.assertEquals([], ac_files)
+        self.assertEquals([], cr_dirs)
+        self.assertEquals([], cr_files)
+
+    def test_accessed_and_created_open_non_create(self):
+        #FIXME: we need flags for create and for non-create
+        ac_dirs, ac_files, cr_dirs, cr_files = accessed_and_created("0 940 940 (tar) open 1319227153693893-147 /usr/lib/euc_jp.pyc 32961 384 5".split())
+        self.assertEquals(
+                          [
+                           "/usr/lib",
+                           "/usr",
+                          ],
+                          ac_dirs
+                         )
+        self.assertEquals(["euc_jp.pyc"], ac_files)
+        self.assertEquals([], cr_dirs)
+        self.assertEquals([], cr_files)
+
+    def test_accessed_and_created_empty_response_error_open(self):
+        ac_dirs, ac_files, cr_dirs, cr_files = accessed_and_created("0 940 940 (tar) open 1319227153693893-147 /usr/lib/euc_jp.pyc 32961 384 -3".split())
         self.assertEquals([], ac_dirs )
         self.assertEquals([], ac_files)
         self.assertEquals([], cr_dirs)

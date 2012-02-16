@@ -33,5 +33,8 @@ def accessed_and_created(tokens):
         elif _call == "mkdir":
             parent = parent_path(_fullpath)
             return (dirs(parent), [], [basename(_fullpath)], [])
+        elif _call == "open":
+            parent = parent_path(_fullpath)
+            return (dirs(parent), [basename(_fullpath)], [], [])
 
     return ([], [], [], [])

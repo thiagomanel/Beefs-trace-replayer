@@ -14,6 +14,9 @@ def pid(tokens):
 def parent_path(fullpath):
     return fullpath[:fullpath.rfind("/")]
 
+def basename(fullpath):
+    return fullpath[(fullpath.rfind("/") + 1):]
+
 def open_fd(tokens):
     return tokens[-1]
 

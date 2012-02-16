@@ -23,6 +23,7 @@ def fstat_fd(tokens):
 def rw_fd(tokens):
     return tokens[-3]
 
+#FIXME FULLPATH IS NOT THE SAME COME FOR ALL OF THESE
 def rw_fullpath(token):
     return tokens[-4]
 

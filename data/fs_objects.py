@@ -1,5 +1,8 @@
 from clean_trace import *
 
+#TODO: after using this module do we guarantee all file system hierarchy was created ? So, replayer
+	#can run fine ?
+
 def success(call_tokens):#FIXME move this to clean_trace.py module
     return_value = int(call_tokens[-1])
     if return_value < 0:
@@ -25,5 +28,10 @@ def accessed_and_created(tokens):
         if (_call == "unlink" or _call == "stat" or _call == "read" or _call == "write" or _call == "llseek"):#FIXME we can make basename and dirs to manage this
             parent = parent_path(_fullpath)
             return (dirs(parent), [basename(_fullpath)], [], [])
-        return (dirs(_fullpath), [], [], [])#FIXME add a elif and return unknow operation exception is token does not match
+        elif (_call == "rmdir"):
+            return (dirs(_fullpath), [], [], [])
+        elif _call == "mkdir":
+            parent = parent_path(_fullpath)
+            return (dirs(parent), [], [basename(_fullpath)], [])
+
     return ([], [], [], [])

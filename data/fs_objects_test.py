@@ -134,6 +134,28 @@ class TestCleanTrace(unittest.TestCase):
         self.assertEquals([], cr_dirs)
         self.assertEquals([], cr_files)
 
+# "65534 1856 1856 (gmetad) mkdir 1318615768915818-17 /var/lib/ganglia/rrds/__SummaryInfo__ 493 -17
+    def test_accessed_and_created_mkdir(self):
+        ac_dirs, ac_files, cr_dirs, cr_files = accessed_and_created("65534 1856 1856 (gmetad) mkdir 1318615768915818-17 /var/lib/ganglia/rrds/__SummaryInfo__ 493 0".split())
+        self.assertEquals(
+                          [
+                           "/var/lib/ganglia/rrds",
+                           "/var/lib/ganglia",
+                           "/var/lib",
+                           "/var",
+                          ],
+                          ac_dirs
+                         )
+        self.assertEquals([], ac_files)
+        self.assertEquals(["__SummaryInfo__"], cr_dirs)
+        self.assertEquals([], cr_files)
+
+    def test_accessed_and_created_empty_response_error_llseeek(self):
+        ac_dirs, ac_files, cr_dirs, cr_files = accessed_and_created("65534 1856 1856 (gmetad) mkdir 1318615768915818-17 /var/lib/ganglia/rrds/__SummaryInfo__ 493 -17".split())
+        self.assertEquals([], ac_dirs )
+        self.assertEquals([], ac_files)
+        self.assertEquals([], cr_dirs)
+        self.assertEquals([], cr_files)
 
 if __name__ == '__main__':
     unittest.main()

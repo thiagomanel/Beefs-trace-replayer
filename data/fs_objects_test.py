@@ -134,5 +134,6 @@ class TestCleanTrace(unittest.TestCase):
         self.assertEquals([], cr_dirs)
         self.assertEquals([], cr_files)
 
+
 if __name__ == '__main__':
     unittest.main()

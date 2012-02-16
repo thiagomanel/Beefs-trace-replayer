@@ -17,6 +17,7 @@ def dirs(fullpath):
         _dirs.extend(dirs(fullpath[:last_slash_index]))
     return _dirs
 
+#close and fstat handles fd. we can get its information on the related open call
 def accessed_and_created(tokens):
     if success(tokens):
         _fullpath = fullpath(tokens)

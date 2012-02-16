@@ -64,9 +64,29 @@ class TestCleanTrace(unittest.TestCase):
         self.assertEquals([], cr_dirs)
         self.assertEquals([], cr_files)
 
-    def test_empty_response_error__stat(self):
+    def test_empty_response_error_stat(self):
         ac_dirs, ac_files, cr_dirs, cr_files = accessed_and_created("65534 1856 1867 (gmetad) stat 1319227151896626-113 /var/__SummaryInfo__/cpu_idle.rrd -1".split())
         self.assertEquals([], ac_dirs)
+        self.assertEquals([], ac_files)
+        self.assertEquals([], cr_dirs)
+        self.assertEquals([], cr_files)
+
+    def test_accessed_and_created_read(self):
+        ac_dirs, ac_files, cr_dirs, cr_files = accessed_and_created("0 1079 921 (automount) read 1319227058854877-191 /proc/1079/mounts 5 1024 1024".split())
+        self.assertEquals(
+                          [
+                           "/proc/1079",
+                           "/proc",
+                          ],
+                          ac_dirs
+                         )
+        self.assertEquals(["mounts"], ac_files)
+        self.assertEquals([], cr_dirs)
+        self.assertEquals([], cr_files)
+
+    def test_accessed_and_created_empty_response_error_read(self):
+        ac_dirs, ac_files, cr_dirs, cr_files = accessed_and_created("0 1079 921 (automount) read 1319227058854877-191 /proc/1079/mounts 5 1024 -3".split())
+        self.assertEquals([], ac_dirs )
         self.assertEquals([], ac_files)
         self.assertEquals([], cr_dirs)
         self.assertEquals([], cr_files)

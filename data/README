@@ -1,3 +1,3 @@
 Trace treatment includes 
-    1. filter_trace - some files and operations are not supported by the replayer
-    2.
+    1. filter_trace.py - some files and operations are not supported by the replayer
+    2. clean_trace.py - translate relative paths to fullpaths and other sugar sintaxes to fit into replayer format. For some calls that manipulate fd, it tries to associate its fullpath by relating to open call. For this reason, this script needs input to be timestamp ordered

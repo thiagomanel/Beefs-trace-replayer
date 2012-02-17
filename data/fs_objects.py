@@ -1,7 +1,10 @@
 from clean_trace import *
+from fileutil import *
 
 #TODO: after using this module do we guarantee all file system hierarchy was created ? So, replayer
 	#can run fine ?
+def open_to_create(tokens):
+    return CREATION_FLAGS.O_CREAT in creation_flags(open_flags(tokens))
 
 def success(call_tokens):#FIXME move this to clean_trace.py module
     return_value = int(call_tokens[-1])
@@ -35,6 +38,9 @@ def accessed_and_created(tokens):
             return (dirs(parent), [], [basename(_fullpath)], [])
         elif _call == "open":
             parent = parent_path(_fullpath)
-            return (dirs(parent), [basename(_fullpath)], [], [])
+            if open_to_create(tokens):
+                return (dirs(parent), [], [], [basename(_fullpath)])
+            else:
+                return (dirs(parent), [basename(_fullpath)], [], [])
 
     return ([], [], [], [])

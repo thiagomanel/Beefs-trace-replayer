@@ -20,6 +20,9 @@ def basename(fullpath):
 def open_fd(tokens):
     return tokens[-1]
 
+def open_flags(tokens):
+    return int(tokens[7])
+
 def fstat_fd(tokens):
     return tokens[-2]
 

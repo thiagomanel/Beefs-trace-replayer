@@ -66,6 +66,11 @@ CALLS = [
          "sys_open"]
 
 if __name__ == "__main__":
+    """
+    It filters out calls that aren't not going to be replayed. We do not 
+    replay calls other than rmdir, unlink, stat, fstat, llseek, read, write,
+    close and open. We also do not replay FIFO, SOCK, BLK and CHR files
+    """
     for line in sys.stdin:
         if not re.search("S_IFIFO|S_IFSOCK|S_IFBLK|S_IFCHR", line) and re.search("|".join(CALLS), line):
 		print line.strip()

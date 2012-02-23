@@ -394,7 +394,7 @@ void do_consume (Workflow_element* element) {
 }
 
 int produce_buffer_full() {
-	return 0;
+	return (shared_buff->last_produced + 1) >= BUFF_SIZE;
 }
 
 /**
@@ -416,13 +416,15 @@ void *produce (void *arg) {
 		sem_wait(shared_buff->mutex);
 			frontier = shared_buff->frontier;
 			while (frontier != NULL) {
-				//dispatch children that was not dispatched yet
+		        	//dispatch children that was not dispatched yet
 				w_element = frontier->w_element;
 				int chl_index;
 				for (chl_index = 0; chl_index < w_element->n_children; chl_index++) {
 					Workflow_element* child = get_child (w_element, chl_index);
 					if (! produced (child)) {
-						do_produce (child);
+						if ( ! produce_buffer_full ()) {
+							do_produce (child);
+						}
 					}
 				}
 				frontier = frontier->next;

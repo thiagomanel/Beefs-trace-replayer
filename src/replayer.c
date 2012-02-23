@@ -357,7 +357,7 @@ int do_replay (struct replay_command* cmd) {
 }
 
 void do_produce(Workflow_element* el_to_produce) {
-
+        printf("shared_buff->last_produced %d\n", shared_buff->last_produced);
 	//1. produce
 	shared_buff->produced_queue[++shared_buff->last_produced] = el_to_produce;
 	//2. mark
@@ -391,6 +391,10 @@ void do_consume (Workflow_element* element) {
 				element->command->command);
 		exit (1);
 	}
+}
+
+int produce_buffer_full() {
+	return 0;
 }
 
 /**

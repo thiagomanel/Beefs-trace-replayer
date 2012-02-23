@@ -45,23 +45,23 @@ def fs_dependency_order(lines):#do we assume _id or timestamp order ?
             return tokens[6]
 
         if call(line_tokens) == "mkdir":
-            filepath = line_tokens[6]
+            filepath = pathcall_fullpath(line_tokens)
             parent = parent_path(filepath)
             return [filepath, parent]
         elif call(line_tokens) == "stat":
-            return [line_tokens[6]]
+            return [pathcall_fullpath(line_tokens)]
         elif call(line_tokens) == "open":
             return  [(pid(line_tokens), open_fd(line_tokens)), open_full_path(line_tokens)]
         elif call(line_tokens) == "fstat":
             return [(pid(line_tokens), fstat_fd(line_tokens))]
         elif call(line_tokens) == "llseek":
-            return [llseek_fullpath(line_tokens)]
+            return [pathcall_fullpath(line_tokens)]
         elif call(line_tokens) == "rmdir":
-            filepath = rmdir_fullpath(line_tokens)
+            filepath = pathcall_fullpath(line_tokens)
             parent = parent_path(filepath)
             return [filepath, parent]
         elif call(line_tokens) == "unlink":
-            filepath = unlink_fullpath(line_tokens)
+            filepath = pathcall_fullpath(line_tokens)
             parent = parent_path(filepath)
             return [filepath, parent]
         elif (call(line_tokens) == "write") or (call(line_tokens) == "read"):

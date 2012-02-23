@@ -36,16 +36,15 @@ def rw_fullpath(token):
 def close_fd(tokens):
     return tokens[-2]
 
-def llseek_fullpath(tokens):
+#FIXME BOTH FD AND FULLPATH ARE AT INDEX 6 ?
+def pathcall_fullpath(tokens):
+    """
+    unlink, mkdir, rmdir, stat and llseek are syscall calls receiving path as parameter.
+    Fullpath has the same position in all of them
+    """
     return tokens[6]
 
 def llseek_fd(tokens):
-    return tokens[6]
-
-def rmdir_fullpath(tokens):
-    return tokens[6]
-
-def unlink_fullpath(tokens):
     return tokens[6]
 
 """
@@ -67,6 +66,10 @@ def unlink_fullpath(tokens):
   33193 sys_read
   50483 sys_write
 """
+
+def home_file(fullpath):
+    return fullpath.startswith(HOME)
+
 def clean(lines_tokens):
 
     def open_full_path(cleaned_open):
@@ -75,54 +78,80 @@ def clean(lines_tokens):
     def error(tokens, error_msg):
         return " ".join(tokens) + " error: " + error_msg
 
-    pid_fd2fullpath = {}
+    pid_fd2opencall = {}
     cleaned = []
     errors = []
-
+#FIXME I guess one can shrink lot of lines in a refactor
     for tokens in lines_tokens:
         _call = call(tokens)
         if _call == "sys_stat64":
-            cleaned.append(clean_stat(tokens))
+            _stat = clean_stat(tokens)
+            if home_file(pathcall_fullpath(_stat.split())):
+                cleaned.append(_stat)
+        elif _call == "vfs_rmdir":
+	    _rmdir = clean_rmdir(tokens)
+            if home_file(pathcall_fullpath(_rmdir.split())):
+                cleaned.append(_rmdir)
+        elif _call == "sys_mkdir":
+            _mkdir = clean_mkdir(tokens)
+            if home_file(pathcall_fullpath(_mkdir.split())):
+                cleaned.append(_mkdir)
+        elif _call == "vfs_unlink":#always we have a sys_unlink we have a vfs_unlink, the converse it is true, so we choose to use just vfs_unlink
+            _unlink = clean_unlink(tokens)
+            if home_file(pathcall_fullpath(_unlink.split())):
+                cleaned.append(_unlink)
+        elif _call == "generic_file_llseek":
+            _llseek = clean_llseek(tokens)
+            if home_file(pathcall_fullpath(_llseek.split())):
+                cleaned.append(_llseek)
         elif _call == "sys_fstat64":
             pid_fd = (pid(tokens), fstat_fd(tokens))
             fullpath = None
-            if pid_fd in pid_fd2fullpath:
-                fullpath = open_full_path(pid_fd2fullpath[pid_fd])
-            cleaned.append(clean_fstat(tokens, fullpath))
-        elif _call == "vfs_rmdir":
-            cleaned.append(clean_rmdir(tokens))
-        elif _call == "sys_mkdir":
-            cleaned.append(clean_mkdir(tokens))
-        elif _call == "vfs_unlink":#always we have a sys_unlink we have a vfs_unlink, the converse it is true, so we choose to use just vfs_unlink
-            cleaned.append(clean_unlink(tokens))
+            if pid_fd in pid_fd2opencall:
+                fullpath = open_full_path(pid_fd2opencall[pid_fd])
+                if home_file(fullpath):
+                    cleaned.append(clean_fstat(tokens, fullpath))
+            else:
+                errors.append(error(tokens, "file descriptor not found"))
         elif _call == "sys_open":
             pid_fd = (pid(tokens), open_fd(tokens))
-            if pid_fd in pid_fd2fullpath:
+            if pid_fd in pid_fd2opencall:
                 errors.append(error(tokens, "File descriptor is alread in use"))
             else:
                 open_call = clean_open(tokens)
-                pid_fd2fullpath[pid_fd] = open_call
-                cleaned.append(open_call)
-        elif _call == "sys_close":#we should remove pid_fd from map
-            cleaned.append(clean_close(tokens))
+                pid_fd2opencall[pid_fd] = open_call
+                fullpath = open_full_path(pid_fd2opencall[pid_fd])
+                if home_file(fullpath):
+                    cleaned.append(open_call)
         elif _call == "sys_write":
             pid_fd = (pid(tokens), rw_fd(tokens))
-            if pid_fd in pid_fd2fullpath:
-                open_call = pid_fd2fullpath[pid_fd]
-                write_call = clean_rw(tokens, "write", open_full_path(open_call))
-                cleaned.append(write_call)
+            if pid_fd in pid_fd2opencall:
+                open_call = pid_fd2opencall[pid_fd]
+                _fullpath = open_full_path(open_call)
+                if home_file(_fullpath):
+                    write_call = clean_rw(tokens, "write", _fullpath)
+                    cleaned.append(write_call)
             else:
                 errors.append(error(tokens, "file descriptor not found")) 
         elif _call == "sys_read":
             pid_fd = (pid(tokens), rw_fd(tokens))
-            if pid_fd in pid_fd2fullpath:
-                open_call = pid_fd2fullpath[pid_fd]
-                write_call = clean_rw(tokens, "read", open_full_path(open_call))
-                cleaned.append(write_call)
+            if pid_fd in pid_fd2opencall:
+                open_call = pid_fd2opencall[pid_fd]
+                _fullpath = open_full_path(open_call)
+                if home_file(_fullpath):
+                    read_call = clean_rw(tokens, "read", _fullpath)
+                    cleaned.append(read_call)
             else:
                 errors.append(error(tokens, "file descriptor not found")) 
-        elif _call == "generic_file_llseek":
-            cleaned.append(clean_llseek(tokens))
+        elif _call == "sys_close":
+            pid_fd = (pid(tokens), close_fd(tokens))
+            if pid_fd in pid_fd2opencall:
+                open_call = pid_fd2opencall[pid_fd]
+                _fullpath = open_full_path(open_call)
+                if home_file(_fullpath):
+                    cleaned.append(clean_close(tokens))
+            else:
+                errors.append(error(tokens, "file descriptor not found"))
         else:
             errors.append(error(tokens, "unknow operation"))
 
@@ -222,7 +251,7 @@ def clean_mkdir(tokens):
     when 
     65534 1856 1856 (gmetad) sys_mkdir 1318615768915818-17 / /var/lib/ganglia/rrds/__SummaryInfo__ 493 -17
     returns
-    65534 1856 1856 (gmetad) sys_mkdir 1318615768915818-17 /var/lib/ganglia/rrds/__SummaryInfo__ 493 -17
+    65534 1856 1856 (gmetad) mkdir 1318615768915818-17 /var/lib/ganglia/rrds/__SummaryInfo__ 493 -17
     """
     return " ".join(tokens[:4] + ["mkdir"] + [tokens[5]] + [full_path(tokens[6], tokens[7])] + tokens[-2:])
 

@@ -221,14 +221,9 @@ class TestOrderTrace(unittest.TestCase):
                 ]
 
         o_lines = order_by_pidfid(lines)
-	first_tid = o_lines.next()
-	second_tid = o_lines.next()
+        self.assertEquals(len(o_lines), 4)
 
-        self.assertEquals(len(first_tid), 2)
-        self.assertEquals(len(second_tid), 2)
-
-        all_lines = list(chain(first_tid, second_tid))
-        all_lines = sorted(all_lines, key=lambda line: line[0])#sort by _id
+        all_lines = sorted(o_lines, key=lambda line: line[0])#sort by _id
 
         (_id, n_parents, parents, n_children, children, line) = all_lines[0]
         self.assertEquals(line, lines[0])

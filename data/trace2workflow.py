@@ -2,7 +2,7 @@ import sys
 from order_trace import *
 
 if __name__ == "__main__":
-    #python order_trace.py < file.clean > file.pidfid_order
+    #python trace2workflow.py < file.clean > file.pidfid_order
     #FIXME do not print pidfid order result, pass them to fsdependency instead
     lines = sys.stdin.readlines()
     pidfid_lines = sorted(order_by_pidfid(lines), key=lambda line: line[0])#sort by _id

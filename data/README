@@ -2,5 +2,5 @@ Trace treatment includes
     1. filter_trace.py - some files and operations are not supported by the replayer. It outputs .filtered files
     2. sort.sh - it sorts filtered files withing a directory. It outputs .sort files
     3. join_sort.sh - it concats and sort sorted files
-    4. clean_trace.py - translates relative paths to fullpaths and other sugar sintaxes to fit into replayer format. For some calls that manipulate fd, it tries to associate its fullpath by relating to open call. For this reason, this script needs input to be timestamp ordered
-    5. trace2workflow.py - It applies pid_tid and fs dependencies ordering. 
+    4. clean_trace.py (python clean_trace.py < filename.join > filename.clean 2> filename.clean.err- translates relative paths to fullpaths and other sugar sintaxes to fit into replayer format. For some calls that manipulate fd, it tries to associate its fullpath by relating to open call. For this reason, this script needs input to be timestamp ordered
+    5. trace2workflow.py (python trace2workflow.py < file.clean > file.pidfid_order) - It applies pid_tid and fs dependencies ordering. 

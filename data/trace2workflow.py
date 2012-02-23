@@ -22,5 +22,7 @@ if __name__ == "__main__":
     lines = sys.stdin.readlines()
     pidfid_lines = sorted(order_by_pidfid(lines), key=lambda line: line[0])#sort by _id
     fs_dep_lines = sorted(fs_dependency_order(pidfid_lines), key=lambda line: line[0])#sort by _id
+    n_commands = len(fs_dep_lines)
+    sys.stdout.write(str(n_commands) + "\n")
     for o_line in fs_dep_lines:
         sys.stdout.write(trace_line2workflowstr(o_line))

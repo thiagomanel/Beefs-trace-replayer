@@ -236,6 +236,7 @@ def clean_unlink(tokens):
     return " ".join(tokens[:4] + ["unlink"] + [tokens[5]] + [full_path(tokens[7], tokens[8])] + [tokens[-1]])
 
 if __name__ == "__main__":
+    #python clean_trace.py < file.join > file.clean 2> file.clean.err
     tokens = [line.split() for line in sys.stdin]
     (cleaned, errors) = clean(tokens)
     sys.stdout.writelines([str(op) + "\n" for op in cleaned])

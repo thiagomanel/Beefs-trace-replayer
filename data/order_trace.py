@@ -142,5 +142,9 @@ def order_by_pidfid(lines):
     for lines in lines_by_fidpidprocess.values():
         for (father, son) in pairwise(lines):
             join(father, son)
-
-    return chain(lines_by_fidpidprocess.values())
+    
+    #stackoverflow says it is faster
+    #FIXME: unit should be broken after this change
+    result = []
+    map(result.extend, lines_by_fidpidprocess.values())
+    return result

@@ -252,6 +252,10 @@ int produced (Workflow_element* element) {//FIXME do we need this?
 	return element->produced;
 }
 
+int consumed (Workflow_element* element) {
+	return element->consumed;
+}
+
 /**
  * Returns non-zero if all Workflow_element identified by the ids stored in
  * *element_ids were consumed (dispatched) or n_elements is zero
@@ -357,7 +361,6 @@ int do_replay (struct replay_command* cmd) {
 }
 
 void do_produce(Workflow_element* el_to_produce) {
-        printf("shared_buff->last_produced %d\n", shared_buff->last_produced);
 	//1. produce
 	shared_buff->produced_queue[++shared_buff->last_produced] = el_to_produce;
 	//2. mark
@@ -383,13 +386,14 @@ void do_consume (Workflow_element* element) {
 		shared_buff->consumed_queue[++shared_buff->last_consumed] = element;
 
 		mark_consumed (element);
+		printf ("do_consume element->id %d\n", element->id);
 		stamp_replay_time (replay_result (element->id));
 
 		++shared_buff->consumed_count;
 	} else {
 		fprintf (stderr, "Error on replaying command type=%d\n",
 				element->command->command);
-		exit (1);
+		//exit (1);
 	}
 }
 
@@ -421,7 +425,8 @@ void *produce (void *arg) {
 				int chl_index;
 				for (chl_index = 0; chl_index < w_element->n_children; chl_index++) {
 					Workflow_element* child = get_child (w_element, chl_index);
-					if (! produced (child)) {
+					if (! produced (child) && 
+						_consumed (child->parents_ids, child->n_parents)) {
 						if ( ! produce_buffer_full ()) {
 							do_produce (child);
 						}
@@ -472,7 +477,7 @@ Workflow_element* take () {
 	return cmd;
 }
 
-long delay_on_trace (struct replay_command* earlier,	struct replay_command* later) {
+long delay_on_trace (struct replay_command* earlier, struct replay_command* later) {
 	//assert negative, programming error
 	return 0;
 }
@@ -483,12 +488,11 @@ long elapsed_to_now (struct timeval *timestamp) {
 
 	struct timeval now;
 	gettimeofday (&now, NULL);
-    long us_elapsed = (now.tv_sec - timestamp->tv_sec) * 1000000
+	long us_elapsed = (now.tv_sec - timestamp->tv_sec) * 1000000
     		+ (now.tv_usec - timestamp->tv_usec);
 
-    assert (us_elapsed >= 0);
-
-    return us_elapsed;
+	assert (us_elapsed >= 0);
+	return us_elapsed;
 }
 
 /**
@@ -511,11 +515,12 @@ long delay (Workflow_element* to_replay) {
 //FIXME what if I have two parents. I don't think it is possible in your data but our workflow allows it
 //FIXME what if I don't have a parent ? :
 	Workflow_element* parent = get_parent (to_replay, 0);
-	command_replay_result* parent_cmd_result = replay_result (parent->id);
+	assert (consumed (parent));
 
-    long dlay_trace = delay_on_trace (parent->command, to_replay->command);
-    long elapsed = elapsed_since_replay (parent_cmd_result);
-    return dlay_trace - elapsed;
+	command_replay_result* parent_cmd_result = replay_result (parent->id);
+	long dlay_trace = delay_on_trace (parent->command, to_replay->command);
+	long elapsed = elapsed_since_replay (parent_cmd_result);
+	return dlay_trace - elapsed;
 }
 
 /**

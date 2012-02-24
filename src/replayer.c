@@ -50,20 +50,6 @@ Replay_result* result;
  */
 static int *pids_to_fd_pairs[PID_MAX];
 
-void print_w_element (Workflow_element* element) {
-	printf("w_element id=%d n_children=%d n_parent=%d produced=%d consumed=%d\n",
-			element->id, element->n_children, element->n_parents, element->produced,
-			element->consumed);
-	int i;
-	for (i = 0; i < element->n_children; i++) {
-		printf ("child_i=%d id=%d\n", i, element->children_ids[i]);
-	}
-
-	for (i = 0; i < element->n_parents; i++) {
-		printf ("parent_i=%d id=%d\n", i, element->parents_ids[i]);
-	}
-}
-
 Workflow_element* alloc_workflow_element () {
 	Workflow_element* element = (Workflow_element*) malloc (sizeof (Workflow_element));
 	fill_workflow_element (element);
@@ -112,6 +98,29 @@ Workflow_element* get_child (Workflow_element* parent, int child_index) {
 Workflow_element* get_parent (Workflow_element* child, int parent_index) {
 	int parent_id = child->parents_ids[parent_index];
 	return element(workload, parent_id);
+}
+
+void w_element_info(Workflow_element* element) {
+	printf("w_element id=%d n_children=%d n_parent=%d produced=%d consumed=%d\n",
+				element->id, element->n_children, element->n_parents, element->produced,
+				element->consumed);
+}
+
+void print_w_element (Workflow_element* element) {
+
+	printf ("Info\t");
+	w_element_info(element);
+
+	int i;
+	for (i = 0; i < element->n_children; i++) {
+		printf ("child_i=%d id=%d info=\t", i, element->children_ids[i]);
+		w_element_info (get_child (element, i));
+	}
+
+	for (i = 0; i < element->n_parents; i++) {
+		printf ("parent_i=%d id=%d info=\t", i, element->parents_ids[i]);
+		w_element_info (get_parent(element, i));
+	}
 }
 
 int is_child (Workflow_element* parent, Workflow_element* child) {
@@ -381,12 +390,12 @@ void stamp_replay_time (command_replay_result* cmd_result) {
 
 void do_consume (Workflow_element* element) {
 
+	printf ("do_consume element->id %d\n", element->id);
 	if (do_replay (element->command) == REPLAY_SUCCESS) {
 
 		shared_buff->consumed_queue[++shared_buff->last_consumed] = element;
 
 		mark_consumed (element);
-		printf ("do_consume element->id %d\n", element->id);
 		stamp_replay_time (replay_result (element->id));
 
 		++shared_buff->consumed_count;
@@ -420,11 +429,14 @@ void *produce (void *arg) {
 		sem_wait(shared_buff->mutex);
 			frontier = shared_buff->frontier;
 			while (frontier != NULL) {
-		        	//dispatch children that was not dispatched yet
+		        //dispatch children that was not dispatched yet
+				printf("----------------\n");
 				w_element = frontier->w_element;
 				int chl_index;
 				for (chl_index = 0; chl_index < w_element->n_children; chl_index++) {
 					Workflow_element* child = get_child (w_element, chl_index);
+					printf("child\n");
+					print_w_element(child);
 					if (! produced (child) && 
 						_consumed (child->parents_ids, child->n_parents)) {
 						if ( ! produce_buffer_full ()) {
@@ -432,6 +444,7 @@ void *produce (void *arg) {
 						}
 					}
 				}
+				printf("+++++++++++++++++\n");
 				frontier = frontier->next;
 			}
 		sem_post(shared_buff->mutex);

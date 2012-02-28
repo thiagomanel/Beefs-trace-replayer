@@ -190,6 +190,17 @@ Parms* alloc_and_parse_parms (op_t cmd_type,  char* token) {
 		parm[0].argm = (arg*) malloc (sizeof (arg));
 		parm[0].argm->i_val = atoi(token); //fd
 		break;
+	case FSTAT_OP:
+		parm = (Parms*) malloc(3 * sizeof(Parms));
+		token = strtok(NULL, " "); //timestamp
+		token = strtok(NULL, " "); //fullpath
+		parm[0].argm = (arg*) malloc (sizeof (arg));
+		parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
+		strcpy(parm[0].argm->cprt_val, token);
+		token = strtok(NULL, " "); //fd
+		parm[1].argm = (arg*) malloc (sizeof (arg));
+		parm[1].argm->i_val = atoi(token);
+		break;
 	default: //FIXME we need a case to NONE_OP, test it
 		parm = (Parms*) malloc(sizeof(Parms)); //it should be done at each switch case
 		token = strtok(NULL, " "); //timestamp

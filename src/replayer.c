@@ -362,6 +362,13 @@ int do_replay (struct replay_command* cmd) {
 			//i think i this way we do not mask programming errors
 		}
 		break;
+		case FSTAT_OP: {
+			struct stat sb;
+			int traced_fd = args[1].argm->i_val;
+			int repl_fd = replayed_fd (cmd->caller->pid, traced_fd);
+			fstat(repl_fd, &sb);
+		}
+		break;
 		default:
 			return -1;
 	}
@@ -390,7 +397,6 @@ void stamp_replay_time (command_replay_result* cmd_result) {
 
 void do_consume (Workflow_element* element) {
 
-	printf ("do_consume element->id %d\n", element->id);
 	if (do_replay (element->command) == REPLAY_SUCCESS) {
 
 		shared_buff->consumed_queue[++shared_buff->last_consumed] = element;
@@ -400,9 +406,9 @@ void do_consume (Workflow_element* element) {
 
 		++shared_buff->consumed_count;
 	} else {
-		fprintf (stderr, "Error on replaying command type=%d\n",
-				element->command->command);
-		//exit (1);
+		fprintf (stderr, "Error on replaying command workflow_id=%d type=%d\n",
+			element->id, element->command->command);
+		exit (1);
 	}
 }
 
@@ -430,13 +436,10 @@ void *produce (void *arg) {
 			frontier = shared_buff->frontier;
 			while (frontier != NULL) {
 		        //dispatch children that was not dispatched yet
-				printf("----------------\n");
 				w_element = frontier->w_element;
 				int chl_index;
 				for (chl_index = 0; chl_index < w_element->n_children; chl_index++) {
 					Workflow_element* child = get_child (w_element, chl_index);
-					printf("child\n");
-					print_w_element(child);
 					if (! produced (child) && 
 						_consumed (child->parents_ids, child->n_parents)) {
 						if ( ! produce_buffer_full ()) {
@@ -444,7 +447,6 @@ void *produce (void *arg) {
 						}
 					}
 				}
-				printf("+++++++++++++++++\n");
 				frontier = frontier->next;
 			}
 		sem_post(shared_buff->mutex);
@@ -470,6 +472,7 @@ void *produce (void *arg) {
 					}
 				}
 
+				//FIXME I think items do not leave the frontier
 				if (! _contains (shared_buff->frontier, consumed)) {
 					frontier_append (consumed);
 				}

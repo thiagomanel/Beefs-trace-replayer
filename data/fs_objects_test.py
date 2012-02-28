@@ -149,7 +149,7 @@ class TestCleanTrace(unittest.TestCase):
         self.assertEquals(["__SummaryInfo__"], cr_dirs)
         self.assertEquals([], cr_files)
 
-    def test_accessed_and_created_empty_response_error_lls(self):
+    def test_accessed_and_created_empty_response_error_mkdir(self):
         ac_dirs, ac_files, cr_dirs, cr_files = accessed_and_created("65534 1856 1856 (gmetad) mkdir 1318615768915818-17 /var/lib/ganglia/rrds/__SummaryInfo__ 493 -17".split())
         self.assertEquals([], ac_dirs )
         self.assertEquals([], ac_files)

@@ -23,12 +23,19 @@ def dirs(fullpath):
         _dirs.extend(dirs(fullpath[:last_slash_index]))
     return _dirs
 
-#close and fstat handles fd. we can get its information on the related open call
 def accessed_and_created(tokens):
+    """
+        for a tokenized workflow line, extract the collection of touched and 
+        created diretories and files as a 4-tuple of lists 
+        ([touched_dirs], [touched_files], [created_dirs], [created_files])
+    """
+    #we do not handle close and fstat because its information was already processed on the 
+    #associated open call
     if success(tokens):
         _fullpath = fullpath(tokens)
         _call = call(tokens)
-        if (_call == "unlink" or _call == "stat" or _call == "read" or _call == "write" or _call == "llseek"):#FIXME we can make basename and dirs to manage this
+        if (_call == "unlink" or _call == "stat" or _call == "read" or _call == "write" or _call == "llseek"):
+            #FIXME we can make basename and dirs to manage this
             parent = parent_path(_fullpath)
             return (dirs(parent), [basename(_fullpath)], [], [])
         elif (_call == "rmdir"):

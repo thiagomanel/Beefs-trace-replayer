@@ -75,14 +75,15 @@ TEST(LoaderTest, LoadCloseCall) {
 TEST(LoaderTest, LoadFstatCall) {
 	//syscall.fstat
 	//uid pid tid exec_name fstat begin-elapsed fd return
-	//1159 2076 2194 (gnome-do) fstat 1318539073583678-143 23 0
+	//1159 2076 2194 (gnome-do) fstat 1318539073583678-143 /home/thiagoepdc/.config/google-chrome/com.google.chrome.gUMVsk 23 0
 	//FIXME What if in other arch the calls name is not fstat64 ?
+
 
 	Workflow_element* element = alloc_workflow_element();
 	EXPECT_EQ(0, element->consumed);
 	EXPECT_EQ(0, element->produced);
 	char line[] =
-			"1 0 - 1 2 1159 2076 2194 (gnome-do) fstat 1318539073583678-143 23 0";
+			"1 0 - 1 2 1159 2076 2194 (gnome-do) fstat 1318539073583678-143 /home/thiagoepdc/.config/google-chrome/com.google.chrome.gUMVsk 23 0";
 	parse_element (element, line);
 
 	EXPECT_EQ(1, element->id);
@@ -93,14 +94,14 @@ TEST(LoaderTest, LoadFstatCall) {
 	EXPECT_EQ(0, element->consumed);
 	EXPECT_EQ(0, element->produced);
 
-    struct replay_command* loaded_cmd = element->command;
+    	struct replay_command* loaded_cmd = element->command;
 
-    EXPECT_EQ(FSTAT_OP, loaded_cmd->command);
-    EXPECT_EQ(0, loaded_cmd->expected_retval);
-    Caller* caller_id = loaded_cmd->caller;
-    EXPECT_EQ(1159, caller_id->uid);
-    EXPECT_EQ(2076, caller_id->pid);
-    EXPECT_EQ(2194, caller_id->tid);
+	EXPECT_EQ(FSTAT_OP, loaded_cmd->command);
+    	EXPECT_EQ(0, loaded_cmd->expected_retval);
+    	Caller* caller_id = loaded_cmd->caller;
+    	EXPECT_EQ(1159, caller_id->uid);
+    	EXPECT_EQ(2076, caller_id->pid);
+    	EXPECT_EQ(2194, caller_id->tid);
 }
 
 TEST(LoaderTest, LoadRmdirCall) {

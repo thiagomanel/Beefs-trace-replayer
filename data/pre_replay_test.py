@@ -3,11 +3,17 @@ from pre_replay import *
 
 class TestTraceWalk(unittest.TestCase):
 
-    def test_objects_tobe_createdr(self):
+    def fs_object(to_create):
+        return to_create[0]
+
+    def fs_type(to_create):
+        return to_create[1]
+
+    def test_fsobjects_to_be_created(self):
         lines = [
                  "0 916 916 (rm) rmdir 1319227056527181-26 /ok_rmdir/lib/gp_hash_table_map_ 0",
                  "0 916 916 (rm) rmdir 1319227056527181-26 /error_rmdir/lib/gp_hash_table_map_2 -1",
-                 "1159 2364 32311 (eclipse) unlink 1318539134533662-8118 /ok_unlinkl/ourgrid/debug_no_store_hash_fn_imps.hpp 0",
+                 "1159 2364 32311 (eclipse) unlink 1318539134533662-8118 /ok_unlink/ourgrid/debug_no_store_hash_fn_imps.hpp 0",
                  "1159 2364 32311 (eclipse) unlink 1318539134533662-8118 /error_unlink/ourgrid/debug_no_store_hash_fn_imps.hpp1 -1",
                  "65534 1856 1867 (gmetad) stat 1319227151896626-113 /ok_stat/__SummaryInfo__/cpu_idle.rrd 0",
                  "65534 1856 1867 (gmetad) stat 1319227151896626-113 /error_stat/__SummaryInfo__/cpu_idle.rrd -1",
@@ -23,6 +29,69 @@ class TestTraceWalk(unittest.TestCase):
                  "0 940 940 (tar) open 1319227153693893-147 /create/lib/euc_jp.pyc 66 384 5",#open to create
                  "0 940 940 (tar) open 1319227153693893-147 /error_open/lib/euc_jp.pyc 32961 384 -3"
                 ]
+
+        #test if a path cannot be shown twice
+
+        to_create = fs_objects_to_create(lines)
+
+        self.assertEquals("/ok_rmdir", self.fs_object(to_create[0]))
+        self.assertEquals("d", self.fs_type(to_create[0]))
+        self.assertEquals("/ok_rmdir/lib", self.fs_object(to_create[1]))
+        self.assertEquals("d", self.fs_type(to_create[1]))
+        self.assertEquals("/ok_rmdir/lib/gp_hash_table_map_", self.fs_object(to_create[2]))
+        self.assertEquals("d", self.fs_type(to_create[2]))
+
+        self.assertEquals("/ok_unlink", self.fs_object(to_create[3]))
+        self.assertEquals("d", self.fs_type(to_create[3]))
+        self.assertEquals("/ok_unlink/ourgrid", self.fs_object(to_create[4]))
+        self.assertEquals("d", self.fs_object(to_create[4]))
+        self.assertEquals("/ok_unlink/ourgrid/debug_no_store_hash_fn_imps.hpp", self.fs_object(to_create[5]))
+        self.assertEquals("f", self.fs_object(to_create[5]))
+
+        self.assertEquals("/ok_stat", self.fs_object(to_create[6]))
+        self.assertEquals("d", self.fs_type(to_create[6]))
+        self.assertEquals("/ok_stat/__SummaryInfo__", self.fs_object(to_create[7]))
+        self.assertEquals("d", self.fs_type(to_create[7]))
+        self.assertEquals("/ok_stat/__SummaryInfo__/cpu_idle.rrd", self.fs_object(to_create[8]))
+        self.assertEquals("d", self.fs_type(to_create[8]))
+
+        self.assertEquals("/ok_read", self.fs_object(to_create[9]))
+        self.assertEquals("d", self.fs_type(to_create[9]))
+        self.assertEquals("/ok_read/1079", self.fs_object(to_create[10]))
+        self.assertEquals("d", self.fs_type(to_create[10]))
+        self.assertEquals("/ok_read/1079/mounts", self.fs_object(to_create[11]))
+        self.assertEquals("f", self.fs_type(to_create[11]))
+
+        self.assertEquals("/ok_write", self.fs_object(to_create[12]))
+        self.assertEquals("d", self.fs_type(to_create[12]))
+        self.assertEquals("/ok_write/1079", self.fs_object(to_create[13]))
+        self.assertEquals("d", self.fs_type(to_create[13]))
+        self.assertEquals("/ok_write/1079/mounts", self.fs_object(to_create[14]))
+        self.assertEquals("f", self.fs_type(to_create[14]))
+
+        self.assertEquals("/ok_llseek", self.fs_object(to_create[15]))
+        self.assertEquals("d", self.fs_type(to_create[15]))
+        self.assertEquals("/ok_llseek/R-ex", self.fs_object(to_create[16]))
+        self.assertEquals("d", self.fs_type(to_create[16]))
+        self.assertEquals("/ok_llseek/R-ex/file", self.fs_object(to_create[17]))
+        self.assertEquals("d", self.fs_type(to_create[17]))
+
+        self.assertEquals("/ok_mkdir", self.fs_object(to_create[18]))
+        self.assertEquals("d", self.fs_type(to_create[18]))
+        self.assertEquals("/ok_mkdir/rrds", self.fs_object(to_create[19]))
+        self.assertEquals("d", self.fs_type(to_create[19]))
+
+        self.assertEquals("/ok_open", self.fs_object(to_create[20]))
+        self.assertEquals("d", self.fs_type(to_create[20]))
+        self.assertEquals("/ok_open/lib", self.fs_object(to_create[21]))
+        self.assertEquals("d", self.fs_type(to_create[21]))
+        self.assertEquals("/ok_open/lib/euc_jp.pyc", self.fs_object(to_create[22]))
+        self.assertEquals("f", self.fs_type(to_create[22]))
+
+        self.assertEquals("/create", self.fs_object(to_create[23]))
+        self.assertEquals("d", self.fs_type(to_create[23]))
+        self.assertEquals("/create/lib", self.fs_object(to_create[21]))
+        self.assertEquals("d", self.fs_type(to_create[21]))
 
 if __name__ == '__main__':
     unittest.main()

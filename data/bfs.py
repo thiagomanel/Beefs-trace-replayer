@@ -1,6 +1,7 @@
 from collections import deque
 
 def bfs(g, start):
+    print g
     queue, enqueued = deque([(None, start)]), set([start])
     while queue:
         parent, n = queue.popleft()

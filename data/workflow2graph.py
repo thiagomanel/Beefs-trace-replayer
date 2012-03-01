@@ -1,7 +1,7 @@
 import sys
 from bfs import *
 
-def graph(workflow_lines):
+def graph(workflow_lines, bottom_up=False):
     """ 
         it builds a graph based on replay workflow data. On this map-based graph, node id
         is the key and the arcs is the value as a list of ids
@@ -31,8 +31,10 @@ def graph(workflow_lines):
     _graph = {}
     for node in nodes:
         node_id = node[0]
-        parents = node[2] 
-        _graph[node_id] = parents
+        if bottom_up:
+            _graph[node_id] = node[2]#parents
+        else:
+            _graph[node_id] = node[-1]#children
     return _graph
 
 if __name__ == "__main__":

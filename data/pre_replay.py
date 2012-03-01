@@ -15,8 +15,8 @@ def fs_objects_to_create(workflow_lines):
 
     to_create = []
     w_tree = graph(workflow_lines)
-    for node, children in bfs(w_tree, 1):
-        print node, children
+    for node in bfs(w_tree, 1):
+        print node
         node_objs = objects(node)
         node_syscall = node_objs[-1]
         children_objs = map(objects, children)

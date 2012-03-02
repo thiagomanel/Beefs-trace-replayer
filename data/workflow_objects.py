@@ -27,5 +27,5 @@ def objects(workflow_line_tokens):
         children = []
         syscall_index = n_children_pos + 2
     
-    syscall = "".join(workflow_line_tokens[syscall_index:])
+    syscall = " ".join(workflow_line_tokens[syscall_index:])
     return (_id, n_parents, parents, n_children, children, syscall)

@@ -1,5 +1,8 @@
 from clean_trace import *
 from fileutil import *
+from workflow2graph import *
+from workflow_objects import *
+from itertools import *
 
 #TODO: after using this module do we guarantee all file system hierarchy was created ? So, replayer
 	#can run fine ?
@@ -51,3 +54,45 @@ def accessed_and_created(tokens):
                 return (dirs(parent), [basename(_fullpath)], [], [])
 
     return ([], [], [], [])
+
+def fs_tree(workflow_lines):
+    """ gives the fs tree as view in workflow begin """
+    w_lines_by_id = dict(
+                          [ (WorkflowLine(w_line.split())._id,  w_line)
+                           for w_line in workflow_lines]
+                         )
+
+    def path_graph(dirs):
+        """ when ["/a/b/c", "/a/b", "/a"]
+            then {"/a":"/a/b", "/ab":"/a/b/c"}
+        """
+        def pairwise(iterable):#this code is duplicated elsewher
+            a, b = tee(iterable)
+            next(b, None)
+            return izip(a, b)
+
+        _graph = {}
+        for (parent, child) in pairwise(reversed(dirs)):
+            _graph[parent] = child
+        return _graph
+
+    def syscall(line_id):
+        w_line = w_lines_by_id[line_id]
+        return WorkflowLine(w_line.split()).syscall
+                    
+    parents_to_children = {}
+    created_paths = set()
+
+    for node_and_child in bfs(graph(workflow_lines), 1):
+        child_id = int(node_and_child[1])
+        node_syscall = syscall(child_id)
+        ac_dirs, ac_files, c_dirs, c_files = accessed_and_created(node_syscall.split())
+
+        for parent_dir, child_dir in path_graph(ac_dirs).iteritems():
+            if not parent_dir in created_paths:
+                if not parent_dir in parents_to_children:
+                    parents_to_children[parent_dir] = set()
+                if not child_dir in created_paths:
+                    parents_to_children[parent_dir].add(child_dir)
+        
+    return parents_to_children

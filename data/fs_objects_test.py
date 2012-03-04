@@ -4,7 +4,7 @@ from fs_objects import *
 
 class TestFSObjects(unittest.TestCase):
 
-    def test_fs_tree(workflow_lines):
+    def test_fs_tree(self):
         lines = [
                  "1 0 - 1 2 0 916 916 (rm) rmdir 1319227056527181-26 /ok_rmdir/lib/gp_hash_table_map_ 0",
                  "2 1 1 1 3 0 916 916 (rm) rmdir 1319227056527181-26 /error_rmdir/lib/gp_hash_table_map_2 -1",
@@ -27,7 +27,7 @@ class TestFSObjects(unittest.TestCase):
 
         tree = fs_tree(lines)
         self.assertTrue("/ok_rmdir" in tree)
-        self.assertTrue("lib" in tree["/ok_rmdir"])
+        self.assertTrue("/ok_rmdir/lib" in tree["/ok_rmdir"])
         self.assertEquals(1, len(tree["/ok_rmdir"]))
 
 

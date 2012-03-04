@@ -1,16 +1,16 @@
 from bfs import *
 from fs_objects import *
 from workflow2graph import *
-from workflow_objects import objects
+from workflow_objects import *
 
 def fs_objects_to_create(workflow_lines):
 
     def trace_begin(workflow_lines):
-        first_syscall = objects(workflow_lines[0].split())[-1]
+        first_syscall = WorkflowLine(workflow_lines[0].split()).syscall
         return syscall_timestamp(first_syscall)
 
     def workflow_line_id(workflow_line_tokens):
-        return objects(workflow_line_tokens)[0]
+        return WorkflowLine(workflow_line_tokens)._id
 
     def syscall_timestamp(syscall):
         # it should be moved to an util module (testing tool has something related to it) FIXME
@@ -29,11 +29,9 @@ def fs_objects_to_create(workflow_lines):
     w_tree = graph(workflow_lines)
     for node_and_child in bfs(w_tree, 1):
         w_line = w_lines_by_id[node_and_child[1]]
-        print w_line
-        node_objs = objects(w_line.split())
-        node_syscall = node_objs[-1]
+        node_syscall = WorkflowLine(w_line.split()).syscall
         if created_before(_trace_begin, node_syscall):
-            ([ac_dirs], [ac_files], [c_dirs], [c_files]) = accessed_and_created(node_syscall.split())
-            to_create.append(dirssnode)#FIXME to add fd object type (f or d), do not know where
+            ac_dirs, ac_files, c_dirs, c_files = accessed_and_created(node_syscall.split())
+            #to_create.append(dirssnode)#FIXME to add fd object type (f or d), do not know where
     return to_create
 

@@ -40,18 +40,18 @@ def accessed_and_created(tokens):
         if (_call == "unlink" or _call == "stat" or _call == "read" or _call == "write" or _call == "llseek"):
             #FIXME we can make basename and dirs to manage this
             parent = parent_path(_fullpath)
-            return (dirs(parent), [basename(_fullpath)], [], [])
+            return (dirs(parent), [_fullpath], [], [])
         elif (_call == "rmdir"):
             return (dirs(_fullpath), [], [], [])
         elif _call == "mkdir":
             parent = parent_path(_fullpath)
-            return (dirs(parent), [], [basename(_fullpath)], [])
+            return (dirs(parent), [], [_fullpath], [])
         elif _call == "open":
             parent = parent_path(_fullpath)
             if open_to_create(tokens):
-                return (dirs(parent), [], [], [basename(_fullpath)])
+                return (dirs(parent), [], [], [_fullpath])
             else:
-                return (dirs(parent), [basename(_fullpath)], [], [])
+                return (dirs(parent), [_fullpath], [], [])
 
     return ([], [], [], [])
 
@@ -63,9 +63,7 @@ def fs_tree(workflow_lines):
                          )
 
     def path_graph(dirs):
-        """ when ["/a/b/c", "/a/b", "/a"]
-            then {"/a":"/a/b", "/ab":"/a/b/c"}
-        """
+        """ ["/a/b/c", "/a/b", "/a"] -> {"/a":"/a/b", "/ab":"/a/b/c"} """
         def pairwise(iterable):#this code is duplicated elsewher
             a, b = tee(iterable)
             next(b, None)
@@ -88,11 +86,23 @@ def fs_tree(workflow_lines):
         node_syscall = syscall(child_id)
         ac_dirs, ac_files, c_dirs, c_files = accessed_and_created(node_syscall.split())
 
+        for c_dir in c_dirs:
+            created_paths.add(c_dir)
+        for c_file in c_files:
+            created_paths.add(c_file)
+
         for parent_dir, child_dir in path_graph(ac_dirs).iteritems():
             if not parent_dir in created_paths:
                 if not parent_dir in parents_to_children:
                     parents_to_children[parent_dir] = set()
-                if not child_dir in created_paths:
-                    parents_to_children[parent_dir].add(child_dir)
+                    if not child_dir in created_paths:
+                        parents_to_children[parent_dir].add((child_dir, "d"))
+
+        for a_file in ac_files:
+            if not a_file in created_paths:
+                parent = parent_path(a_file)
+                if not parent in parents_to_children:
+                    parents_to_children[parent] = set()
+                parents_to_children[parent].add((a_file, "f"))
         
     return parents_to_children

@@ -4,6 +4,12 @@ from fs_objects import *
 
 class TestFSObjects(unittest.TestCase):
 
+    def assertDictEquals(self, actual, expected):
+        self.assertEquals(actual.keys(), expected.keys())
+        for (k, v) in actual.iteritems():
+            self.assertTrue(k in expected)
+            self.assertEquals(actual[k], expected[k])
+
     def test_fs_tree(self):
         lines = [
                  "1 0 - 1 2 0 916 916 (rm) rmdir 1319227056527181-26 /ok_rmdir/lib/gp_hash_table_map_ 0",
@@ -26,11 +32,28 @@ class TestFSObjects(unittest.TestCase):
                 ]
 
         tree = fs_tree(lines)
-        self.assertTrue("/ok_rmdir" in tree)
-        self.assertTrue("/ok_rmdir/lib" in tree["/ok_rmdir"])
-        self.assertEquals(1, len(tree["/ok_rmdir"]))
 
+        #assert the total number of keys
+        expected_tree = {
+            "/ok_rmdir" : set([("/ok_rmdir/lib", "d")]),
+            "/ok_rmdir/lib" : set([("/ok_rmdir/lib/gp_hash_table_map_", "d")]),
+            "/ok_unlink" : set([("/ok_unlink/ourgrid", "d")]),
+            "/ok_unlink/ourgrid" : set([("/ok_unlink/ourgrid/debug_no_store_hash_fn_imps.hpp", "f")]), 
+            "/ok_stat" : set([("/ok_stat/__SummaryInfo__", "d")]),
+            "/ok_stat/__SummaryInfo__" : set([("/ok_stat/__SummaryInfo__/cpu_idle.rrd", "f")]),
+            "/ok_read" : set([("/ok_read/1079", "d")]),
+            "/ok_read/1079" : set([("/ok_read/1079/mounts", "f")]),
+            "/ok_write" : set([("/ok_write/1079", "d")]),
+            "/ok_write/1079" : set([("/ok_write/1079/mounts", "f")]),
+            "/ok_llseek" : set([("/ok_llseek/R-ex", "d")]),
+            "/ok_llseek/R-ex" : set([("/ok_llseek/R-ex/file", "f")]),
+            "/ok_mkdir" : set([("/ok_mkdir/rrds", "d")]),
+            "/ok_open" : set([("/ok_open/lib", "d")]),
+            "/ok_open/lib" : set([("/ok_open/lib/euc_jp.pyc", "f")]),
+            "/create" : set([("/create/lib", "d")]),
+            }
 
+        self.assertDictEquals(tree, expected_tree)
 
     def test_accessed_and_created_rmdir(self):
         #FIXME what if the directory terminates with "/" ? can we guarantee we do not receive that ?
@@ -65,7 +88,7 @@ class TestFSObjects(unittest.TestCase):
                           ],
                           ac_dirs
                          )
-        self.assertEquals(["debug_no_store_hash_fn_imps.hpp"], ac_files)
+        self.assertEquals(["/local/ourgrid/debug_no_store_hash_fn_imps.hpp"], ac_files)
         self.assertEquals([], cr_dirs)
         self.assertEquals([], cr_files)
 
@@ -88,7 +111,7 @@ class TestFSObjects(unittest.TestCase):
                           ],
                           ac_dirs
                          )
-        self.assertEquals(["cpu_idle.rrd"], ac_files)
+        self.assertEquals(["/var/__SummaryInfo__/cpu_idle.rrd"], ac_files)
         self.assertEquals([], cr_dirs)
         self.assertEquals([], cr_files)
 
@@ -108,7 +131,7 @@ class TestFSObjects(unittest.TestCase):
                           ],
                           ac_dirs
                          )
-        self.assertEquals(["mounts"], ac_files)
+        self.assertEquals(["/proc/1079/mounts"], ac_files)
         self.assertEquals([], cr_dirs)
         self.assertEquals([], cr_files)
 
@@ -128,7 +151,7 @@ class TestFSObjects(unittest.TestCase):
                           ],
                           ac_dirs
                          )
-        self.assertEquals(["mounts"], ac_files)
+        self.assertEquals(["/proc/1079/mounts"], ac_files)
         self.assertEquals([], cr_dirs)
         self.assertEquals([], cr_files)
 
@@ -150,7 +173,7 @@ class TestFSObjects(unittest.TestCase):
                           ],
                           ac_dirs
                          )
-        self.assertEquals(["file"], ac_files)
+        self.assertEquals(["/local/ourgrid/R-ex/file"], ac_files)
         self.assertEquals([], cr_dirs)
         self.assertEquals([], cr_files)
 
@@ -174,7 +197,7 @@ class TestFSObjects(unittest.TestCase):
                           ac_dirs
                          )
         self.assertEquals([], ac_files)
-        self.assertEquals(["__SummaryInfo__"], cr_dirs)
+        self.assertEquals(["/var/lib/ganglia/rrds/__SummaryInfo__"], cr_dirs)
         self.assertEquals([], cr_files)
 
     def test_accessed_and_created_empty_response_error_mkdir(self):
@@ -194,7 +217,7 @@ class TestFSObjects(unittest.TestCase):
                           ],
                           ac_dirs
                          )
-        self.assertEquals(["euc_jp.pyc"], ac_files)
+        self.assertEquals(["/usr/lib/euc_jp.pyc"], ac_files)
         self.assertEquals([], cr_dirs)
         self.assertEquals([], cr_files)
 
@@ -209,7 +232,7 @@ class TestFSObjects(unittest.TestCase):
                          )
         self.assertEquals([], ac_files)
         self.assertEquals([], cr_dirs)
-        self.assertEquals(["euc_jp.pyc"], cr_files)
+        self.assertEquals(["/usr/lib/euc_jp.pyc"], cr_files)
 
 #66,
 

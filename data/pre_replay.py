@@ -2,36 +2,46 @@ from bfs import *
 from fs_objects import *
 from workflow2graph import *
 from workflow_objects import *
+from clean_trace import *
+import os, errno
 
-def fs_objects_to_create(workflow_lines):
+def build_fs_tree(replay_dir, workflow_lines):
 
-    def trace_begin(workflow_lines):
-        first_syscall = WorkflowLine(workflow_lines[0].split()).syscall
-        return syscall_timestamp(first_syscall)
+    def is_dir(_type):
+        return _type is "d"
 
-    def workflow_line_id(workflow_line_tokens):
-        return WorkflowLine(workflow_line_tokens)._id
+    def fs_object(to_create):
+        return to_create[0]
 
-    def syscall_timestamp(syscall):
-        # it should be moved to an util module (testing tool has something related to it) FIXME
-        """ ex. 0 916 916 (rm) rmdir 1319227056527181-26 /ok_rmdir/lib/gp_hash_table_map_ 0 """
-        timestamp_tokens = syscall.split()[5].split("-")
-        return (int(timestamp_tokens[0]), int(timestamp_tokens[1]))
+    def fs_type(to_create):
+        return to_create[1]
 
-    def created_before(timestamp, syscall):
-        return syscall_timestamp(syscall)[0] < timestamp[0]
+    def mkdir_p(path):
+        try:
+            os.makedirs(path)
+        except OSError as exc: # Python >2.5
+            if exc.errno == errno.EEXIST:
+                pass
+            else: raise
 
-    _trace_begin = trace_begin(workflow_lines)
-    w_lines_by_id = dict([(workflow_line_id(w_line.split()),  w_line) 
-                             for w_line in workflow_lines]
-                        )
-    to_create = []
-    w_tree = graph(workflow_lines)
-    for node_and_child in bfs(w_tree, 1):
-        w_line = w_lines_by_id[node_and_child[1]]
-        node_syscall = WorkflowLine(w_line.split()).syscall
-        if created_before(_trace_begin, node_syscall):
-            ac_dirs, ac_files, c_dirs, c_files = accessed_and_created(node_syscall.split())
-            #to_create.append(dirssnode)#FIXME to add fd object type (f or d), do not know where
-    return to_create
+    def create_file(path):
+        open(path, 'w').close()
+     
+    if os.path.exists(replay_dir):
+        raise Exception("replay_dir should be created by replay_code")
+    os.mkdir(replay_dir)
+
+    _fs_tree = fs_tree(workflow_lines)
+    for (parent, children) in _fs_tree.iteritems():
+        if is_dir(parent):
+            mkdir_p(replay_dir + fs_object(parent))
+        for child in children:
+            if is_dir(child):
+                mkdir_p(replay_dir + fs_object(parent))
+            else:
+                if not os.path.exists(replay_dir + fs_object(parent)):
+                    parents = dirs(parent_path(replay_dir + fs_object(child)))
+                    for parent in parents:
+                        mkdir_p(parent)
+                    create_file(replay_dir + fs_object(child))
 

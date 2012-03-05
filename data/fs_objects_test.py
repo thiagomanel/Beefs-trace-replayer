@@ -35,22 +35,22 @@ class TestFSObjects(unittest.TestCase):
 
         #assert the total number of keys
         expected_tree = {
-            "/ok_rmdir" : set([("/ok_rmdir/lib", "d")]),
-            "/ok_rmdir/lib" : set([("/ok_rmdir/lib/gp_hash_table_map_", "d")]),
-            "/ok_unlink" : set([("/ok_unlink/ourgrid", "d")]),
-            "/ok_unlink/ourgrid" : set([("/ok_unlink/ourgrid/debug_no_store_hash_fn_imps.hpp", "f")]), 
-            "/ok_stat" : set([("/ok_stat/__SummaryInfo__", "d")]),
-            "/ok_stat/__SummaryInfo__" : set([("/ok_stat/__SummaryInfo__/cpu_idle.rrd", "f")]),
-            "/ok_read" : set([("/ok_read/1079", "d")]),
-            "/ok_read/1079" : set([("/ok_read/1079/mounts", "f")]),
-            "/ok_write" : set([("/ok_write/1079", "d")]),
-            "/ok_write/1079" : set([("/ok_write/1079/mounts", "f")]),
-            "/ok_llseek" : set([("/ok_llseek/R-ex", "d")]),
-            "/ok_llseek/R-ex" : set([("/ok_llseek/R-ex/file", "f")]),
-            "/ok_mkdir" : set([("/ok_mkdir/rrds", "d")]),
-            "/ok_open" : set([("/ok_open/lib", "d")]),
-            "/ok_open/lib" : set([("/ok_open/lib/euc_jp.pyc", "f")]),
-            "/create" : set([("/create/lib", "d")]),
+            ("/ok_rmdir", "d") : set([("/ok_rmdir/lib", "d")]),
+            ("/ok_rmdir/lib", "d") : set([("/ok_rmdir/lib/gp_hash_table_map_", "d")]),
+            ("/ok_unlink", "d") : set([("/ok_unlink/ourgrid", "d")]),
+            ("/ok_unlink/ourgrid", "d") : set([("/ok_unlink/ourgrid/debug_no_store_hash_fn_imps.hpp", "f")]), 
+            ("/ok_stat", "d") : set([("/ok_stat/__SummaryInfo__", "d")]),
+            ("/ok_stat/__SummaryInfo__", "d") : set([("/ok_stat/__SummaryInfo__/cpu_idle.rrd", "f")]),
+            ("/ok_read", "d") : set([("/ok_read/1079", "d")]),
+            ("/ok_read/1079", "d") : set([("/ok_read/1079/mounts", "f")]),
+            ("/ok_write", "d") : set([("/ok_write/1079", "d")]),
+            ("/ok_write/1079", "d") : set([("/ok_write/1079/mounts", "f")]),
+            ("/ok_llseek", "d") : set([("/ok_llseek/R-ex", "d")]),
+            ("/ok_llseek/R-ex", "d") : set([("/ok_llseek/R-ex/file", "f")]),
+            ("/ok_mkdir", "d") : set([("/ok_mkdir/rrds", "d")]),
+            ("/ok_open", "d") : set([("/ok_open/lib", "d")]),
+            ("/ok_open/lib", "d") : set([("/ok_open/lib/euc_jp.pyc", "f")]),
+            ("/create", "d") : set([("/create/lib", "d")]),
             }
 
         self.assertDictEquals(tree, expected_tree)

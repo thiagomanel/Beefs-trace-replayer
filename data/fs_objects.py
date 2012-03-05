@@ -94,15 +94,15 @@ def fs_tree(workflow_lines):
         for parent_dir, child_dir in path_graph(ac_dirs).iteritems():
             if not parent_dir in created_paths:
                 if not parent_dir in parents_to_children:
-                    parents_to_children[parent_dir] = set()
+                    parents_to_children[(parent_dir, "d")] = set()
                     if not child_dir in created_paths:
-                        parents_to_children[parent_dir].add((child_dir, "d"))
+                        parents_to_children[(parent_dir, "d")].add((child_dir, "d"))
 
         for a_file in ac_files:
             if not a_file in created_paths:
                 parent = parent_path(a_file)
                 if not parent in parents_to_children:
-                    parents_to_children[parent] = set()
-                parents_to_children[parent].add((a_file, "f"))
+                    parents_to_children[(parent, "d")] = set()
+                parents_to_children[(parent, "d")].add((a_file, "f"))
         
     return parents_to_children

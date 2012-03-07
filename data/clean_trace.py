@@ -30,11 +30,22 @@ def rw_fd(tokens):
     return tokens[-3]
 
 #FIXME FULLPATH IS NOT THE SAME COME FOR ALL OF THESE
-def rw_fullpath(token):
+def rw_fullpath(tokens):
     return tokens[-4]
 
 def close_fd(tokens):
     return tokens[-2]
+
+def syscall_timestamp(tokens):
+    return tokens[5]
+
+def syscall_fullpath(tokens):
+    syscall = call(tokens)
+    if syscall in ["read", "write"]:
+        return rw_fullpath(tokens)
+    elif syscall in ["unlink", "mkdir", "rmdir", "stat", "llseek"]:
+        return pathcall_fullpath(tokens)
+    raise Exception("It is not possible to get full path from " + str(tokens)) 
 
 #FIXME BOTH FD AND FULLPATH ARE AT INDEX 6 ?
 def pathcall_fullpath(tokens):

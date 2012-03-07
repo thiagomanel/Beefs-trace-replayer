@@ -6,8 +6,24 @@ from clean_trace import *
 import os, errno
 
 def find_timestamps(created_files, workflow_lines):
-    pass
+     
+    calls_with_size = ["write", "read", "llseek"]
 
+    to_find = list(created_files)
+    result = dict((_file, None) for _file in created_files)
+    for line in workflow_lines:
+        if not to_find:#we found everything
+            break
+        traced_line_tokens = WorkflowLine(line.split()).syscall.split()
+        syscall = call(traced_line_tokens)
+        if syscall in calls_with_size:
+            _fullpath = syscall_fullpath(traced_line_tokens)
+            if _fullpath in to_find:
+                result[_fullpath] = syscall_timestamp(traced_line_tokens)
+                to_find.remove(_fullpath)
+
+    return result
+            
 def find_file_size(join_data_lines, path_and_timestamps):
     """ 
         join_data_lines is the input data to clean_trace.py

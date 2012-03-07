@@ -37,11 +37,10 @@ class TestTraceWalk(unittest.TestCase):
                           "/ok_llseek/R-ex/file"],
                         lines)
 
-        self.assertEquals(file2timestamps[0], ("/ok_stat/__SummaryInfo__/cpu_idle.rrd", None))
-        self.assertEquals(file2timestamps[1], ("/ok_read/1079/mounts", "1006-191"))
-        self.assertEquals(file2timestamps[2], ("/ok_write/1079/mounts", "1008-191"))
-        self.assertEquals(file2timestamps[3], ("/ok_llseek/R-ex/file", "/ok_llseek/R-ex/file"))
-
+        self.assertEquals(file2timestamps["/ok_stat/__SummaryInfo__/cpu_idle.rrd"], None)
+        self.assertEquals(file2timestamps["/ok_read/1079/mounts"], "1006-191")
+        self.assertEquals(file2timestamps["/ok_write/1079/mounts"], "1008-191")
+        self.assertEquals(file2timestamps["/ok_llseek/R-ex/file"], "1010-4")
 
     def test_fsobjects_to_be_created(self):
         lines = [

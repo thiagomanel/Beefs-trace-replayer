@@ -5,6 +5,9 @@ from workflow_objects import *
 from clean_trace import *
 import os, errno
 
+def find_timestamps(created_files, workflow_lines):
+    pass
+
 def find_file_size(join_data_lines, path_and_timestamps):
     """ 
         join_data_lines is the input data to clean_trace.py
@@ -31,7 +34,7 @@ def find_file_size(join_data_lines, path_and_timestamps):
     for line in join_data_lines:
         line_timestamp = join_line_timestamp(line)
         if first_stamp <= line_timestamp <= last_stamp:
-            if 
+            pass 
 
 def build_namespace(replay_dir, workflow_lines):#FIXME TEST-IT
     """

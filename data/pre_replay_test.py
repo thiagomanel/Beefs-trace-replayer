@@ -67,7 +67,6 @@ class TestTraceWalk(unittest.TestCase):
                 ]
 
         #test if a path cannot be shown twice
-
         to_create = build_namespace("/tmp/replay", lines)
 
 if __name__ == '__main__':

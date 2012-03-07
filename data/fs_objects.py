@@ -63,8 +63,8 @@ def fs_tree(workflow_lines):
                          )
 
     def path_graph(dirs):
-        """ ["/a/b/c", "/a/b", "/a"] -> {"/a":"/a/b", "/ab":"/a/b/c"} """
-        def pairwise(iterable):#this code is duplicated elsewher
+        """ ["/a/b/c", "/a/b", "/a"] -> {"/a":"/a/b", "/a/b":"/a/b/c"} """
+        def pairwise(iterable):#this code is duplicated elsewhere
             a, b = tee(iterable)
             next(b, None)
             return izip(a, b)

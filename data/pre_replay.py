@@ -60,7 +60,7 @@ def find_file_size(join_data_lines, path_and_timestamps):
 
     join_calls_with_size = ["sys_read", "sys_write", "sys_llseek"]
     timestamp_to_find = [timestamp(stamp_str) 
-                         for stamp_str in path_and_timestamps.values()]
+				 for stamp_str in path_and_timestamps.values()]
 
     first_stamp = min(timestamp_to_find)
     last_stamp = max(timestamp_to_find)
@@ -97,8 +97,8 @@ def build_namespace(replay_dir, workflow_lines):#FIXME TEST-IT
        were created
     """
 
-    def is_dir(_type):
-        return _type is "d"
+    def is_dir(to_create):
+        return fs_type(to_create) is "d"
 
     def fs_object(to_create):
         return to_create[0]
@@ -107,6 +107,7 @@ def build_namespace(replay_dir, workflow_lines):#FIXME TEST-IT
         return to_create[1]
 
     def mkdir_p(path):
+        print "mkdir_p", path
         try:
             os.makedirs(path)
         except OSError as exc: # Python >2.5
@@ -127,23 +128,23 @@ def build_namespace(replay_dir, workflow_lines):#FIXME TEST-IT
     created_files = []
 
     for (parent, children) in _fs_tree.iteritems():
-        parent_path = replay_dir + fs_object(parent)
+        _parent_path = replay_dir + fs_object(parent)
         if is_dir(parent):
-            mkdir_p(parent_path)
-            created_dirs.append(parent_path)
+            mkdir_p(_parent_path)
+            created_dirs.append(_parent_path)
         for child in children:
             if is_dir(child):
-                mkdir_p(parent_path)#FIXME is this correct ?
-                created_dirs.append(parent_path)
+                mkdir_p(_parent_path)#FIXME is this correct ?
+                created_dirs.append(_parent_path)
             else:
-                if not os.path.exists(parent_path):
-                    filepath = replay_dir + fs_object(child)
+                filepath = replay_dir + fs_object(child)
+                if not os.path.exists(_parent_path):
                     parents = dirs(parent_path(filepath))
                     for parent in parents:
                         mkdir_p(parent)#FIXME we do not need this if we use mkdir_p
                         created_dirs.append(parent_path)
-                    create_file(filepath)
-                    files_to_write.append(filepath)
+                create_file(filepath)
+                created_files.append(filepath)
 
     return (created_dirs, created_files)
 
@@ -151,10 +152,21 @@ def expand_file(filename, newsize):
     pass
 
 if __name__ == "__main__":
+    """Usage: python pre_replay.py replay_dir_path replay_input_path join_file_path"""
+
     replay_dir = sys.argv[1]
     with open(sys.argv[2], 'r') as workflow_file:
-        workflow_lines = workflow_file.readlines()
+        workflow_lines = workflow_file.readlines()[1:]
         created_dirs, created_files = build_namespace(replay_dir, workflow_lines)
+
+        for cd in created_dirs:
+            print "cd", cd
+        for cf in created_files:
+            print "cf", cf
+
+        workflow_file.seek(0)
+        workflow_lines = workflow_file.readlines()[1:]
+
         path_to_timestamp = find_timestamps(created_files, workflow_lines)#FIXME it think we cannot iterate again over it
         with open(sys.argv[3], 'r') as join_data_file:
             for filepath, size in find_file_size(join_data_file.readlines(), path_to_timestamp):

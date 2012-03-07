@@ -16,7 +16,7 @@ class WorkflowLine:
             self.parents = []
 
         if self.n_parents > 1:
-            n_children_pos = 2 + n_parents
+            n_children_pos = 2 + self.n_parents
         else:
             n_children_pos = 3
 

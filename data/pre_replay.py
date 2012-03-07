@@ -4,6 +4,7 @@ from workflow2graph import *
 from workflow_objects import *
 from clean_trace import *
 import os, errno
+import sys
 
 def find_timestamps(created_files, workflow_lines):
      
@@ -32,25 +33,62 @@ def find_file_size(join_data_lines, path_and_timestamps):
         comes from the first occurrence of a llseek, write or read operation
         over the filepath to find. This list is timestamp ordered
     """
-    def timestamp(path_and_timestamp):
-        return path_and_timestamp[1]
+    def timestamp(stamp_str):#FIXME i bet this code is duplicated elsewhere
+        return long(stamp_str.split("-")[0])
 
     def join_line_timestamp(line):
-        pass
+        """  e.g 1159 2064 2084 (pulseaudio) sys_write 1319203706332866-16 (/ / /[eventfd]/ 0  558) 19 8 8 """
+        return timestamp(line.split()[5])
 
-    first_stamp = timestamp(path_and_timestamps[0])
-    last_stamp = timestamp(path_and_timestamps[0])
+    def join_line_syscall(line):
+        return line.split()[4]
+
+    def join_line_file_size(line):
+        """  e.g 1159 2064 2084 (pulseaudio) sys_write 1319203706332866-16 (/ / /[eventfd]/ 0  558) 19 8 8
+             this format does not help much, we are going to:
+             1. tokenize by "(/"
+             2. take the second token
+             3. tokenize by " "
+             4. take the 3th token, If it's possible to transform to a number we use it
+        """
+        file_info_tokens = line.split("(\/")[1].split(" ")
+        file_size = file_info_tokens[3]
+        try:
+            return long(file_size)
+        except ValueError:
+            return None
+
+    join_calls_with_size = ["sys_read", "sys_write", "sys_llseek"]
+    timestamp_to_find = [timestamp(stamp_str) 
+                         for stamp_str in path_and_timestamps.values()]
+
+    first_stamp = min(timestamp_to_find)
+    last_stamp = max(timestamp_to_find)
+
     to_find = {}
-    for path_and_stamp in path_and_timestamps:
+    #invert dict
+    for path, stamp in path_and_timestamps:
         stamp = timestamp(path_and_stamp)
         if not stamp in to_find:
             to_find[stamp] = set()
         to_find[stamp].add(path_and_stamp)
 
+    result = {}
+
     for line in join_data_lines:
         line_timestamp = join_line_timestamp(line)
-        if first_stamp <= line_timestamp <= last_stamp:
-            pass 
+        if first_stamp <= line_timestamp:
+            if line_timestamp in to_find:
+                _syscall = join_line_syscall(line)
+                if _syscall in join_calls_with_size:
+                    for path, stamp in to_find[line_timestamp]:
+                        if basename(path) in line:#we can have multiple lines in in the same timestamp
+                            file_size = join_line_file_size(line)
+                            if file_size:
+                                result[path] = file_size
+        if line_timestamp > last_stamp: break
+
+    return result
 
 def build_namespace(replay_dir, workflow_lines):#FIXME TEST-IT
     """
@@ -108,3 +146,17 @@ def build_namespace(replay_dir, workflow_lines):#FIXME TEST-IT
                     files_to_write.append(filepath)
 
     return (created_dirs, created_files)
+
+def expand_file(filename, newsize):
+    pass
+
+if __name__ == "__main__":
+    replay_dir = sys.argv[1]
+    with open(sys.argv[2], 'r') as workflow_file:
+        workflow_lines = workflow_file.readlines()
+        created_dirs, created_files = build_namespace(replay_dir, workflow_lines)
+        path_to_timestamp = find_timestamps(created_files, workflow_lines)#FIXME it think we cannot iterate again over it
+        with open(sys.argv[3], 'r') as join_data_file:
+            for filepath, size in find_file_size(join_data_file.readlines(), path_to_timestamp):
+                if size:
+                    expand_file(filepath, size)

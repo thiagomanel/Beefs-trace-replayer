@@ -42,6 +42,9 @@ class TestTraceWalk(unittest.TestCase):
         self.assertEquals(file2timestamps["/ok_write/1079/mounts"], "1008-191")
         self.assertEquals(file2timestamps["/ok_llseek/R-ex/file"], "1010-4")
 
+    def test_find_file_size(self):
+        pass
+
     def test_fsobjects_to_be_created(self):
         lines = [
                  "1 0 - 1 2 0 916 916 (rm) rmdir 1319227056527181-26 /ok_rmdir/lib/gp_hash_table_map_ 0",

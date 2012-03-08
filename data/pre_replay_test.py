@@ -30,7 +30,7 @@ class TestTraceWalk(unittest.TestCase):
                  "17 1 16 0 - 0 940 940 (tar) open 1016-147 /error_open/lib/euc_jp.pyc 32961 384 -3"
                 ]
 
-        file2timestamps = find_timestamps([
+        file2timestamps = find_timestamps("", [
                           "/ok_stat/__SummaryInfo__/cpu_idle.rrd",
                           "/ok_read/1079/mounts",
                           "/ok_write/1079/mounts", 

@@ -6,8 +6,12 @@ from clean_trace import *
 import os, errno
 import sys
 
-def find_timestamps(created_files, workflow_lines):
-     
+def find_timestamps(replay_dir, created_files, workflow_lines):
+    """
+       find the timestamps of the first write, read or llseek
+       calls to created_files list. Paths on created_files are different
+       than those from workflow_lines, they have replay_dir as root
+    """
     calls_with_size = ["write", "read", "llseek"]
 
     to_find = list(created_files)
@@ -18,10 +22,10 @@ def find_timestamps(created_files, workflow_lines):
         traced_line_tokens = WorkflowLine(line.split()).syscall.split()
         syscall = call(traced_line_tokens)
         if syscall in calls_with_size:
-            _fullpath = syscall_fullpath(traced_line_tokens)
-            if _fullpath in to_find:
-                result[_fullpath] = syscall_timestamp(traced_line_tokens)
-                to_find.remove(_fullpath)
+            to_replay_fullpath = replay_dir + syscall_fullpath(traced_line_tokens)
+            if (to_replay_fullpath) in to_find:
+                result[to_replay_fullpath] = syscall_timestamp(traced_line_tokens)
+                to_find.remove(to_replay_fullpath)
 
     return result
             
@@ -51,7 +55,7 @@ def find_file_size(join_data_lines, path_and_timestamps):
              3. tokenize by " "
              4. take the 3th token, If it's possible to transform to a number we use it
         """
-        file_info_tokens = line.split("(\/")[1].split(" ")
+        file_info_tokens = line.split("(/")[1].split(" ")
         file_size = file_info_tokens[3]
         try:
             return long(file_size)
@@ -67,11 +71,11 @@ def find_file_size(join_data_lines, path_and_timestamps):
 
     to_find = {}
     #invert dict
-    for path, stamp in path_and_timestamps:
-        stamp = timestamp(path_and_stamp)
+    for path, stamp_str in path_and_timestamps.iteritems():
+        stamp = timestamp(stamp_str)
         if not stamp in to_find:
             to_find[stamp] = set()
-        to_find[stamp].add(path_and_stamp)
+        to_find[stamp].add((path, stamp))
 
     result = {}
 
@@ -82,11 +86,12 @@ def find_file_size(join_data_lines, path_and_timestamps):
                 _syscall = join_line_syscall(line)
                 if _syscall in join_calls_with_size:
                     for path, stamp in to_find[line_timestamp]:
-                        if basename(path) in line:#we can have multiple lines in in the same timestamp
+                        #we can have multiple lines in in the same timestamp
+                        if basename(path) in line:
                             file_size = join_line_file_size(line)
-                            if file_size:
-                                result[path] = file_size
-        if line_timestamp > last_stamp: break
+                            result[path] = file_size
+        if line_timestamp > last_stamp:
+            break
 
     return result
 
@@ -107,7 +112,6 @@ def build_namespace(replay_dir, workflow_lines):#FIXME TEST-IT
         return to_create[1]
 
     def mkdir_p(path):
-        print "mkdir_p", path
         try:
             os.makedirs(path)
         except OSError as exc: # Python >2.5
@@ -149,7 +153,9 @@ def build_namespace(replay_dir, workflow_lines):#FIXME TEST-IT
     return (created_dirs, created_files)
 
 def expand_file(filename, newsize):
-    pass
+    if newsize:
+         with open(filename, 'w') as _file:
+            _file.truncate(newsize)
 
 if __name__ == "__main__":
     """Usage: python pre_replay.py replay_dir_path replay_input_path join_file_path"""
@@ -159,16 +165,12 @@ if __name__ == "__main__":
         workflow_lines = workflow_file.readlines()[1:]
         created_dirs, created_files = build_namespace(replay_dir, workflow_lines)
 
-        for cd in created_dirs:
-            print "cd", cd
-        for cf in created_files:
-            print "cf", cf
-
         workflow_file.seek(0)
         workflow_lines = workflow_file.readlines()[1:]
 
-        path_to_timestamp = find_timestamps(created_files, workflow_lines)#FIXME it think we cannot iterate again over it
+        path_to_timestamp = find_timestamps(replay_dir, created_files, workflow_lines)
+        #FIXME it's possible to get None timestamps here
         with open(sys.argv[3], 'r') as join_data_file:
-            for filepath, size in find_file_size(join_data_file.readlines(), path_to_timestamp):
+            for filepath, size in find_file_size(join_data_file.readlines(), path_to_timestamp).iteritems():
                 if size:
                     expand_file(filepath, size)

@@ -70,8 +70,11 @@ def fs_tree(workflow_lines):
             return izip(a, b)
 
         _graph = {}
-        for (parent, child) in pairwise(reversed(dirs)):
-            _graph[parent] = child
+        if len(dirs) == 1:
+            _graph[dirs[0]] = None
+        else:
+            for (parent, child) in pairwise(reversed(dirs)):
+                _graph[parent] = child
         return _graph
 
     def syscall(line_id):
@@ -93,16 +96,34 @@ def fs_tree(workflow_lines):
 
         for parent_dir, child_dir in path_graph(ac_dirs).iteritems():
             if not parent_dir in created_paths:
-                if not parent_dir in parents_to_children:
+                if not (parent_dir, "d") in parents_to_children:
                     parents_to_children[(parent_dir, "d")] = set()
+                if child_dir:
                     if not child_dir in created_paths:
                         parents_to_children[(parent_dir, "d")].add((child_dir, "d"))
 
         for a_file in ac_files:
             if not a_file in created_paths:
                 parent = parent_path(a_file)
-                if not parent in parents_to_children:
+                if not (parent, "d") in parents_to_children:
                     parents_to_children[(parent, "d")] = set()
                 parents_to_children[(parent, "d")].add((a_file, "f"))
-        
+
+    #accessed_and_created method is not reliable, for example 
+    #it is possible to directories be opened and closed, also llseeked
+    #for this reason, ac_files can return directories, to get over it
+    #we make a second pass to see if an acessed file was also identified as
+    #directory, if so, we change its type
+    #TODO is the conversely possible ? think a file is a directory
+    to_change_type = []
+    for parent, children in parents_to_children.iteritems():
+        for path, _type in children:
+            if _type is "f":
+                if (path, "d") in parents_to_children:#it was described as dir before
+                    to_change_type.append((parent, (path, _type)))
+
+    for parent, child in to_change_type:
+        parents_to_children[parent].remove(child)
+        parents_to_children[parent].add((child[0], "d"))
+
     return parents_to_children

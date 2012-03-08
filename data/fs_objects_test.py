@@ -10,6 +10,28 @@ class TestFSObjects(unittest.TestCase):
             self.assertTrue(k in expected)
             self.assertEquals(actual[k], expected[k])
 
+    def test_fs_tree_unusual_dir_operations(self):
+        lines = [
+                 "1 0 - 1 2 0 916 916 (rm) rmdir 100-26 /ok_rmdir/lib/gp_hash_table_map_ 0",
+                 "2 1 1 1 3 0 916 916 (rm) rmdir 101-26 /error_rmdir/lib/gp_hash_table_map_2 -1",
+                 "3 1 2 1 4 0 1079 921 (automount) read 106-191 /dir2/lib 5 1024 1024",
+                 "4 1 3 1 5 0 1079 921 (automount) read 107-191 /dir2/lib2/ha 5 1024 1024",
+                 "5 1 4 0 - 0 1079 921 (automount) read 108-191 /dir2/lib/ffu.txt 5 1024 1024",
+                ]
+
+        tree = fs_tree(lines)
+        print tree
+
+        expected_tree = {
+            ("/ok_rmdir", "d") : set([("/ok_rmdir/lib", "d")]),
+            ("/ok_rmdir/lib", "d") : set([("/ok_rmdir/lib/gp_hash_table_map_", "d")]),
+            ("/dir2", "d") : set([("/dir2/lib", "d"), ("/dir2/lib2", "d")]),
+            ("/dir2/lib2", "d") : set([("/dir2/lib2/ha", "f")]),
+            ("/dir2/lib", "d") : set([("/dir2/lib/ffu.txt", "f")]),
+            }
+
+        self.assertDictEquals(tree, expected_tree)
+
     def test_fs_tree(self):
         lines = [
                  "1 0 - 1 2 0 916 916 (rm) rmdir 1319227056527181-26 /ok_rmdir/lib/gp_hash_table_map_ 0",

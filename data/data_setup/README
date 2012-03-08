@@ -1,0 +1,25 @@
+Our infrastrucure is not big enough, as we cannot process all data in the same place, we do a lot of data movement.
+We group data by machine and day.
+
+raw data has the following layout:
+e.g 
+
+abelhinha
+  |-- 20111021102209-abelhinha.log.0
+  |-- ...
+  |-- 20111021102209-abelhinha.log.97
+  |-- 20111021102209-abelhinha.log.98
+
+file name follows this pattern %Y%m%d%H%M%-machine.log.$seq
+
+steps to process data
+ 1. we filter raw data and store output grouping by machine and day
+    e.g
+    abelhinha
+      |-- 20111021
+            |-- 20111021102209-abelhinha.log.0.filtered
+            |--  ...
+            |-- 20111021102209-abelhinha.log.97.filtered
+            |-- 20111021102209-abelhinha.log.98.filtered
+
+2. sorts *filtered files. After sorting delete filtered files

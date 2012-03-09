@@ -385,8 +385,12 @@ if __name__ == "__main__":
     #python match_syscalls.py replay_strace_output replay_input -v
     opts, args = getopt.getopt(sys.argv[1:], "-v")
     
+<<<<<<< HEAD
     replay_strace_output = [parse_replay_output(line) 
                             for line in open(args[0], 'r').readlines()]
+=======
+    replay_strace_output = [parse_replay_output(line) for line in open(args[0], 'r').readlines()]
+>>>>>>> da0c2d9cba4fafcfb78e38cc5b1daad61c533881
     replay_input = open(args[1], 'r').readlines()[1:]#first line is head
     verbose = ("-v", "") in opts
 

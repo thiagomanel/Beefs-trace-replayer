@@ -385,7 +385,7 @@ if __name__ == "__main__":
     #python match_syscalls.py replay_strace_output replay_input -v
     opts, args = getopt.getopt(sys.argv[1:], "-v")
     
-    replay_strace_output = open(args[0], 'r').readlines()
+    replay_strace_output = [parse_replay_output(line) for line in open(args[0], 'r').readlines()]
     replay_input = open(args[1], 'r').readlines()[1:]#first line is head
     verbose = ("-v", "") in opts
 
@@ -393,7 +393,7 @@ if __name__ == "__main__":
 
     for replay_line in replay_input:
 	line_2_match = " ".join(replay_line.split())
-        result = matcher.match(line_2_match, not verbose)
+        result = matcher.match(parse_replay_input(line_2_match), not verbose)
 	for (expected_call, actual_call, ok_call, ok_args, ok_rvalue) in result:
 	    print '[RUN]\texpected={expected}\tactual={actual}'.format(expected=expected_call, actual=actual_call)
   	    print '\tactual\t{actual}'.format(actual=actual_call)

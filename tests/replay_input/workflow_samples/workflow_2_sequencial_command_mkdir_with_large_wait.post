@@ -1,0 +1,5 @@
+#!/bin/sh
+for i in `seq 1 2`
+do
+    rm -rf /tmp/jdt-images-$i
+done

@@ -493,18 +493,19 @@ Workflow_element* take () {
 	return cmd;
 }
 
-long delay_on_trace (struct replay_command* earlier, struct replay_command* later) {
-	//assert negative, programming error
-	return 0;
+double delay_on_trace (struct replay_command* earlier, struct replay_command* later) {
+	double delay = (double) (later->traced_begin - earlier->traced_begin);
+	assert (delay >= 0);
+	return delay;
 }
 
-long elapsed_to_now (struct timeval *timestamp) {
+double elapsed_to_now (struct timeval *timestamp) {
 
 	assert (timestamp != NULL);
 
 	struct timeval now;
 	gettimeofday (&now, NULL);
-	long us_elapsed = (now.tv_sec - timestamp->tv_sec) * 1000000
+	double us_elapsed = (now.tv_sec - timestamp->tv_sec) * 1000000
     		+ (now.tv_usec - timestamp->tv_usec);
 
 	assert (us_elapsed >= 0);
@@ -523,19 +524,19 @@ long elapsed_since_replay (command_replay_result* cmd_replay_result) {
 }
 
 /**
- * This function returns the number of useconds a thread needs to wait before
+ * This function returns the number of microseconds a thread needs to wait before
  * dispatching a command. It should wait to preserve the timing between itself
  * and its parents described on trace data.
  */
-long delay (Workflow_element* to_replay) {
+double delay (Workflow_element* to_replay) {
 //FIXME what if I have two parents. I don't think it is possible in your data but our workflow allows it
 //FIXME what if I don't have a parent ? :
 	Workflow_element* parent = get_parent (to_replay, 0);
 	assert (consumed (parent));
 
 	command_replay_result* parent_cmd_result = replay_result (parent->id);
-	long dlay_trace = delay_on_trace (parent->command, to_replay->command);
-	long elapsed = elapsed_since_replay (parent_cmd_result);
+	double dlay_trace = delay_on_trace (parent->command, to_replay->command);
+	double elapsed = elapsed_since_replay (parent_cmd_result);
 	return dlay_trace - elapsed;
 }
 
@@ -551,7 +552,7 @@ void *consume (void *arg) {
 		if ( has_commands_to_consume (shared_buff)) {
 			//take (i could move to a function)
 			Workflow_element* cmd = take ();
-			long dlay = delay (cmd);
+			double dlay = delay (cmd);
 			if (dlay > 0) {
 				sem_post (shared_buff->mutex);
 				usleep (dlay);

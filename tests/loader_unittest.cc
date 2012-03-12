@@ -64,6 +64,9 @@ TEST(LoaderTest, LoadCloseCall) {
     EXPECT_EQ(CLOSE_OP, loaded_cmd->command);
     EXPECT_EQ(0, loaded_cmd->expected_retval);
 
+    EXPECT_EQ(37, loaded_cmd->traced_elapsed_time);
+    EXPECT_EQ(1318539063006403, loaded_cmd->traced_begin);
+
     Caller* caller_id = loaded_cmd->caller;
     EXPECT_EQ(0, caller_id->uid);
     EXPECT_EQ(2097, caller_id->pid);
@@ -981,6 +984,10 @@ TEST(ReplayTest, 2_sequencial_command_mkdir_parsing_skipped) {
 	Workflow_element* root_element = (rep_wld->element_list);
 	fill_workflow_element(root_element);
 	root_element->command = root_cmd;
+
+	root_element->command->traced_begin = 1318539134542649;
+	root_element->command->traced_elapsed_time = 479;
+
 	root_element->id = ROOT_ID;
 	root_element->produced = 1;
 	root_element->consumed = 1;
@@ -998,6 +1005,9 @@ TEST(ReplayTest, 2_sequencial_command_mkdir_parsing_skipped) {
 					= (struct replay_command*) malloc (sizeof (struct replay_command));
 	fill_replay_command(one_cmd);
 	one_cmd->command = MKDIR_OP;
+
+	one_cmd->traced_begin = 1318539134542649;
+	one_cmd->traced_elapsed_time = 479;
 
 	one_cmd->caller = (Caller*) malloc (sizeof (Caller));
 	one_cmd->caller->uid = 1159;
@@ -1035,6 +1045,9 @@ TEST(ReplayTest, 2_sequencial_command_mkdir_parsing_skipped) {
 					= (struct replay_command*) malloc( sizeof (struct replay_command));
 	fill_replay_command(cmd_two);
 	cmd_two->command = MKDIR_OP;
+
+	cmd_two->traced_begin = 1318539134542649;
+	cmd_two->traced_elapsed_time = 479;
 
 	cmd_two->caller = (Caller*) malloc(sizeof(Caller));
 	cmd_two->caller->uid = 1159;
@@ -1207,7 +1220,8 @@ TEST(LoaderTest, LoadWorkflow_2_sequencial_command_mkdir) {
     EXPECT_EQ(1, w_element->n_children);
     EXPECT_EQ(0, w_element->n_parents);
     int child_id = w_element->children_ids[0];
-    EXPECT_EQ(1, child_id);
+    EXPECT_EQ(1318539134542649, w_element->command->traced_begin);
+    EXPECT_EQ(0, w_element->command->traced_elapsed_time);
 
     w_element = element(rep_wld, 1);
     EXPECT_EQ(1, w_element->id);
@@ -1230,6 +1244,8 @@ TEST(LoaderTest, LoadWorkflow_2_sequencial_command_mkdir) {
 	EXPECT_TRUE(strcmp("/tmp/jdt-images-1", parm[0].argm->cprt_val) == 0);
 	EXPECT_EQ(0, loaded_cmd->expected_retval);
 	EXPECT_EQ(MKDIR_OP, loaded_cmd->command);
+	EXPECT_EQ(1318539134542649, loaded_cmd->traced_begin);
+	EXPECT_EQ(479, loaded_cmd->traced_elapsed_time);
 
     w_element = element(rep_wld, 2);
     EXPECT_EQ(2, w_element->id);
@@ -1250,6 +1266,8 @@ TEST(LoaderTest, LoadWorkflow_2_sequencial_command_mkdir) {
 	EXPECT_TRUE(strcmp("/tmp/jdt-images-2", parm[0].argm->cprt_val) == 0);
 	EXPECT_EQ(0, loaded_cmd->expected_retval);
 	EXPECT_EQ(MKDIR_OP, loaded_cmd->command);
+	EXPECT_EQ(1318539134542649, loaded_cmd->traced_begin);
+	EXPECT_EQ(479, loaded_cmd->traced_elapsed_time);
 
     fclose(input_f);
 }

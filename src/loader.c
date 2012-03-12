@@ -98,7 +98,6 @@ Parms* alloc_and_parse_parms (op_t cmd_type,  char* token) {
 	switch (cmd_type) {
 	case OPEN_OP:
 		parm = (Parms*) malloc(3 * sizeof(Parms)); //it should be done at each switch case
-		token = strtok(NULL, " "); //timestamp
 		token = strtok(NULL, " "); //fullpath
 		parm[0].argm = (arg*) malloc (sizeof (arg));
 		parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
@@ -113,14 +112,12 @@ Parms* alloc_and_parse_parms (op_t cmd_type,  char* token) {
 	case DUP2_OP:
 	case DUP3_OP:
 		parm = (Parms*) malloc(2 * sizeof(Parms)); //it should be done at each switch case
-		token = strtok(NULL, " "); //timestamp
 		token = strtok(NULL, " "); //oldfd
 		token = strtok(NULL, " "); //new_fd
 		break;
 	case WRITE_OP:
 	case READ_OP: //TODO: write and read have the same token sequence than open
 		parm = (Parms*) malloc(3 * sizeof(Parms)); //it should be done at each switch case
-		token = strtok(NULL, " "); //timestamp
 		token = strtok(NULL, " "); //fullpath
 		parm[0].argm = (arg*) malloc (sizeof (arg));
 		parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
@@ -134,7 +131,6 @@ Parms* alloc_and_parse_parms (op_t cmd_type,  char* token) {
 		break;
 	case LLSEEK_OP: //TODO: write and read have the same token sequence than open
 		parm = (Parms*) malloc(2 * sizeof(Parms)); //it should be done at each switch case
-		token = strtok(NULL, " "); //timestamp
 		token = strtok(NULL, " "); //fullpath
 		token = strtok(NULL, " "); //fd
 		token = strtok(NULL, " "); //offset_high
@@ -143,7 +139,6 @@ Parms* alloc_and_parse_parms (op_t cmd_type,  char* token) {
 		break;
 	case MKDIR_OP:
 		parm = (Parms*) malloc(2 * sizeof(Parms)); //it should be done at each switch case
-		token = strtok(NULL, " "); //timestamp
 		token = strtok(NULL, " "); //fullpath
 		parm[0].argm = (arg*) malloc (sizeof (arg));
 		parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
@@ -154,14 +149,12 @@ Parms* alloc_and_parse_parms (op_t cmd_type,  char* token) {
 		break;
 	case MKNOD_OP:
 		parm = (Parms*) malloc(2 * sizeof(Parms)); //it should be done at each switch case
-		token = strtok(NULL, " "); //timestamp
 		token = strtok(NULL, " "); //fullpath
 		token = strtok(NULL, " "); //mode
 		token = strtok(NULL, " "); //dev
 		break;
 	case SYMLINK_OP:
 		parm = (Parms*) malloc(2 * sizeof(Parms)); //it should be done at each switch case
-		token = strtok(NULL, " "); //timestamp
 		token = strtok(NULL, " "); //fullpath_old_name
 		token = strtok(NULL, " "); //fullpath_new_name
 		break;
@@ -172,12 +165,10 @@ Parms* alloc_and_parse_parms (op_t cmd_type,  char* token) {
 	case LREMOVEXATTR_OP:
 	case LLISTXATTR_OP:
 		parm = (Parms*) malloc(2 * sizeof(Parms)); //it should be done at each switch case
-		token = strtok(NULL, " "); //timestamp
 		token = strtok(NULL, " "); //fullpath
 		break;
 	case LSETXATTR_OP:
 		parm = (Parms*) malloc(2 * sizeof(Parms)); //it should be done at each switch case
-		token = strtok(NULL, " "); //timestamp
 		token = strtok(NULL, " "); //fullpath
 		token = strtok(NULL, " "); //name
 		token = strtok(NULL, " "); //value
@@ -185,14 +176,12 @@ Parms* alloc_and_parse_parms (op_t cmd_type,  char* token) {
 		break;
 	case CLOSE_OP:
 		parm = (Parms*) malloc(sizeof(Parms)); //it should be done at each switch case
-		token = strtok(NULL, " "); //timestamp
 		token = strtok(NULL, " ");
 		parm[0].argm = (arg*) malloc (sizeof (arg));
 		parm[0].argm->i_val = atoi(token); //fd
 		break;
 	case FSTAT_OP:
 		parm = (Parms*) malloc(3 * sizeof(Parms));
-		token = strtok(NULL, " "); //timestamp
 		token = strtok(NULL, " "); //fullpath
 		parm[0].argm = (arg*) malloc (sizeof (arg));
 		parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
@@ -203,7 +192,6 @@ Parms* alloc_and_parse_parms (op_t cmd_type,  char* token) {
 		break;
 	default: //FIXME we need a case to NONE_OP, test it
 		parm = (Parms*) malloc(sizeof(Parms)); //it should be done at each switch case
-		token = strtok(NULL, " "); //timestamp
 		token = strtok(NULL, " "); //arg
 		parm[0].argm = (arg*) malloc (sizeof (arg));
 		parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
@@ -212,6 +200,13 @@ Parms* alloc_and_parse_parms (op_t cmd_type,  char* token) {
 	}
 
 	return parm;
+}
+
+void parse_timestamps (struct replay_command* cmd, char* token) {
+	token = strtok (NULL, "-");
+	cmd->traced_begin = strtod (token, NULL);
+	token = strtok (NULL, " ");
+	cmd->traced_elapsed_time = atol (token);
 }
 
 int parse_element (Workflow_element* element, char* line) {
@@ -263,6 +258,7 @@ int parse_element (Workflow_element* element, char* line) {
 	op_t loaded_cmd = marker2operation (token);
 	current_command->command = loaded_cmd;
 
+	parse_timestamps (current_command, token);
 	current_command->params = alloc_and_parse_parms (loaded_cmd, token);
 
 	token = strtok (NULL, " ");
@@ -321,6 +317,30 @@ int orphans (int *orphans_ids_result, Replay_workload* repl_wld)  {
 	}
 
 	return orphans_i;
+}
+
+void assign_root_timestamp (Replay_workload* wld) {
+
+ 	Workflow_element* root = element (wld, 0);
+
+	double first_stamp = -1;
+	int chl_index;
+
+	for (chl_index = 0; chl_index < root->n_children; chl_index++) {
+
+		Workflow_element *child = element (wld, root->children_ids[chl_index]);
+		double child_stamp = child->command->traced_begin;
+		if (first_stamp == -1) {
+			first_stamp = child_stamp;
+		}
+
+		first_stamp = (child_stamp < first_stamp) ? child_stamp : first_stamp;
+	}
+
+	assert (first_stamp >= 0);
+
+	root->command->traced_begin = first_stamp;
+	root->command->traced_elapsed_time = 0;
 }
 
 int load (Replay_workload* replay_wld, FILE* input_file) {
@@ -411,6 +431,8 @@ int load (Replay_workload* replay_wld, FILE* input_file) {
 		}
 
 		free (orphans_ids);
+
+		assign_root_timestamp (replay_wld);
 	}
 
 	free (line);

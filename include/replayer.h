@@ -78,7 +78,7 @@ struct replay_command {
 	Caller* caller;
 	Parms* params;
 
-	long traced_begin;
+	double traced_begin;
 	long traced_elapsed_time;
 
 	int expected_retval;

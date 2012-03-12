@@ -386,24 +386,21 @@ void do_produce(Workflow_element* el_to_produce) {
 }
 
 void fill_command_replay_result (command_replay_result *result) {
+	result->dispatch_begin = (struct timeval*) malloc (sizeof (struct timeval));
 	result->dispatch_end = (struct timeval*) malloc (sizeof (struct timeval));
-}
-
-void stamp_replay_time (command_replay_result* cmd_result) {
-	assert (cmd_result != NULL);
-	fill_command_replay_result (cmd_result);
-	gettimeofday (cmd_result->dispatch_end, NULL);
 }
 
 void do_consume (Workflow_element* element) {
 
-	if (do_replay (element->command) == REPLAY_SUCCESS) {
+	command_replay_result *cmd_result = replay_result (element->id);
+	fill_command_replay_result (cmd_result);
+	gettimeofday (cmd_result->dispatch_begin, NULL);
+	int replay_result = do_replay(element->command);
+	gettimeofday (cmd_result->dispatch_end, NULL);
 
+	if (replay_result == REPLAY_SUCCESS) {
 		shared_buff->consumed_queue[++shared_buff->last_consumed] = element;
-
 		mark_consumed (element);
-		stamp_replay_time (replay_result (element->id));
-
 		++shared_buff->consumed_count;
 	} else {
 		fprintf (stderr, "Error on replaying command workflow_id=%d type=%d\n",
@@ -584,7 +581,10 @@ void fill_shared_buffer (Replay_workload* workload, sbuffs_t* shared) {
 	shared->frontier->next = NULL;
 
 	//stamping root
-	stamp_replay_time (replay_result (ROOT_ID));
+	command_replay_result *root_result = replay_result (ROOT_ID);
+	fill_command_replay_result (root_result);
+	gettimeofday (root_result->dispatch_begin, NULL);
+	gettimeofday (root_result->dispatch_end, NULL);
 }
 
 Replay_result* replay (Replay_workload* rep_workload) {

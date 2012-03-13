@@ -33,7 +33,7 @@
 //maybe pre-process trace to uncover the biggest possible value ?
 #define FD_MAX 32768
 
-#define BUFF_SIZE   20
+#define BUFF_SIZE   200
 #define DEBUG 1
 
 #define REPLAY_SUCCESS 0
@@ -479,6 +479,8 @@ void *produce (void *arg) {
 			shared_buff->last_consumed = -1;
 		sem_post(shared_buff->mutex);
 	}
+
+	pthread_exit(NULL);
 }
 
 /**
@@ -537,6 +539,8 @@ double delay (Workflow_element* to_replay) {
 	return dlay_trace - elapsed;
 }
 
+static int wait_count = 0;
+
 /**
  * 1.take a command C from produced queue
  * 2.dispatch C
@@ -559,6 +563,8 @@ void *consume (void *arg) {
 		}
 		sem_post (shared_buff->mutex);
 	}
+
+	pthread_exit(NULL);
 }
 
 void fill_shared_buffer (Replay_workload* workload, sbuffs_t* shared) {
@@ -610,15 +616,22 @@ Replay_result* replay (Replay_workload* rep_workload) {
 
 	sem_init(shared_buff->mutex, 0, 1);
 
-	pthread_t consumer, consumer2, producer;
-
+	pthread_t producer;
 	pthread_create (&producer, NULL, produce, 0);
-	pthread_create (&consumer, NULL, consume, 0);
-	pthread_create (&consumer2, NULL, consume, 0);
 
-	pthread_join(consumer, NULL);
-	pthread_join(consumer2, NULL);
+	int max_consumers = 50;
+	int num_consumers = (workload->num_cmds >= max_consumers)
+			? max_consumers : workload->num_cmds;
+
+	pthread_t *consumers = (pthread_t*) malloc (sizeof (pthread_t) * num_consumers);
+	for (int i = 0; i < num_consumers ; i++) {
+		pthread_create (&consumers[i], NULL, consume, 0);
+	}
+
 	pthread_join(producer, NULL);
+	for (int i = 0; i < num_consumers ; i++) {
+		pthread_join(consumers[i], NULL);
+	}
 
 	result->produced_commands = shared_buff->produced_count;
 	result->replayed_commands = shared_buff->consumed_count;

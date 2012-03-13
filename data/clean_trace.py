@@ -83,7 +83,33 @@ def llseek_fd(tokens):
 def home_file(fullpath):
     return fullpath.startswith(HOME)
 
-def clean(lines_tokens):
+class Collector():
+
+    def __init__(self, delegate):
+        self.delegate = delegate
+        self.content = []
+    def write(self, _str):
+        if self.delegate:
+            self.delegate.write(_str)
+        else:
+            self.content.append(_str)
+
+    def readlines(self):
+        if self.delegate:
+            return self.delegate.readlines()
+        return [line.strip() for line in self.content]
+
+    def __len__(self):
+        if self.delegate:
+            return len(self.delegate)
+        return len(self.content)
+
+    def __getitem__(self, index):
+        if self.delegate:
+            return self.delegate[index]
+        return self.content[index].strip()
+
+def clean(lines, out_collector, err_collector):
 
     def open_full_path(cleaned_open):
         return cleaned_open.split()[6]
@@ -91,84 +117,66 @@ def clean(lines_tokens):
     def error(tokens, error_msg):
         return " ".join(tokens) + " error: " + error_msg
 
+    #dirty, eh !
+    clean_functions = {"sys_stat64":clean_stat,
+                       "vfs_rmdir":clean_rmdir,
+                       "sys_mkdir":clean_mkdir,
+                       "vfs_unlink":clean_unlink,
+                       "generic_file_llseek":clean_llseek
+                      }
+
+    fd_functions = {"sys_fstat64":fstat_fd,
+                    "sys_open":open_fd,
+                    "sys_write":rw_fd,
+                    "sys_read":rw_fd,
+                    "sys_close":close_fd,
+                   }
+
+    fd_based_operations = set(["sys_fstat64", "sys_write", "sys_read", "sys_close"])
+
     pid_fd2opencall = {}
     cleaned = []
     errors = []
-#FIXME I guess one can shrink lot of lines in a refactor
-    for tokens in lines_tokens:
+
+    for line in lines:
+        tokens = line.split()
         _call = call(tokens)
-        if _call == "sys_stat64":
-            _stat = clean_stat(tokens)
-            if home_file(pathcall_fullpath(_stat.split())):
-                cleaned.append(_stat)
-        elif _call == "vfs_rmdir":
-	    _rmdir = clean_rmdir(tokens)
-            if home_file(pathcall_fullpath(_rmdir.split())):
-                cleaned.append(_rmdir)
-        elif _call == "sys_mkdir":
-            _mkdir = clean_mkdir(tokens)
-            if home_file(pathcall_fullpath(_mkdir.split())):
-                cleaned.append(_mkdir)
-        elif _call == "vfs_unlink":#always we have a sys_unlink we have a vfs_unlink, the converse it is true, so we choose to use just vfs_unlink
-            _unlink = clean_unlink(tokens)
-            if home_file(pathcall_fullpath(_unlink.split())):
-                cleaned.append(_unlink)
-        elif _call == "generic_file_llseek":
-            _llseek = clean_llseek(tokens)
-            if home_file(pathcall_fullpath(_llseek.split())):
-                cleaned.append(_llseek)
-        elif _call == "sys_fstat64":
-            pid_fd = (pid(tokens), fstat_fd(tokens))
-            fullpath = None
-            if pid_fd in pid_fd2opencall:
-                fullpath = open_full_path(pid_fd2opencall[pid_fd])
-                if home_file(fullpath):
-                    cleaned.append(clean_fstat(tokens, fullpath))
+        if _call in clean_functions:
+            cleaned_call = clean_functions[_call](tokens)
+            if home_file(pathcall_fullpath(cleaned_call.split())):
+                out_collector.write(cleaned_call + "\n")
+        elif _call in fd_based_operations:
+            pid_fd = (pid(tokens), fd_functions[_call](tokens))
+            if not pid_fd in pid_fd2opencall:
+                err_collector.write(error(tokens, "file descriptor not found") + "\n")
             else:
-                errors.append(error(tokens, "file descriptor not found"))
+                open_call = pid_fd2opencall[pid_fd]
+                _fullpath = open_full_path(open_call)
+                if home_file(_fullpath):
+                    if _call == "sys_fstat64":
+                        fstat_call = clean_fstat(tokens, fullpath)
+                        out_collector.write(fstat_call + "\n")
+                    elif _call == "sys_write":
+                        write_call = clean_rw(tokens, "write", _fullpath)
+                        out_collector.write(write_call + "\n")
+                    elif _call == "sys_read":
+                        read_call = clean_rw(tokens, "read", _fullpath)
+                        out_collector.write(read_call + "\n")
+                    elif _call == "sys_close":
+                        close_call = clean_close(tokens)
+                        out_collector.write(close_call + "\n")
         elif _call == "sys_open":
             pid_fd = (pid(tokens), open_fd(tokens))
             if pid_fd in pid_fd2opencall:
-                errors.append(error(tokens, "File descriptor is alread in use"))
+                err_collector.write(error(tokens, "File descriptor is already in use") + "\n")
             else:
                 open_call = clean_open(tokens)
                 pid_fd2opencall[pid_fd] = open_call
                 fullpath = open_full_path(pid_fd2opencall[pid_fd])
                 if home_file(fullpath):
-                    cleaned.append(open_call)
-        elif _call == "sys_write":
-            pid_fd = (pid(tokens), rw_fd(tokens))
-            if pid_fd in pid_fd2opencall:
-                open_call = pid_fd2opencall[pid_fd]
-                _fullpath = open_full_path(open_call)
-                if home_file(_fullpath):
-                    write_call = clean_rw(tokens, "write", _fullpath)
-                    cleaned.append(write_call)
-            else:
-                errors.append(error(tokens, "file descriptor not found")) 
-        elif _call == "sys_read":
-            pid_fd = (pid(tokens), rw_fd(tokens))
-            if pid_fd in pid_fd2opencall:
-                open_call = pid_fd2opencall[pid_fd]
-                _fullpath = open_full_path(open_call)
-                if home_file(_fullpath):
-                    read_call = clean_rw(tokens, "read", _fullpath)
-                    cleaned.append(read_call)
-            else:
-                errors.append(error(tokens, "file descriptor not found")) 
-        elif _call == "sys_close":
-            pid_fd = (pid(tokens), close_fd(tokens))
-            if pid_fd in pid_fd2opencall:
-                open_call = pid_fd2opencall[pid_fd]
-                _fullpath = open_full_path(open_call)
-                if home_file(_fullpath):
-                    cleaned.append(clean_close(tokens))
-            else:
-                errors.append(error(tokens, "file descriptor not found"))
+                    out_collector.write(open_call + "\n")
         else:
-            errors.append(error(tokens, "unknow operation"))
-
-    return (cleaned, errors)
+            err_collector.write(error(tokens, "unknow operation") + "\n")
 
 def full_path(pwdir, basepath):
     """
@@ -279,7 +287,6 @@ def clean_unlink(tokens):
 
 if __name__ == "__main__":
     #python clean_trace.py < file.join > file.clean 2> file.clean.err
-    tokens = [line.split() for line in sys.stdin]
-    (cleaned, errors) = clean(tokens)
-    sys.stdout.writelines([str(op) + "\n" for op in cleaned])
-    sys.stderr.writelines([error + "\n" for error in errors])
+    clean(sys.stdin, Collector(sys.stdout), Collector(sys.stderr))
+#   sys.stdout.writelines([str(op) + "\n" for op in cleaned])
+#    sys.stderr.writelines([error + "\n" for error in errors])

@@ -1,0 +1,16 @@
+python join_by_date_and_sort.py /local/tracer/processed/charroco/20111014/
+python join_by_date_and_sort.py /local/tracer/processed/charroco/20111021/
+python join_by_date_and_sort.py /local/tracer/processed/cherne/20111014
+python join_by_date_and_sort.py /local/tracer/processed/cherne/20111021
+python join_by_date_and_sort.py /local/tracer/processed/gupi/20111014
+python join_by_date_and_sort.py /local/tracer/processed/gupi/20111021
+python join_by_date_and_sort.py /local/tracer/processed/jurupoca/20111014
+python join_by_date_and_sort.py /local/tracer/processed/jurupoca/20111021
+python join_by_date_and_sort.py /local/tracer/processed/morcego/20111014
+python join_by_date_and_sort.py /local/tracer/processed/mulato/20111014
+python join_by_date_and_sort.py /local/tracer/processed/mulato/20111021
+python join_by_date_and_sort.py /local/tracer/processed/mussum/20111014
+python join_by_date_and_sort.py /local/tracer/processed/mussum/20111021
+python join_by_date_and_sort.py /local/tracer/processed/ourico/20111014
+python join_by_date_and_sort.py /local/tracer/processed/ourico/20111021
+python join_by_date_and_sort.py /local/tracer/processed/palmito/20111014

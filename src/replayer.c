@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <pthread.h>
 #include "replayer.h"
 #include "loader.h"
 #include <stdlib.h>
@@ -23,8 +24,6 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
-#include <pthread.h>
-#include </usr/include/semaphore.h>
 #include <assert.h>
 #include <sys/time.h>
 
@@ -39,6 +38,9 @@
 #define REPLAY_SUCCESS 0
 
 int N_ITEMS;
+
+static pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+pthread_mutex_t lock;
 
 Replay_workload* workload;
 Replay_result* result;
@@ -173,15 +175,6 @@ typedef struct _sbuffs_t {
 	int total_commands;
 
 	struct frontier* frontier;
-
-	sem_t sem_produced_full;
-	sem_t sem_produced_empty;
-
-	sem_t sem_consumed_full;
-	sem_t sem_consumed_empty;
-
-	sem_t* mutex;
-
 } sbuffs_t;
 
 sbuffs_t* shared_buff = (sbuffs_t*) malloc( sizeof(sbuffs_t));
@@ -429,7 +422,7 @@ void *produce (void *arg) {
 	//It seems the second part of this algorithm cannot be nested in this while
 	//it is allowed to run even when all commands were produced
 	while ( ! all_produced (shared_buff)) {
-		sem_wait(shared_buff->mutex);
+		pthread_mutex_lock (&lock);
 			frontier = shared_buff->frontier;
 			while (frontier != NULL) {
 		        //dispatch children that was not dispatched yet
@@ -446,9 +439,9 @@ void *produce (void *arg) {
 				}
 				frontier = frontier->next;
 			}
-		sem_post(shared_buff->mutex);
+		pthread_mutex_unlock (&lock);
 
-		sem_wait(shared_buff->mutex);
+		pthread_mutex_lock (&lock);
 
 			Workflow_element* consumed;
 
@@ -477,7 +470,7 @@ void *produce (void *arg) {
 
 			//cleaning consumed_queue
 			shared_buff->last_consumed = -1;
-		sem_post(shared_buff->mutex);
+		pthread_mutex_unlock (&lock);
 	}
 
 	pthread_exit(NULL);
@@ -549,27 +542,25 @@ static int wait_count = 0;
 void *consume (void *arg) {
 	//FIXME don't trust tips concerning locks below
 	while ( ! all_consumed (shared_buff)) {
-		sem_wait (shared_buff->mutex);
+		pthread_mutex_lock (&lock);
 		if ( has_commands_to_consume (shared_buff)) {
 			//take (i could move to a function)
 			Workflow_element* cmd = take ();
 			double dlay = delay (cmd);
 			if (dlay > 0) {
-				sem_post (shared_buff->mutex);
+				pthread_mutex_unlock (&lock);
 				usleep (dlay);
-				sem_wait (shared_buff->mutex);
+				pthread_mutex_lock (&lock);
 			}
 			do_consume (cmd);
 		}
-		sem_post (shared_buff->mutex);
+		pthread_mutex_unlock (&lock);
 	}
 
 	pthread_exit(NULL);
 }
 
 void fill_shared_buffer (Replay_workload* workload, sbuffs_t* shared) {
-
-	shared->mutex = (sem_t*) malloc (sizeof (sem_t));
 
 	//bootstrap element is consumed and produced
 	shared->produced_count = 1;
@@ -614,7 +605,7 @@ Replay_result* replay (Replay_workload* rep_workload) {
 
 	fill_shared_buffer (workload, shared_buff);
 
-	sem_init(shared_buff->mutex, 0, 1);
+	pthread_mutex_init (&lock, NULL);
 
 	pthread_t producer;
 	pthread_create (&producer, NULL, produce, 0);

@@ -191,6 +191,10 @@ int has_commands_to_consume (sbuffs_t* shared) {
 	return shared->last_produced >= 0;
 }
 
+int commands_were_consumed (sbuffs_t* shared) {
+	return shared->last_consumed >= 0;
+}
+
 //FIXME we can move this list method do an util list code outside replayer
 //FIXME this code can set the frontier to null, do we want this (because of this,
 //i had to modify _add method to malloc frontier when it is null
@@ -439,37 +443,36 @@ void *produce (void *arg) {
 				}
 				frontier = frontier->next;
 			}
-		pthread_mutex_unlock (&lock);
 
-		pthread_mutex_lock (&lock);
 
-			Workflow_element* consumed;
+			if (commands_were_consumed(shared_buff)) {
+				//items come to the frontier after they have been consumed (dispatched)
+				Workflow_element* consumed;
+				for (i = 0; i <= shared_buff->last_consumed; i++) {
 
-			//items come to the frontier after they have been consumed (dispatched)
-			for (i = 0; i <= shared_buff->last_consumed; i++) {
+					consumed = shared_buff->consumed_queue[i];
+					int parent_i;
+					for (parent_i = 0; parent_i < consumed->n_parents; parent_i++) {
 
-				consumed = shared_buff->consumed_queue[i];
-				int parent_i;
-				for (parent_i = 0; parent_i < consumed->n_parents; parent_i++) {
+						Workflow_element* parent = get_parent (consumed, parent_i);
 
-					Workflow_element* parent = get_parent (consumed, parent_i);
+						//items left the frontier if its children were consumed (dispatched)
+						int all_children_consumed =
+								_consumed (parent->children_ids, parent->n_children);
+						if ( all_children_consumed ) {
+							shared_buff->frontier = _del (shared_buff->frontier, parent);
+						}
+					}
 
-					//items left the frontier if its children were consumed (dispatched)
-					int all_children_consumed =
-							_consumed (parent->children_ids, parent->n_children);
-					if ( all_children_consumed ) {
-						shared_buff->frontier = _del (shared_buff->frontier, parent);
+					//FIXME I think items do not leave the frontier
+					if (! _contains (shared_buff->frontier, consumed)) {
+						frontier_append (consumed);
 					}
 				}
-
-				//FIXME I think items do not leave the frontier
-				if (! _contains (shared_buff->frontier, consumed)) {
-					frontier_append (consumed);
-				}
+				//cleaning consumed_queue
+				shared_buff->last_consumed = -1;
 			}
 
-			//cleaning consumed_queue
-			shared_buff->last_consumed = -1;
 		pthread_mutex_unlock (&lock);
 	}
 

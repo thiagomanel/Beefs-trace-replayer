@@ -8,7 +8,7 @@ if __name__ == "__main__":
         then, it filters the input out by grouping lines at the same day
     """
     def date(stamp_secs):
-        tm = time.gmtime(stamp_secs)
+        tm = time.localtime(stamp_secs)
         return tm.tm_year, tm.tm_mon, tm.tm_mday 
 
     files_by_date = {}

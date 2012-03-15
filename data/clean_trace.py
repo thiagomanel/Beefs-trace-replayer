@@ -109,13 +109,22 @@ class Collector():
             return self.delegate[index]
         return self.content[index].strip()
 
-def clean(lines, out_collector, err_collector):
+def clean(lines, out_collector, err_collector, begin=None, end=None):
+    """ It cleans lines out and appending cleaned lines to out_collector.
+        Lines that cannot be cleaned are appended to err_collector.
+        Lines earlier than begin and later than end are ignored.
+    """
 
     def open_full_path(cleaned_open):
         return cleaned_open.split()[6]
 
     def error(tokens, error_msg):
         return " ".join(tokens) + " error: " + error_msg
+
+    def between(stamp, begin, end):
+        ge_begin = not (begin and (stamp < begin))#ge GreaterEquals
+        le_end = not (end and (stamp > end))#le LessEquals
+        return ge_begin and le_end
 
     #dirty, eh !
     clean_functions = {"sys_stat64":clean_stat,
@@ -141,42 +150,44 @@ def clean(lines, out_collector, err_collector):
     for line in lines:
         tokens = line.split()
         _call = call(tokens)
-        if _call in clean_functions:
-            cleaned_call = clean_functions[_call](tokens)
-            if home_file(pathcall_fullpath(cleaned_call.split())):
-                out_collector.write(cleaned_call + "\n")
-        elif _call in fd_based_operations:
-            pid_fd = (pid(tokens), fd_functions[_call](tokens))
-            if not pid_fd in pid_fd2opencall:
-                err_collector.write(error(tokens, "file descriptor not found") + "\n")
+        _stamp = long(syscall_timestamp(tokens).split("-")[0])
+        if between(_stamp, begin, end):
+            if _call in clean_functions:
+                cleaned_call = clean_functions[_call](tokens)
+                if home_file(pathcall_fullpath(cleaned_call.split())):
+                    out_collector.write(cleaned_call + "\n")
+            elif _call in fd_based_operations:
+                pid_fd = (pid(tokens), fd_functions[_call](tokens))
+                if not pid_fd in pid_fd2opencall:
+                    err_collector.write(error(tokens, "file descriptor not found") + "\n")
+                else:
+                    open_call = pid_fd2opencall[pid_fd]
+                    _fullpath = open_full_path(open_call)
+                    if home_file(_fullpath):
+                        if _call == "sys_fstat64":
+                            fstat_call = clean_fstat(tokens, fullpath)
+                            out_collector.write(fstat_call + "\n")
+                        elif _call == "sys_write":
+                            write_call = clean_rw(tokens, "write", _fullpath)
+                            out_collector.write(write_call + "\n")
+                        elif _call == "sys_read":
+                            read_call = clean_rw(tokens, "read", _fullpath)
+                            out_collector.write(read_call + "\n")
+                        elif _call == "sys_close":
+                            close_call = clean_close(tokens)
+                            out_collector.write(close_call + "\n")
+            elif _call == "sys_open":
+                pid_fd = (pid(tokens), open_fd(tokens))
+                if pid_fd in pid_fd2opencall:
+                    err_collector.write(error(tokens, "File descriptor is already in use") + "\n")
+                else:
+                    open_call = clean_open(tokens)
+                    pid_fd2opencall[pid_fd] = open_call
+                    fullpath = open_full_path(pid_fd2opencall[pid_fd])
+                    if home_file(fullpath):
+                        out_collector.write(open_call + "\n")
             else:
-                open_call = pid_fd2opencall[pid_fd]
-                _fullpath = open_full_path(open_call)
-                if home_file(_fullpath):
-                    if _call == "sys_fstat64":
-                        fstat_call = clean_fstat(tokens, fullpath)
-                        out_collector.write(fstat_call + "\n")
-                    elif _call == "sys_write":
-                        write_call = clean_rw(tokens, "write", _fullpath)
-                        out_collector.write(write_call + "\n")
-                    elif _call == "sys_read":
-                        read_call = clean_rw(tokens, "read", _fullpath)
-                        out_collector.write(read_call + "\n")
-                    elif _call == "sys_close":
-                        close_call = clean_close(tokens)
-                        out_collector.write(close_call + "\n")
-        elif _call == "sys_open":
-            pid_fd = (pid(tokens), open_fd(tokens))
-            if pid_fd in pid_fd2opencall:
-                err_collector.write(error(tokens, "File descriptor is already in use") + "\n")
-            else:
-                open_call = clean_open(tokens)
-                pid_fd2opencall[pid_fd] = open_call
-                fullpath = open_full_path(pid_fd2opencall[pid_fd])
-                if home_file(fullpath):
-                    out_collector.write(open_call + "\n")
-        else:
-            err_collector.write(error(tokens, "unknow operation") + "\n")
+                err_collector.write(error(tokens, "unknow operation") + "\n")
 
 def full_path(pwdir, basepath):
     """
@@ -286,7 +297,7 @@ def clean_unlink(tokens):
     return " ".join(tokens[:4] + ["unlink"] + [tokens[5]] + [full_path(tokens[7], tokens[8])] + [tokens[-1]])
 
 if __name__ == "__main__":
-    #python clean_trace.py < file.join > file.clean 2> file.clean.err
-    clean(sys.stdin, Collector(sys.stdout), Collector(sys.stderr))
-#   sys.stdout.writelines([str(op) + "\n" for op in cleaned])
-#    sys.stderr.writelines([error + "\n" for error in errors])
+    if len(sys.argv) > 1:
+        begin = long(sys.argv[1])
+        end = long(sys.argv[2])
+    clean(sys.stdin, Collector(sys.stdout), Collector(sys.stderr), begin, end)

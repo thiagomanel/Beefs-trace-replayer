@@ -315,7 +315,7 @@ int do_replay (struct replay_command* cmd) {
 
 	switch (cmd->command) {
 		case MKDIR_OP: {
-			mkdir(args[0].argm->cprt_val, args[1].argm->i_val);
+			mkdir (args[0].argm->cprt_val, args[1].argm->i_val);
 		}
 		break;
 		case STAT_OP: {
@@ -364,6 +364,10 @@ int do_replay (struct replay_command* cmd) {
 			int traced_fd = args[1].argm->i_val;
 			int repl_fd = replayed_fd (cmd->caller->pid, traced_fd);
 			fstat(repl_fd, &sb);
+		}
+		break;
+		case RMDIR_OP: {
+			unlink (args[0].argm->cprt_val);
 		}
 		break;
 		default:

@@ -174,6 +174,7 @@ def clean(lines, out_collector, err_collector, begin=None, end=None):
                             read_call = clean_rw(tokens, "read", _fullpath)
                             out_collector.write(read_call + "\n")
                         elif _call == "sys_close":
+                            del pid_fd2opencall[pid_fd]
                             close_call = clean_close(tokens)
                             out_collector.write(close_call + "\n")
             elif _call == "sys_open":
@@ -182,9 +183,9 @@ def clean(lines, out_collector, err_collector, begin=None, end=None):
                     err_collector.write(error(tokens, "File descriptor is already in use") + "\n")
                 else:
                     open_call = clean_open(tokens)
-                    pid_fd2opencall[pid_fd] = open_call
-                    fullpath = open_full_path(pid_fd2opencall[pid_fd])
+                    fullpath = open_full_path(open_call)
                     if home_file(fullpath):
+                        pid_fd2opencall[pid_fd] = open_call
                         out_collector.write(open_call + "\n")
             else:
                 err_collector.write(error(tokens, "unknow operation") + "\n")

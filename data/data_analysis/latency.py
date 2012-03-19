@@ -11,7 +11,7 @@ def latency(replay_output_line):
 def parse(secs_str, u_secs_str):
     """when 1331665020 738759 returns 1331665020738759"""
     usecs = long(secs_str) * 1000000
-    if not len(u_secs_str) == 6:#padding problems
+    if long(u_secs_str) > 999999:#padding problems
         raise Exception(" ".join(["padding problems", secs_str, u_secs_str]))
     return usecs + long(u_secs_str)
 

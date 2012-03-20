@@ -396,7 +396,7 @@ void do_consume (Workflow_element* element) {
 	command_replay_result *cmd_result = replay_result (element->id);
 	fill_command_replay_result (cmd_result);
 	gettimeofday (cmd_result->dispatch_begin, NULL);
-	int replay_result = do_replay(element->command);
+	int replay_result = do_replay (element->command);
 	gettimeofday (cmd_result->dispatch_end, NULL);
 
 	if (replay_result == REPLAY_SUCCESS) {
@@ -494,7 +494,7 @@ Workflow_element* take () {
 
 double delay_on_trace (struct replay_command* earlier, struct replay_command* later) {
 	double delay = (double) (later->traced_begin - earlier->traced_begin);
-	assert (delay >= 0);
+	//assert (delay >= 0);
 	return delay;
 }
 
@@ -535,6 +535,11 @@ double delay (Workflow_element* to_replay) {
 
 	command_replay_result* parent_cmd_result = replay_result (parent->id);
 	double dlay_trace = delay_on_trace (parent->command, to_replay->command);
+        if (dlay_trace < 0)  {
+		fprintf (stderr, "negative dlay to_replay_id=%d parent_id=%d\n",
+                        to_replay->id, parent->id);
+                exit (1);
+	}
 	double elapsed = elapsed_since_replay (parent_cmd_result);
 	return dlay_trace - elapsed;
 }
@@ -560,6 +565,7 @@ void *consume (void *arg) {
 				pthread_mutex_lock (&lock);
 			}
 			do_consume (cmd);
+			replay_result (cmd->id)->delay = dlay;
 		}
 		pthread_mutex_unlock (&lock);
 	}

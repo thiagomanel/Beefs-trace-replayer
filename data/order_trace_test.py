@@ -212,6 +212,24 @@ class TestOrderTrace(unittest.TestCase):
         self.assertLine(fs_dep_lines[3],
                           [4, 1, [2], 0, [], "65534 1856 1859 (gmetad) mkdir 1318615768915818-20 /home/user/d1/d2/d3 493 0"])
 
+    def test_order_open_read_close_short_circuit(self):
+    #based on a replay bug (in fact, replay was expecting always single parents
+        lines = [
+                 "1159 2205 9951 (firefox-bin) open 1319204801598460-61446 /home/thiagoepdc/.mozilla/firefox/tqcuxi3p.default/Cache/9/8E/3AE45d01 32768 0 69",
+                 "1159 2205 2306 (firefox-bin) read 1319204805518105-21952 /home/thiagoepdc/.mozilla/firefox/tqcuxi3p.default/Cache/9/8E/3AE45d01 69 4477 4477",
+                 "1159 2205 2306 (firefox-bin) close 1319204805540068-28 69 0"
+                ]
+
+        pidfid_order = sorted(order_by_pidfid(lines), key=lambda line: line[0])
+        fs_order = sorted(fs_dependency_order(pidfid_order), key=lambda line: line[0])
+
+        self.assertLine(fs_order[0],
+                          [1, 0, [], 1, [2], "1159 2205 9951 (firefox-bin) open 1319204801598460-61446 /home/thiagoepdc/.mozilla/firefox/tqcuxi3p.default/Cache/9/8E/3AE45d01 32768 0 69"])
+        self.assertLine(fs_order[1],
+                          [2, 1, [1], 1, [3], "1159 2205 2306 (firefox-bin) read 1319204805518105-21952 /home/thiagoepdc/.mozilla/firefox/tqcuxi3p.default/Cache/9/8E/3AE45d01 69 4477 4477"])
+        self.assertLine(fs_order[2],
+                          [3, 1, [2], 0, [], "1159 2205 2306 (firefox-bin) close 1319204805540068-28 69 0"])
+
     def test_order_pid_tid(self):
         lines = [
                  "65534 1856 1867 (gmetad) stat 1319227151896626-113 /home/user/bla1.rrd 0",

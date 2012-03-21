@@ -39,7 +39,9 @@
 
 int N_ITEMS;
 
-static pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+static pthread_cond_t cmds_were_produced_cond = PTHREAD_COND_INITIALIZER;
+static pthread_cond_t cmds_were_consumed_cond = PTHREAD_COND_INITIALIZER;
+
 pthread_mutex_t lock;
 
 Replay_workload* workload;
@@ -391,25 +393,6 @@ void fill_command_replay_result (command_replay_result *result) {
 	result->dispatch_end = (struct timeval*) malloc (sizeof (struct timeval));
 }
 
-void do_consume (Workflow_element* element) {
-
-	command_replay_result *cmd_result = replay_result (element->id);
-	fill_command_replay_result (cmd_result);
-	gettimeofday (cmd_result->dispatch_begin, NULL);
-	int replay_result = do_replay (element->command);
-	gettimeofday (cmd_result->dispatch_end, NULL);
-
-	if (replay_result == REPLAY_SUCCESS) {
-		shared_buff->consumed_queue[++shared_buff->last_consumed] = element;
-		mark_consumed (element);
-		++shared_buff->consumed_count;
-	} else {
-		fprintf (stderr, "Error on replaying command workflow_id=%d type=%d\n",
-			element->id, element->command->command);
-		exit (1);
-	}
-}
-
 int produce_buffer_full() {
 	return (shared_buff->last_produced + 1) >= BUFF_SIZE;
 }
@@ -422,6 +405,8 @@ int produce_buffer_full() {
  */
 void *produce (void *arg) {
 
+	//FIXME: what if produce does not wait ?
+
 	int i;
 
 	struct frontier* frontier;
@@ -430,7 +415,9 @@ void *produce (void *arg) {
 	//It seems the second part of this algorithm cannot be nested in this while
 	//it is allowed to run even when all commands were produced
 	while ( ! all_produced (shared_buff)) {
+
 		pthread_mutex_lock (&lock);
+
 			frontier = shared_buff->frontier;
 			while (frontier != NULL) {
 		        //dispatch children that was not dispatched yet
@@ -448,6 +435,9 @@ void *produce (void *arg) {
 				frontier = frontier->next;
 			}
 
+			if (has_commands_to_consume (shared_buff)) {
+				pthread_cond_broadcast (&cmds_were_produced_cond);
+			}
 
 			if (commands_were_consumed(shared_buff)) {
 				//items come to the frontier after they have been consumed (dispatched)
@@ -475,11 +465,18 @@ void *produce (void *arg) {
 				}
 				//cleaning consumed_queue
 				shared_buff->last_consumed = -1;
+			} else {
+				while ( ! commands_were_consumed(shared_buff)) {
+					pthread_cond_wait (&cmds_were_consumed_cond, &lock);//SPURIOUS IF, docs says to use a while
+				}
 			}
 
 		pthread_mutex_unlock (&lock);
 	}
 
+	while ( ! all_consumed (shared_buff)) {
+		pthread_cond_broadcast (&cmds_were_produced_cond);//last chance to wake consumers up, how ugly it can be ?
+	}
 	pthread_exit(NULL);
 }
 
@@ -494,7 +491,7 @@ Workflow_element* take () {
 
 double delay_on_trace (struct replay_command* earlier, struct replay_command* later) {
 	double delay = (double) (later->traced_begin - earlier->traced_begin);
-	//assert (delay >= 0);
+	assert (delay >= 0);
 	return delay;
 }
 
@@ -535,10 +532,9 @@ double delay (Workflow_element* to_replay) {
 
 	command_replay_result* parent_cmd_result = replay_result (parent->id);
 	double dlay_trace = delay_on_trace (parent->command, to_replay->command);
-        if (dlay_trace < 0)  {
-		fprintf (stderr, "negative dlay to_replay_id=%d parent_id=%d\n",
-                        to_replay->id, parent->id);
-                exit (1);
+	if (dlay_trace < 0)  {
+		fprintf (stderr, "negative dlay to_replay_id=%d parent_id=%d\n", to_replay->id, parent->id);
+		exit (1);
 	}
 	double elapsed = elapsed_since_replay (parent_cmd_result);
 	return dlay_trace - elapsed;
@@ -552,25 +548,55 @@ static int wait_count = 0;
  * 3.add C to consumed queue
  */
 void *consume (void *arg) {
-	//FIXME don't trust tips concerning locks below
-	while ( ! all_consumed (shared_buff)) {
+
+	while (1) {
+
 		pthread_mutex_lock (&lock);
-		if ( has_commands_to_consume (shared_buff)) {
-			//take (i could move to a function)
-			Workflow_element* cmd = take ();
-			double dlay = delay (cmd);
-			if (dlay > 0) {
-				pthread_mutex_unlock (&lock);
-				usleep (dlay);
-				pthread_mutex_lock (&lock);
-			}
-			do_consume (cmd);
-			replay_result (cmd->id)->delay = dlay;
+
+		while (! has_commands_to_consume (shared_buff) && ! all_consumed (shared_buff)) {
+			//if we use "if" we can get spurious behaviour
+			pthread_cond_wait (&cmds_were_produced_cond, &lock);
 		}
-		pthread_mutex_unlock (&lock);
+
+		if ( has_commands_to_consume (shared_buff)) {
+			Workflow_element* element = take ();
+
+			pthread_mutex_unlock (&lock);
+
+			double dlay = delay (element);
+			if (dlay > 0) {
+				usleep (dlay);
+			}
+
+			command_replay_result *cmd_result = replay_result (element->id);
+			fill_command_replay_result (cmd_result);
+			gettimeofday (cmd_result->dispatch_begin, NULL);
+			int result = do_replay (element->command);
+			gettimeofday (cmd_result->dispatch_end, NULL);
+
+			pthread_mutex_lock (&lock);
+
+			if (result == REPLAY_SUCCESS) {
+				shared_buff->consumed_queue[++shared_buff->last_consumed] = element;
+				mark_consumed (element);
+				++shared_buff->consumed_count;
+			} else {
+				fprintf (stderr, "Error on replaying command workflow_id=%d type=%d\n", element->id, element->command->command);
+				pthread_mutex_unlock (&lock);
+				exit (1);
+			}
+
+			replay_result (element->id)->delay = dlay;
+
+			pthread_cond_broadcast (&cmds_were_consumed_cond);
+			pthread_mutex_unlock (&lock);
+
+		} else if (all_consumed (shared_buff)) {
+			pthread_mutex_unlock (&lock);
+			pthread_exit(NULL);
+		}
 	}
 
-	pthread_exit(NULL);
 }
 
 void fill_shared_buffer (Replay_workload* workload, sbuffs_t* shared) {
@@ -633,9 +659,9 @@ Replay_result* replay (Replay_workload* rep_workload) {
 	}
 
 	pthread_join(producer, NULL);
-	for (int i = 0; i < num_consumers ; i++) {
-		pthread_join(consumers[i], NULL);
-	}
+	//for (int i = 0; i < num_consumers ; i++) {
+		//pthread_join(consumers[i], NULL);
+	//}
 
 	result->produced_commands = shared_buff->produced_count;
 	result->replayed_commands = shared_buff->consumed_count;

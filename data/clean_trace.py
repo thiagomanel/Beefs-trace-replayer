@@ -150,7 +150,11 @@ def clean(lines, out_collector, err_collector, begin=None, end=None):
     for line in lines:
         tokens = line.split()
         _call = call(tokens)
-        _stamp = long(syscall_timestamp(tokens).split("-")[0])
+        try:
+            _stamp = long(syscall_timestamp(tokens).split("-")[0])
+        except ValueError:
+            sys.stderr.write(" ".join(["problems on parsing", line, "\n"]))
+            continue
         if between(_stamp, begin, end):
             if _call in clean_functions:
                 cleaned_call = clean_functions[_call](tokens)
@@ -301,4 +305,7 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         begin = long(sys.argv[1])
         end = long(sys.argv[2])
+    else:
+        begin, end = None, None
+
     clean(sys.stdin, Collector(sys.stdout), Collector(sys.stderr), begin, end)

@@ -2,6 +2,7 @@ from itertools import tee
 from itertools import izip
 from itertools import chain
 from clean_trace import *
+import sys
 
 # if things start to get complicated we should try using ReplayInput class from match_syscall.py
 #TODO: open with creation semantics is different

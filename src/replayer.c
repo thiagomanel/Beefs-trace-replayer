@@ -580,6 +580,7 @@ void *consume (void *arg) {
 				shared_buff->consumed_queue[++shared_buff->last_consumed] = element;
 				mark_consumed (element);
 				++shared_buff->consumed_count;
+				fprintf (stderr, "replay_count=%d\n", shared_buff->consumed_count);
 			} else {
 				fprintf (stderr, "Error on replaying command workflow_id=%d type=%d\n", element->id, element->command->command);
 				pthread_mutex_unlock (&lock);

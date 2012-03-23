@@ -1,0 +1,984 @@
+1062 27234 27234 (chrome) open 1319220551613252-71 /home/isabellylr/.icons/DMZ-White/cursors/08e8e1c95fe2fc01f976f1e063a24ccd 0 438 -2
+1062 27119 27119 (gconfd-2) open 1319220552609352-113972 /home/isabellylr/.gconfd/saved_state 1089 438 68
+1062 27119 27119 (gconfd-2) fstat 1319220552723341-173 /dev/shm/.com.google.chrome.jZttbE 68 0
+1062 27119 27119 (gconfd-2) fstat 1319220552723552-132 /dev/shm/.com.google.chrome.jZttbE 68 0
+1062 27119 27119 (gconfd-2) write 1319220552723760-165 /home/isabellylr/.gconfd/saved_state 68 644 644
+1062 27119 27119 (gconfd-2) close 1319220552724217-561222 68 0
+1062 27119 27119 (gconfd-2) open 1319220553289498-2676 /home/isabellylr/.gconfd/saved_state.tmp 577 448 68
+1062 27119 27119 (gconfd-2) write 1319220553292193-261 /home/isabellylr/.gconfd/saved_state.tmp 68 88505 88505
+1062 27119 27119 (gconfd-2) close 1319220553327093-42 68 0
+1062 27397 27397 (eclipse) open 1319220561764951-75 /home/isabellylr/.local/share//mime/aliases 32768 438 -2
+1062 27397 27397 (eclipse) open 1319220561784280-1788 /home/isabellylr/.config/user-dirs.dirs 32768 0 112
+1062 27397 27397 (eclipse) fstat 1319220561786102-131 /proc/19497/stat 112 0
+1062 27397 27397 (eclipse) read 1319220561786246-128 /home/isabellylr/.config/user-dirs.dirs 112 632 632
+1062 27397 27397 (eclipse) close 1319220561786390-90 112 0
+1062 27397 27397 (eclipse) open 1319220561802033-392341 /home/isabellylr/.local/share/gvfs-metadata/.openIVG63V 32768 0 124
+1062 27397 27397 (eclipse) fstat 1319220562272949-1228 /var/lib/boinc-client/slots/2/fraction_done.txt 124 0
+1062 27397 27397 (eclipse) open 1319220562575218-100138 /home/isabellylr/.local/share/gvfs-metadata/.openJF8U3V 32768 0 133
+1062 27397 27397 (eclipse) fstat 1319220562731418-527 /var/lib/boinc-client/slots/2/fraction_done.txt 133 0
+1062 27397 27397 (eclipse) open 1319220562780182-2522 /home/isabellylr/.local/share/applications/defaults.list 32768 0 97
+1062 27397 27397 (eclipse) fstat 1319220562782730-139 /home/isabellylr/.local/share/applications/defaults.list 97 0
+1062 27397 27397 (eclipse) read 1319220562782878-147 /home/isabellylr/.local/share/applications/defaults.list 97 4096 55
+1062 27397 27397 (eclipse) read 1319220562783061-135 /home/isabellylr/.local/share/applications/defaults.list 97 4096 0
+1062 27397 27397 (eclipse) close 1319220562783252-45 97 0
+1062 27397 27397 (eclipse) open 1319220562784825-2314 /home/isabellylr/.local/share/applications/mimeapps.list 32768 0 97
+1062 27397 27397 (eclipse) fstat 1319220562787163-138 /home/isabellylr/.local/share/applications/mimeapps.list 97 0
+1062 27397 27397 (eclipse) read 1319220562787310-139 /home/isabellylr/.local/share/applications/mimeapps.list 97 4096 56
+1062 27397 27397 (eclipse) read 1319220562787479-139 /home/isabellylr/.local/share/applications/mimeapps.list 97 4096 0
+1062 27397 27397 (eclipse) close 1319220562787667-43 97 0
+1062 27894 27894 (gnome-terminal) open 1319220568325087-77 /home/isabellylr/.Xdefaults-celacanto 0 825307186 -2
+1062 27894 27894 (gnome-terminal) open 1319220568337706-882 /home/isabellylr/.ICEauthority 0 438 7
+1062 27894 27894 (gnome-terminal) fstat 1319220568338629-115 /var/lib/boinc-client/slots/2/fraction_done.txt 7 0
+1062 27894 27894 (gnome-terminal) read 1319220568338802-177 /home/isabellylr/.ICEauthority 7 131072 16392
+1062 27894 27894 (gnome-terminal) read 1319220568339963-135 /home/isabellylr/.ICEauthority 7 131072 0
+1062 27894 27894 (gnome-terminal) close 1319220568340129-51 7 0
+1062 27894 27894 (gnome-terminal) open 1319220568341113-599 /home/isabellylr/.ICEauthority 0 438 7
+1062 27894 27894 (gnome-terminal) fstat 1319220568341738-103 /home/isabellylr/.ICEauthority 7 0
+1062 27894 27894 (gnome-terminal) read 1319220568341880-132 /home/isabellylr/.ICEauthority 7 131072 16392
+1062 27894 27894 (gnome-terminal) close 1319220568342417-44 7 0
+1062 27894 27894 (gnome-terminal) open 1319220568343348-1111 /home/isabellylr/.ICEauthority 0 438 7
+1062 27894 27894 (gnome-terminal) fstat 1319220568344483-98 /proc/27844/stat 7 0
+1062 27894 27894 (gnome-terminal) read 1319220568344614-125 /home/isabellylr/.ICEauthority 7 131072 16392
+1062 27894 27894 (gnome-terminal) read 1319220568345152-97 /home/isabellylr/.ICEauthority 7 131072 0
+1062 27894 27894 (gnome-terminal) close 1319220568345263-40 7 0
+1062 27894 27894 (gnome-terminal) open 1319220568345934-288037 /home/isabellylr/.ICEauthority 0 438 7
+1062 27894 27894 (gnome-terminal) fstat 1319220568634002-108 /var/lib/boinc-client/slots/2/fraction_done.txt 7 0
+1062 27894 27894 (gnome-terminal) read 1319220568634154-141 /home/isabellylr/.ICEauthority 7 131072 16392
+1062 27894 27894 (gnome-terminal) close 1319220568634735-48 7 0
+1062 27119 27119 (gconfd-2) open 1319220568677652-607 /home/isabellylr/.gconfd/saved_state 1089 438 70
+1062 27119 27119 (gconfd-2) fstat 1319220568678276-95 /home/isabellylr/.gconfd/saved_state 70 0
+1062 27119 27119 (gconfd-2) fstat 1319220568678410-91 /home/isabellylr/.gconfd/saved_state 70 0
+1062 27119 27119 (gconfd-2) write 1319220568678573-107 /home/isabellylr/.gconfd/saved_state 70 641 641
+1062 27119 27119 (gconfd-2) write 1319220568694694-107 /home/isabellylr/.gconfd/saved_state 70 682 682
+1062 27119 27119 (gconfd-2) open 1319220568714494-1152 /home/isabellylr/.gconf/apps/gnome-terminal 624640 -1218093068 71
+1062 27119 27119 (gconfd-2) close 1319220568720168-38 71 0
+1062 27119 27119 (gconfd-2) write 1319220568721600-118 /home/isabellylr/.gconfd/saved_state 70 679 679
+1062 27119 27119 (gconfd-2) write 1319220568724807-105 /home/isabellylr/.gconfd/saved_state 70 668 668
+1062 27119 27119 (gconfd-2) write 1319220568726452-100 /home/isabellylr/.gconfd/saved_state 70 673 673
+1062 27119 27119 (gconfd-2) write 1319220568732153-109 /home/isabellylr/.gconfd/saved_state 70 692 692
+1062 27119 27119 (gconfd-2) open 1319220568734426-1149 /home/isabellylr/.gconf/apps/gnome-terminal/profiles 624640 -1218093068 71
+1062 27119 27119 (gconfd-2) close 1319220568739138-37 71 0
+1062 27119 27119 (gconfd-2) open 1319220568739776-1692 /home/isabellylr/.gconf/apps/gnome-terminal/profiles/Default/%gconf.xml 0 438 71
+1062 27119 27119 (gconfd-2) fstat 1319220568741490-142 /home/isabellylr/.gconf/apps/gnome-terminal/profiles/Default/%gconf.xml 71 0
+1062 27119 27119 (gconfd-2) read 1319220568741672-27362 /home/isabellylr/.gconf/apps/gnome-terminal/profiles/Default/%gconf.xml 71 131072 904
+1062 27119 27119 (gconfd-2) read 1319220568769058-142 /home/isabellylr/.gconf/apps/gnome-terminal/profiles/Default/%gconf.xml 71 131072 0
+1062 27119 27119 (gconfd-2) close 1319220568769352-40 71 0
+1062 27119 27119 (gconfd-2) write 1319220568774679-107 /home/isabellylr/.gconfd/saved_state 70 687 687
+1062 27896 27896 (bash) open 1319220570526759-1485 /home/isabellylr/.bashrc 32768 0 3
+1062 27896 27896 (bash) fstat 1319220570528269-105 /home/isabellylr/.bashrc 3 0
+1062 27896 27896 (bash) read 1319220570528405-26604 /home/isabellylr/.bashrc 3 3184 3184
+1062 27896 27896 (bash) close 1319220570555026-49 3 0
+1062 27896 27896 (bash) open 1319220572779306-2426 /home/isabellylr/.bash_history 32768 0 3
+1062 27896 27896 (bash) fstat 1319220572781761-103 /home/isabellylr/.bash_history 3 0
+1062 27896 27896 (bash) read 1319220572781895-13745 /home/isabellylr/.bash_history 3 8037 8037
+1062 27896 27896 (bash) close 1319220572795662-51 3 0
+1062 27896 27896 (bash) open 1319220572795870-1277 /home/isabellylr/.bash_history 32768 0 3
+1062 27896 27896 (bash) fstat 1319220572797171-103 /home/isabellylr/.bash_history 3 0
+1062 27896 27896 (bash) read 1319220572797286-110 /home/isabellylr/.bash_history 3 8037 8037
+1062 27896 27896 (bash) close 1319220572797410-42 3 0
+1062 27234 27247 (chrome) open 1319220579279895-575575 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 32834 420 78
+1062 27234 27247 (chrome) open 1319220579855509-112462 /home/isabellylr/.config/google-chrome/Default 32768 0 94
+1062 27234 27247 (chrome) write 1319220579968271-169 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 78 512 512
+1062 27234 27247 (chrome) write 1319220579968953-169 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 78 4 4
+1062 27234 27247 (chrome) write 1319220579969156-145 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 78 1024 1024
+1062 27234 27247 (chrome) write 1319220579969336-144 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 78 4 4
+1062 27234 27247 (chrome) write 1319220579969623-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 78 4 4
+1062 27234 27247 (chrome) write 1319220579969799-146 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 78 1024 1024
+1062 27234 27247 (chrome) write 1319220579969979-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 78 4 4
+1062 27234 27247 (chrome) write 1319220579970249-146 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 78 4 4
+1062 27234 27247 (chrome) write 1319220579970428-146 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 78 1024 1024
+1062 27234 27247 (chrome) write 1319220579970607-147 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 78 4 4
+1062 27234 27247 (chrome) write 1319220579970881-147 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 78 4 4
+1062 27234 27247 (chrome) write 1319220579971062-155 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 78 1024 1024
+1062 27234 27247 (chrome) write 1319220579971251-146 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 78 4 4
+1062 27234 27247 (chrome) write 1319220579971438-147 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 78 4 4
+1062 27234 27247 (chrome) write 1319220579971618-145 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 78 1024 1024
+1062 27234 27247 (chrome) write 1319220579971797-144 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 78 4 4
+1062 27234 27247 (chrome) write 1319220579971984-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 78 4 4
+1062 27234 27247 (chrome) write 1319220579973865-158 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 78 1024 1024
+1062 27234 27247 (chrome) write 1319220579974060-146 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 78 4 4
+1062 27234 27247 (chrome) write 1319220579974859-150 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 78 4 4
+1062 27234 27247 (chrome) write 1319220579975042-144 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 78 1024 1024
+1062 27234 27247 (chrome) write 1319220579975220-143 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 78 4 4
+1062 27234 27247 (chrome) write 1319220579975476-147 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 78 4 4
+1062 27234 27247 (chrome) write 1319220579975657-152 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 78 1024 1024
+1062 27234 27247 (chrome) write 1319220579975843-145 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 78 4 4
+1062 27234 27247 (chrome) write 1319220579976592-148 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 78 4 4
+1062 27234 27247 (chrome) write 1319220579976773-144 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 78 1024 1024
+1062 27234 27247 (chrome) write 1319220579976951-163 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 78 4 4
+1062 27234 27247 (chrome) write 1319220579979627-149 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 78 4 4
+1062 27234 27247 (chrome) write 1319220579979809-147 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 78 1024 1024
+1062 27234 27247 (chrome) write 1319220579979990-145 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 78 4 4
+1062 27234 27247 (chrome) read 1319220579980172-147 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 78 8 0
+1062 27234 27247 (chrome) close 1319220581413421-48 94 0
+1062 27234 27247 (chrome) write 1319220581413502-162 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 78 12 12
+1062 27234 27247 (chrome) close 1319220581896453-63 78 0
+1062 27119 27119 (gconfd-2) close 1319220582420916-509369 70 0
+1062 27916 27916 (bash) open 1319220582601438-334294 /home/isabellylr/Downloads/broker/broker 32768 0 3
+1062 27916 27916 (bash) read 1319220582935837-230476 /home/isabellylr/Downloads/broker/broker 3 80 80
+1062 27119 27119 (gconfd-2) open 1319220582938983-15908 /home/isabellylr/.gconfd/saved_state.tmp 577 448 70
+1062 27119 27119 (gconfd-2) write 1319220582954924-250 /home/isabellylr/.gconfd/saved_state.tmp 70 93227 93227
+1062 27119 27119 (gconfd-2) close 1319220583092972-46 70 0
+1062 27916 27916 (bash) close 1319220583166451-105 3 0
+1062 27917 27917 (bash) open 1319220585891540-15079 /home/isabellylr/Downloads/broker/broker 32768 0 3
+1062 27917 27917 (bash) read 1319220585906934-521 /home/isabellylr/Downloads/broker/broker 3 80 80
+1062 27917 27917 (bash) close 1319220585907575-75 3 0
+1062 27918 27918 (bash) open 1319220588215482-399 /home/isabellylr/Downloads/broker/broker 32768 0 3
+1062 27918 27918 (bash) read 1319220588216005-194 /home/isabellylr/Downloads/broker/broker 3 80 80
+1062 27918 27918 (bash) close 1319220588216318-82 3 0
+1062 27922 27922 (bash) open 1319220588309067-365 /home/isabellylr/Downloads/broker/lib/. 624640 5 3
+1062 27922 27922 (bash) close 1319220588415340-60 3 0
+1062 27923 27923 (sh) open 1319220588494520-21536 /home/isabellylr/Downloads/broker/testjvm 0 22 3
+1062 27923 27923 (sh) close 1319220588516180-77 3 0
+1062 27925 27926 (java) open 1319220588995179-731 /home/isabellylr/Downloads/broker/.hotspotrc 0 438 -2
+1062 27923 27923 (sh) open 1319220589700028-1308 /home/isabellylr/Downloads/broker/javalocation 33345 438 3
+1062 27923 27923 (sh) close 1319220589701617-77 3 0
+1062 27941 27941 (cat) open 1319220589717135-407 /home/isabellylr/Downloads/broker/javalocation 32768 0 3
+1062 27941 27941 (cat) fstat 1319220589717602-156 /home/isabellylr/Downloads/broker/javalocation 3 0
+1062 27941 27941 (cat) read 1319220589717840-154 /home/isabellylr/Downloads/broker/javalocation 3 131072 9
+1062 27941 27941 (cat) read 1319220589718101-141 /home/isabellylr/Downloads/broker/javalocation 3 131072 0
+1062 27941 27941 (cat) close 1319220589718293-58 3 0
+1062 27942 27943 (java) open 1319220589764555-67 /home/isabellylr/Downloads/broker/.hotspotrc 0 438 -2
+1062 27942 27943 (java) open 1319220591856051-767 /home/isabellylr/Downloads/broker/lib/activation-1.1.jar 32768 0 8
+1062 27942 27943 (java) fstat 1319220591856852-157 /home/isabellylr/Downloads/broker/lib/activation-1.1.jar 8 0
+1062 27942 27943 (java) read 1319220591857209-517496 /home/isabellylr/Downloads/broker/lib/activation-1.1.jar 8 128 128
+1062 27942 27943 (java) read 1319220592483232-176 /home/isabellylr/Downloads/broker/lib/activation-1.1.jar 8 30 30
+1062 27942 27943 (java) read 1319220592483444-168 /home/isabellylr/Downloads/broker/lib/activation-1.1.jar 8 230 230
+1062 27942 27943 (java) open 1319220592484673-760 /home/isabellylr/Downloads/broker/lib/antlr-2.7.6.jar 32768 0 9
+1062 27942 27943 (java) fstat 1319220592485471-189 /home/isabellylr/Downloads/broker/lib/antlr-2.7.6.jar 9 0
+1062 27942 27943 (java) read 1319220592485870-62514 /home/isabellylr/Downloads/broker/lib/antlr-2.7.6.jar 9 128 128
+1062 27942 27943 (java) read 1319220593125205-158 /home/isabellylr/Downloads/broker/lib/antlr-2.7.6.jar 9 30 30
+1062 27942 27943 (java) read 1319220593125395-151 /home/isabellylr/Downloads/broker/lib/antlr-2.7.6.jar 9 70 70
+1062 27942 27943 (java) open 1319220593129919-14964 /home/isabellylr/Downloads/broker/lib/bcprov-jdk15-140.jar 32768 0 10
+1062 27942 27943 (java) fstat 1319220593144918-179 /proc/812/stat 10 0
+1062 27942 27943 (java) read 1319220593145302-77459 /home/isabellylr/Downloads/broker/lib/bcprov-jdk15-140.jar 10 128 128
+1062 27942 27943 (java) read 1319220593560206-14469 /home/isabellylr/Downloads/broker/lib/bcprov-jdk15-140.jar 10 30 30
+1062 27942 27943 (java) read 1319220593574720-224 /home/isabellylr/Downloads/broker/lib/bcprov-jdk15-140.jar 10 8192 8192
+1062 27942 27943 (java) read 1319220593575407-39810 /home/isabellylr/Downloads/broker/lib/bcprov-jdk15-140.jar 10 8192 8192
+1062 27942 27943 (java) read 1319220593615686-200 /home/isabellylr/Downloads/broker/lib/bcprov-jdk15-140.jar 10 8192 8192
+1062 27942 27943 (java) read 1319220593616288-198 /home/isabellylr/Downloads/broker/lib/bcprov-jdk15-140.jar 10 8192 8192
+1062 27942 27943 (java) read 1319220593616869-204 /home/isabellylr/Downloads/broker/lib/bcprov-jdk15-140.jar 10 8192 8192
+1062 27942 27943 (java) read 1319220593617497-188 /home/isabellylr/Downloads/broker/lib/bcprov-jdk15-140.jar 10 1487 1487
+1062 27942 27943 (java) open 1319220593638218-782 /home/isabellylr/Downloads/broker/lib/c3p0-0.9.1.jar 32768 0 11
+1062 27942 27943 (java) fstat 1319220593639034-154 /home/isabellylr/Downloads/broker/lib/c3p0-0.9.1.jar 11 0
+1062 27942 27943 (java) read 1319220593639384-23743 /home/isabellylr/Downloads/broker/lib/c3p0-0.9.1.jar 11 128 128
+1062 27942 27943 (java) read 1319220593685318-33940 /home/isabellylr/Downloads/broker/lib/c3p0-0.9.1.jar 11 30 30
+1062 27942 27943 (java) read 1319220593719321-175 /home/isabellylr/Downloads/broker/lib/c3p0-0.9.1.jar 11 188 188
+1062 27942 27943 (java) open 1319220593732232-33149 /home/isabellylr/Downloads/broker/lib/classad-mod-2.4.jar 32768 0 12
+1062 27942 27943 (java) fstat 1319220593765418-161 /var/lib/boinc-client/slots/2/fraction_done.txt 12 0
+1062 27942 27943 (java) read 1319220593765797-21179 /home/isabellylr/Downloads/broker/lib/classad-mod-2.4.jar 12 128 128
+1062 27942 27943 (java) read 1319220593825717-168 /home/isabellylr/Downloads/broker/lib/classad-mod-2.4.jar 12 30 30
+1062 27942 27943 (java) read 1319220593825916-154 /home/isabellylr/Downloads/broker/lib/classad-mod-2.4.jar 12 71 71
+1062 27942 27943 (java) open 1319220593857113-106283 /home/isabellylr/Downloads/broker/lib/commons-codec-1.3.jar 32768 0 13
+1062 27942 27943 (java) fstat 1319220593963433-163 /var/lib/boinc-client/slots/2/fraction_done.txt 13 0
+1062 27942 27943 (java) read 1319220593963800-110117 /home/isabellylr/Downloads/broker/lib/commons-codec-1.3.jar 13 128 128
+1062 27942 27943 (java) read 1319220594216995-188 /home/isabellylr/Downloads/broker/lib/commons-codec-1.3.jar 13 30 30
+1062 27942 27943 (java) read 1319220594217215-157 /home/isabellylr/Downloads/broker/lib/commons-codec-1.3.jar 13 204 204
+1062 27942 27943 (java) open 1319220594364743-304244 /home/isabellylr/Downloads/broker/lib/commons-collections-3.1.jar 32768 0 14
+1062 27942 27943 (java) fstat 1319220594669038-168 /var/lib/boinc-client/slots/2/fraction_done.txt 14 0
+1062 27942 27943 (java) read 1319220594669415-210502 /home/isabellylr/Downloads/broker/lib/commons-collections-3.1.jar 14 128 128
+1062 27942 27943 (java) read 1319220595379113-209 /home/isabellylr/Downloads/broker/lib/commons-collections-3.1.jar 14 30 30
+1062 27942 27943 (java) read 1319220595379357-179 /home/isabellylr/Downloads/broker/lib/commons-collections-3.1.jar 14 211 211
+1062 27942 27943 (java) open 1319220595577749-305001 /home/isabellylr/Downloads/broker/lib/commons-io-1.3.2.jar 32768 0 15
+1062 27942 27943 (java) fstat 1319220595882793-165 /var/lib/boinc-client/slots/2/fraction_done.txt 15 0
+1062 27942 27943 (java) read 1319220595883176-158322 /home/isabellylr/Downloads/broker/lib/commons-io-1.3.2.jar 15 128 128
+1062 27942 27943 (java) read 1319220596203222-179 /home/isabellylr/Downloads/broker/lib/commons-io-1.3.2.jar 15 30 30
+1062 27942 27943 (java) read 1319220596203438-161 /home/isabellylr/Downloads/broker/lib/commons-io-1.3.2.jar 15 218 218
+1062 27942 27943 (java) open 1319220596383695-362693 /home/isabellylr/Downloads/broker/lib/commune-1.0.jar 32768 0 16
+1062 27942 27943 (java) fstat 1319220596746428-159 /var/lib/boinc-client/slots/2/fraction_done.txt 16 0
+1062 27942 27943 (java) read 1319220596746787-275559 /home/isabellylr/Downloads/broker/lib/commune-1.0.jar 16 128 128
+1062 27942 27943 (java) read 1319220597360062-57450 /home/isabellylr/Downloads/broker/lib/commune-1.0.jar 16 30 30
+1062 27942 27943 (java) read 1319220597417563-166 /home/isabellylr/Downloads/broker/lib/commune-1.0.jar 16 101 101
+1062 27942 27943 (java) open 1319220597590059-152047 /home/isabellylr/Downloads/broker/lib/derby-10.8.1.2.jar 32768 0 17
+1062 27942 27943 (java) fstat 1319220597742142-160 /home/isabellylr/Downloads/broker/lib/derby-10.8.1.2.jar 17 0
+1062 27942 27943 (java) read 1319220597742510-58267 /home/isabellylr/Downloads/broker/lib/derby-10.8.1.2.jar 17 128 128
+1062 27942 27943 (java) read 1319220597934423-14474 /home/isabellylr/Downloads/broker/lib/derby-10.8.1.2.jar 17 30 30
+1062 27942 27943 (java) read 1319220597948946-176 /home/isabellylr/Downloads/broker/lib/derby-10.8.1.2.jar 17 431 431
+1062 27942 27943 (java) read 1319220597949443-158 /home/isabellylr/Downloads/broker/lib/derby-10.8.1.2.jar 17 431 431
+1062 27942 27943 (java) open 1319220597976289-904 /home/isabellylr/Downloads/broker/lib/dom4j-1.6.1.jar 32768 0 18
+1062 27942 27943 (java) fstat 1319220597977226-156 /home/isabellylr/Downloads/broker/lib/dom4j-1.6.1.jar 18 0
+1062 27942 27943 (java) read 1319220597977579-60030 /home/isabellylr/Downloads/broker/lib/dom4j-1.6.1.jar 18 128 128
+1062 27942 27943 (java) read 1319220598074299-12072 /home/isabellylr/Downloads/broker/lib/dom4j-1.6.1.jar 18 30 30
+1062 27942 27943 (java) read 1319220598086412-187 /home/isabellylr/Downloads/broker/lib/dom4j-1.6.1.jar 18 206 206
+1062 27942 27943 (java) open 1319220598098065-2400 /home/isabellylr/Downloads/broker/lib/ehcache-core-2.4.3.jar 32768 0 19
+1062 27942 27943 (java) fstat 1319220598100498-162 /home/isabellylr/Downloads/broker/lib/ehcache-core-2.4.3.jar 19 0
+1062 27942 27943 (java) read 1319220598100870-123781 /home/isabellylr/Downloads/broker/lib/ehcache-core-2.4.3.jar 19 128 128
+1062 27942 27943 (java) read 1319220598379670-201 /home/isabellylr/Downloads/broker/lib/ehcache-core-2.4.3.jar 19 30 30
+1062 27942 27943 (java) read 1319220598379903-181 /home/isabellylr/Downloads/broker/lib/ehcache-core-2.4.3.jar 19 103 103
+1062 27942 27943 (java) open 1319220598441324-588 /home/isabellylr/Downloads/broker/lib/ejb3-persistence-1.0.2.GA.jar 32768 0 20
+1062 27942 27943 (java) fstat 1319220598441945-168 /home/isabellylr/Downloads/broker/lib/ejb3-persistence-1.0.2.GA.jar 20 0
+1062 27942 27943 (java) read 1319220598442341-50646 /home/isabellylr/Downloads/broker/lib/ejb3-persistence-1.0.2.GA.jar 20 128 128
+1062 27942 27943 (java) read 1319220598507305-177 /home/isabellylr/Downloads/broker/lib/ejb3-persistence-1.0.2.GA.jar 20 30 30
+1062 27942 27943 (java) read 1319220598507513-161 /home/isabellylr/Downloads/broker/lib/ejb3-persistence-1.0.2.GA.jar 20 208 208
+1062 27942 27943 (java) open 1319220598522250-1065 /home/isabellylr/Downloads/broker/lib/filters-2.0.235.jar 32768 0 21
+1062 27942 27943 (java) fstat 1319220598523353-180 /home/isabellylr/Downloads/broker/lib/filters-2.0.235.jar 21 0
+1062 27942 27943 (java) read 1319220598523754-81009 /home/isabellylr/Downloads/broker/lib/filters-2.0.235.jar 21 128 128
+1062 27942 27943 (java) read 1319220598787492-203 /home/isabellylr/Downloads/broker/lib/filters-2.0.235.jar 21 30 30
+1062 27942 27943 (java) read 1319220598787727-184 /home/isabellylr/Downloads/broker/lib/filters-2.0.235.jar 21 187 187
+1062 27942 27943 (java) open 1319220598859986-16127 /home/isabellylr/Downloads/broker/lib/gateway-1.0.jar 32768 0 22
+1062 27942 27943 (java) fstat 1319220598876149-157 /home/isabellylr/Downloads/broker/lib/gateway-1.0.jar 22 0
+1062 27942 27943 (java) read 1319220598876505-14144 /home/isabellylr/Downloads/broker/lib/gateway-1.0.jar 22 128 128
+1062 27942 27943 (java) read 1319220598941160-166 /home/isabellylr/Downloads/broker/lib/gateway-1.0.jar 22 30 30
+1062 27942 27943 (java) read 1319220598941357-152 /home/isabellylr/Downloads/broker/lib/gateway-1.0.jar 22 27 27
+1062 27942 27943 (java) open 1319220598952805-577 /home/isabellylr/Downloads/broker/lib/glite-jdl-api-1.0.jar 32768 0 23
+1062 27942 27943 (java) fstat 1319220598953421-160 /home/isabellylr/Downloads/broker/lib/glite-jdl-api-1.0.jar 23 0
+1062 27942 27943 (java) read 1319220598953786-74486 /home/isabellylr/Downloads/broker/lib/glite-jdl-api-1.0.jar 23 128 128
+1062 27942 27943 (java) read 1319220599053758-168 /home/isabellylr/Downloads/broker/lib/glite-jdl-api-1.0.jar 23 30 30
+1062 27942 27943 (java) read 1319220599053957-156 /home/isabellylr/Downloads/broker/lib/glite-jdl-api-1.0.jar 23 27 27
+1062 27942 27943 (java) open 1319220599081471-79280 /home/isabellylr/Downloads/broker/lib/gson-1.7.1.jar 32768 0 24
+1062 27942 27943 (java) fstat 1319220599160787-158 /var/lib/boinc-client/slots/2/fraction_done.txt 24 0
+1062 27942 27943 (java) read 1319220599161163-47974 /home/isabellylr/Downloads/broker/lib/gson-1.7.1.jar 24 128 128
+1062 27942 27943 (java) read 1319220599254912-166 /home/isabellylr/Downloads/broker/lib/gson-1.7.1.jar 24 30 30
+1062 27942 27943 (java) read 1319220599255110-151 /home/isabellylr/Downloads/broker/lib/gson-1.7.1.jar 24 319 319
+1062 27942 27943 (java) open 1319220599256148-1398 /home/isabellylr/Downloads/broker/lib/hibernate-annotations-3.4.0.GA.jar 32768 0 25
+1062 27942 27943 (java) fstat 1319220599257583-175 /home/isabellylr/Downloads/broker/lib/hibernate-annotations-3.4.0.GA.jar 25 0
+1062 27942 27943 (java) read 1319220599257988-81054 /home/isabellylr/Downloads/broker/lib/hibernate-annotations-3.4.0.GA.jar 25 128 128
+1062 27942 27943 (java) read 1319220599473574-10995 /home/isabellylr/Downloads/broker/lib/hibernate-annotations-3.4.0.GA.jar 25 30 30
+1062 27942 27943 (java) read 1319220599484627-227 /home/isabellylr/Downloads/broker/lib/hibernate-annotations-3.4.0.GA.jar 25 210 210
+1062 27942 27943 (java) open 1319220599700293-330017 /home/isabellylr/Downloads/broker/lib/hibernate-c3p0-3.5.1-Final.jar 32768 0 26
+1062 27234 27247 (chrome) open 1319220249780967-949 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 32834 420 99
+1062 27234 27247 (chrome) open 1319220249781949-1245 /home/isabellylr/.config/google-chrome/Default 32768 0 104
+1062 27234 27247 (chrome) write 1319220249783479-160 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 512 512
+1062 27234 27247 (chrome) write 1319220249783713-144 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 4 4
+1062 27234 27247 (chrome) write 1319220249783889-144 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 1024 1024
+1062 27234 27247 (chrome) write 1319220249784066-141 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 4 4
+1062 27234 27247 (chrome) write 1319220249784249-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 4 4
+1062 27234 27247 (chrome) write 1319220249784425-141 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 1024 1024
+1062 27234 27247 (chrome) write 1319220249784598-141 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 4 4
+1062 27234 27247 (chrome) write 1319220249784775-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 4 4
+1062 27234 27247 (chrome) write 1319220249784949-191 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 1024 1024
+1062 27234 27247 (chrome) write 1319220249785174-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 4 4
+1062 27234 27247 (chrome) write 1319220249785442-143 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 4 4
+1062 27234 27247 (chrome) write 1319220249785618-153 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 1024 1024
+1062 27234 27247 (chrome) write 1319220249785804-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 4 4
+1062 27234 27247 (chrome) write 1319220249785992-421 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 4 4
+1062 27234 27247 (chrome) write 1319220249786450-144 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 1024 1024
+1062 27234 27247 (chrome) write 1319220249786627-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 4 4
+1062 27234 27247 (chrome) write 1319220249786803-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 4 4
+1062 27234 27247 (chrome) write 1319220249786978-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 1024 1024
+1062 27234 27247 (chrome) write 1319220249787152-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 4 4
+1062 27234 27247 (chrome) write 1319220249787328-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 4 4
+1062 27234 27247 (chrome) write 1319220249787501-143 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 1024 1024
+1062 27234 27247 (chrome) write 1319220249787676-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 4 4
+1062 27234 27247 (chrome) write 1319220249787857-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 4 4
+1062 27234 27247 (chrome) write 1319220249788032-154 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 1024 1024
+1062 27234 27247 (chrome) write 1319220249788220-141 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 4 4
+1062 27234 27247 (chrome) write 1319220249788504-143 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 4 4
+1062 27234 27247 (chrome) write 1319220249788679-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 1024 1024
+1062 27234 27247 (chrome) write 1319220249788854-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 4 4
+1062 27234 27247 (chrome) write 1319220249789575-146 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 4 4
+1062 27234 27247 (chrome) write 1319220249789754-143 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 1024 1024
+1062 27234 27247 (chrome) write 1319220249789929-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 4 4
+1062 27234 27247 (chrome) read 1319220249793763-144 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 8 0
+1062 27234 27247 (chrome) close 1319220249795720-48 104 0
+1062 27234 27247 (chrome) write 1319220249795800-151 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 12 12
+1062 27234 27247 (chrome) close 1319220249806002-54 99 0
+1062 27234 27249 (chrome) open 1319220266913665-652 /home/isabellylr/.cache/google-chrome/Default/Cache/f_000596 32770 0 83
+1062 27234 27249 (chrome) close 1319220266953565-54 83 0
+1062 27234 27249 (chrome) open 1319220267664028-52563 /home/isabellylr/.cache/google-chrome/Default/Cache/f_000625 32770 0 97
+1062 27234 27249 (chrome) open 1319220267735331-8463 /home/isabellylr/.cache/google-chrome/Default/Cache/f_000624 32770 0 105
+1062 27234 27249 (chrome) close 1319220267755362-82 97 0
+1062 27234 27249 (chrome) close 1319220267793508-48 105 0
+1062 27234 27331 (chrome) open 1319220268617303-441 /home/isabellylr/.config/google-chrome/Default/Local 32834 420 108
+1062 27234 27331 (chrome) open 1319220268617775-311 /home/isabellylr/.config/google-chrome/Default/Local 32768 0 111
+1062 27234 27331 (chrome) write 1319220268618423-196 /home/isabellylr/.config/google-chrome/Default/Local 108 512 512
+1062 27234 27331 (chrome) write 1319220268618693-179 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268618906-177 /home/isabellylr/.config/google-chrome/Default/Local 108 1024 1024
+1062 27234 27331 (chrome) write 1319220268619116-176 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268619331-176 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268619540-176 /home/isabellylr/.config/google-chrome/Default/Local 108 1024 1024
+1062 27234 27331 (chrome) write 1319220268619750-178 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268619965-177 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268620176-176 /home/isabellylr/.config/google-chrome/Default/Local 108 1024 1024
+1062 27234 27331 (chrome) write 1319220268620384-175 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268620605-192 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268620832-197 /home/isabellylr/.config/google-chrome/Default/Local 108 1024 1024
+1062 27234 27331 (chrome) write 1319220268621105-179 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268621325-178 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268621536-177 /home/isabellylr/.config/google-chrome/Default/Local 108 1024 1024
+1062 27234 27331 (chrome) write 1319220268621746-176 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268621970-176 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268622180-177 /home/isabellylr/.config/google-chrome/Default/Local 108 1024 1024
+1062 27234 27331 (chrome) write 1319220268622391-176 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268622605-185 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268623159-182 /home/isabellylr/.config/google-chrome/Default/Local 108 1024 1024
+1062 27234 27331 (chrome) write 1319220268623375-176 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268623592-176 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268623801-188 /home/isabellylr/.config/google-chrome/Default/Local 108 1024 1024
+1062 27234 27331 (chrome) write 1319220268624023-178 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268624244-176 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268624454-176 /home/isabellylr/.config/google-chrome/Default/Local 108 1024 1024
+1062 27234 27331 (chrome) write 1319220268624664-175 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268624876-193 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268625103-179 /home/isabellylr/.config/google-chrome/Default/Local 108 1024 1024
+1062 27234 27331 (chrome) write 1319220268625316-176 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268625530-176 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268625740-178 /home/isabellylr/.config/google-chrome/Default/Local 108 1024 1024
+1062 27234 27331 (chrome) write 1319220268625952-178 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268626171-177 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268626380-184 /home/isabellylr/.config/google-chrome/Default/Local 108 1024 1024
+1062 27234 27331 (chrome) write 1319220268626599-176 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268626812-177 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268627021-179 /home/isabellylr/.config/google-chrome/Default/Local 108 1024 1024
+1062 27234 27331 (chrome) write 1319220268627234-176 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268627447-177 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268627657-177 /home/isabellylr/.config/google-chrome/Default/Local 108 1024 1024
+1062 27234 27331 (chrome) write 1319220268627868-178 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268628087-177 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268628297-177 /home/isabellylr/.config/google-chrome/Default/Local 108 1024 1024
+1062 27234 27331 (chrome) write 1319220268628508-175 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268628720-177 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268628929-3225 /home/isabellylr/.config/google-chrome/Default/Local 108 1024 1024
+1062 27234 27331 (chrome) write 1319220268632343-202 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268632617-212 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268633190-185 /home/isabellylr/.config/google-chrome/Default/Local 108 1024 1024
+1062 27234 27331 (chrome) write 1319220268633412-200 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268633676-186 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268633898-181 /home/isabellylr/.config/google-chrome/Default/Local 108 1024 1024
+1062 27234 27331 (chrome) write 1319220268634115-172 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268634326-175 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268634534-178 /home/isabellylr/.config/google-chrome/Default/Local 108 1024 1024
+1062 27234 27331 (chrome) write 1319220268634744-176 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268634958-178 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268635169-187 /home/isabellylr/.config/google-chrome/Default/Local 108 1024 1024
+1062 27234 27331 (chrome) write 1319220268635390-175 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268635609-176 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268635819-177 /home/isabellylr/.config/google-chrome/Default/Local 108 1024 1024
+1062 27234 27331 (chrome) write 1319220268636032-178 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268636248-177 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268636457-177 /home/isabellylr/.config/google-chrome/Default/Local 108 1024 1024
+1062 27234 27331 (chrome) write 1319220268636668-176 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268636881-201 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268637126-178 /home/isabellylr/.config/google-chrome/Default/Local 108 1024 1024
+1062 27234 27331 (chrome) write 1319220268637338-176 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268637553-177 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268637763-187 /home/isabellylr/.config/google-chrome/Default/Local 108 1024 1024
+1062 27234 27331 (chrome) write 1319220268637983-177 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268638199-176 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268638469-179 /home/isabellylr/.config/google-chrome/Default/Local 108 1024 1024
+1062 27234 27331 (chrome) write 1319220268638682-177 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268638900-177 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268639109-176 /home/isabellylr/.config/google-chrome/Default/Local 108 1024 1024
+1062 27234 27331 (chrome) write 1319220268639319-175 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268639532-176 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268639741-178 /home/isabellylr/.config/google-chrome/Default/Local 108 1024 1024
+1062 27234 27331 (chrome) write 1319220268639953-178 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268640705-195 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268640936-209 /home/isabellylr/.config/google-chrome/Default/Local 108 1024 1024
+1062 27234 27331 (chrome) write 1319220268641201-180 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268641424-179 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) write 1319220268641636-176 /home/isabellylr/.config/google-chrome/Default/Local 108 1024 1024
+1062 27234 27331 (chrome) write 1319220268641845-178 /home/isabellylr/.config/google-chrome/Default/Local 108 4 4
+1062 27234 27331 (chrome) read 1319220268642126-7660 /home/isabellylr/.config/google-chrome/Default/Local 108 8 0
+1062 27234 27331 (chrome) close 1319220268657432-44 111 0
+1062 27234 27331 (chrome) write 1319220268657508-196 /home/isabellylr/.config/google-chrome/Default/Local 108 12 12
+1062 27234 27331 (chrome) close 1319220268674838-53 108 0
+1062 27234 27249 (chrome) open 1319220270617005-757 /home/isabellylr/.cache/google-chrome/Default/Cache/f_000686 32962 384 108
+1062 27234 27249 (chrome) close 1319220270617789-49 108 0
+1062 27234 27249 (chrome) open 1319220270617955-547 /home/isabellylr/.cache/google-chrome/Default/Cache/f_000686 32770 0 108
+1062 27234 27249 (chrome) close 1319220270618779-3979 108 0
+1062 27234 27249 (chrome) open 1319220284469574-4036 /home/isabellylr/.cache/google-chrome/Default/Cache/f_000687 32962 384 111
+1062 27234 27249 (chrome) close 1319220284473639-50 111 0
+1062 27234 27249 (chrome) open 1319220284473816-1569 /home/isabellylr/.cache/google-chrome/Default/Cache/f_000687 32770 0 111
+1062 27234 27249 (chrome) close 1319220284475682-228655 111 0
+1062 27234 27247 (chrome) open 1319220289721501-808 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 32834 420 128
+1062 27234 27247 (chrome) open 1319220289722338-1137 /home/isabellylr/.config/google-chrome/Default 32768 0 129
+1062 27234 27247 (chrome) write 1319220289723749-155 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 128 512 512
+1062 27234 27247 (chrome) write 1319220289724369-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 128 4 4
+1062 27234 27247 (chrome) write 1319220289724542-140 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 128 1024 1024
+1062 27234 27247 (chrome) write 1319220289724713-138 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 128 4 4
+1062 27234 27247 (chrome) write 1319220289724969-166 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 128 4 4
+1062 27234 27247 (chrome) write 1319220289725167-138 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 128 1024 1024
+1062 27234 27247 (chrome) write 1319220289725336-138 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 128 4 4
+1062 27234 27247 (chrome) write 1319220289725580-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 128 4 4
+1062 27234 27247 (chrome) write 1319220289725750-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 128 1024 1024
+1062 27234 27247 (chrome) write 1319220289725920-138 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 128 4 4
+1062 27234 27247 (chrome) write 1319220289726166-140 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 128 4 4
+1062 27234 27247 (chrome) write 1319220289726337-149 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 128 1024 1024
+1062 27234 27247 (chrome) write 1319220289726518-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 128 4 4
+1062 27234 27247 (chrome) write 1319220289726696-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 128 4 4
+1062 27234 27247 (chrome) write 1319220289726867-138 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 128 1024 1024
+1062 27234 27247 (chrome) write 1319220289727037-138 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 128 4 4
+1062 27234 27247 (chrome) write 1319220289727209-487 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 128 4 4
+1062 27234 27247 (chrome) write 1319220289727728-140 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 128 1024 1024
+1062 27234 27247 (chrome) write 1319220289727899-140 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 128 4 4
+1062 27234 27247 (chrome) write 1319220289728321-144 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 128 4 4
+1062 27234 27247 (chrome) write 1319220289728498-140 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 128 1024 1024
+1062 27234 27247 (chrome) write 1319220289728670-141 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 128 4 4
+1062 27234 27247 (chrome) write 1319220289729167-144 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 128 4 4
+1062 27234 27247 (chrome) write 1319220289729344-151 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 128 1024 1024
+1062 27234 27247 (chrome) write 1319220289729529-141 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 128 4 4
+1062 27234 27247 (chrome) write 1319220289737477-152 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 128 4 4
+1062 27234 27247 (chrome) write 1319220289737663-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 128 1024 1024
+1062 27234 27247 (chrome) write 1319220289737838-141 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 128 4 4
+1062 27234 27247 (chrome) write 1319220289738014-141 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 128 4 4
+1062 27234 27247 (chrome) write 1319220289738188-143 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 128 1024 1024
+1062 27234 27247 (chrome) write 1319220289738363-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 128 4 4
+1062 27234 27247 (chrome) write 1319220289738541-141 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 128 4 4
+1062 27234 27247 (chrome) write 1319220289738715-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 128 1024 1024
+1062 27234 27247 (chrome) write 1319220289738890-141 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 128 4 4
+1062 27234 27247 (chrome) write 1319220289739067-141 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 128 4 4
+1062 27234 27247 (chrome) write 1319220289739240-153 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 128 1024 1024
+1062 27234 27247 (chrome) write 1319220289739427-141 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 128 4 4
+1062 27234 27247 (chrome) write 1319220289739751-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 128 4 4
+1062 27234 27247 (chrome) write 1319220289739926-141 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 128 1024 1024
+1062 27234 27247 (chrome) write 1319220289740099-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 128 4 4
+1062 27234 27247 (chrome) read 1319220289740296-140 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 128 8 0
+1062 27234 27247 (chrome) close 1319220289746872-47 129 0
+1062 27234 27247 (chrome) write 1319220289746951-154 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 128 12 12
+1062 27234 27247 (chrome) close 1319220289759446-53 128 0
+1062 27234 27249 (chrome) open 1319220295596867-3846 /home/isabellylr/.cache/google-chrome/Default/Cache/f_000618 32770 0 130
+1062 27234 27249 (chrome) close 1319220295627410-54 130 0
+1062 27234 27249 (chrome) open 1319220296174911-682 /home/isabellylr/.cache/google-chrome/Default/Cache/f_000688 32962 384 130
+1062 27234 27249 (chrome) close 1319220296175618-50 130 0
+1062 27234 27249 (chrome) open 1319220296175782-1604 /home/isabellylr/.cache/google-chrome/Default/Cache/f_000688 32770 0 130
+1062 27234 27249 (chrome) close 1319220296177667-2447 130 0
+1062 27234 27249 (chrome) open 1319220296367806-796 /home/isabellylr/.cache/google-chrome/Default/Cache/f_000689 32962 384 130
+1062 27234 27249 (chrome) close 1319220296368631-54 130 0
+1062 27234 27249 (chrome) open 1319220296368848-606 /home/isabellylr/.cache/google-chrome/Default/Cache/f_000689 32770 0 130
+1062 27234 27249 (chrome) close 1319220296369754-2331 130 0
+1062 27234 27245 (chrome) open 1319220312095451-67456 /home/isabellylr/.config/google-chrome/.com.google.chrome.tbomnI 32962 384 112
+1062 27234 27245 (chrome) fstat 1319220312163066-147 /var/lib/boinc-client/slots/2/fraction_done.txt 112 0
+1062 27234 27245 (chrome) write 1319220312163367-194 /home/isabellylr/.config/google-chrome/.com.google.chrome.tbomnI 112 27044 27044
+1062 27234 27245 (chrome) close 1319220312163579-37307 112 0
+1062 27234 27249 (chrome) open 1319220314153954-19158 /home/isabellylr/.cache/google-chrome/Default/Cache/f_00059d 32770 0 112
+1062 27234 27249 (chrome) close 1319220314258776-59 112 0
+1062 27234 27247 (chrome) open 1319220320282740-409 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 32834 420 132
+1062 27234 27247 (chrome) open 1319220320283190-306 /home/isabellylr/.config/google-chrome/Default 32768 0 136
+1062 27234 27247 (chrome) write 1319220320283775-155 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 132 512 512
+1062 27234 27247 (chrome) write 1319220320284000-144 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 132 4 4
+1062 27234 27247 (chrome) write 1319220320284211-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 132 1024 1024
+1062 27234 27247 (chrome) write 1319220320284388-155 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 132 4 4
+1062 27234 27247 (chrome) write 1319220320284633-141 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 132 4 4
+1062 27234 27247 (chrome) write 1319220320284806-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 132 1024 1024
+1062 27234 27247 (chrome) write 1319220320284977-155 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 132 4 4
+1062 27234 27247 (chrome) write 1319220320285168-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 132 4 4
+1062 27234 27247 (chrome) write 1319220320285338-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 132 1024 1024
+1062 27234 27247 (chrome) write 1319220320285508-138 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 132 4 4
+1062 27234 27247 (chrome) write 1319220320285680-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 132 4 4
+1062 27234 27247 (chrome) write 1319220320285850-148 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 132 1024 1024
+1062 27234 27247 (chrome) write 1319220320286030-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 132 4 4
+1062 27234 27247 (chrome) write 1319220320286214-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 132 4 4
+1062 27234 27247 (chrome) write 1319220320286384-138 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 132 1024 1024
+1062 27234 27247 (chrome) write 1319220320286554-138 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 132 4 4
+1062 27234 27247 (chrome) write 1319220320286724-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 132 4 4
+1062 27234 27247 (chrome) write 1319220320286893-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 132 1024 1024
+1062 27234 27247 (chrome) write 1319220320287063-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 132 4 4
+1062 27234 27247 (chrome) write 1319220320287234-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 132 4 4
+1062 27234 27247 (chrome) write 1319220320287403-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 132 1024 1024
+1062 27234 27247 (chrome) write 1319220320287573-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 132 4 4
+1062 27234 27247 (chrome) write 1319220320287746-138 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 132 4 4
+1062 27234 27247 (chrome) write 1319220320287915-146 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 132 1024 1024
+1062 27234 27247 (chrome) write 1319220320288093-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 132 4 4
+1062 27234 27247 (chrome) write 1319220320288711-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 132 4 4
+1062 27234 27247 (chrome) write 1319220320288885-161 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 132 1024 1024
+1062 27234 27247 (chrome) write 1319220320289101-145 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 132 4 4
+1062 27234 27247 (chrome) write 1319220320290542-147 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 132 4 4
+1062 27234 27247 (chrome) write 1319220320290721-140 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 132 1024 1024
+1062 27234 27247 (chrome) write 1319220320290893-145 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 132 4 4
+1062 27234 27247 (chrome) write 1319220320291666-141 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 132 4 4
+1062 27234 27247 (chrome) write 1319220320291838-141 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 132 1024 1024
+1062 27234 27247 (chrome) write 1319220320292985-156 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 132 4 4
+1062 27234 27247 (chrome) write 1319220320294421-143 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 132 4 4
+1062 27234 27247 (chrome) write 1319220320294595-147 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 132 1024 1024
+1062 27234 27247 (chrome) write 1319220320294774-138 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 132 4 4
+1062 27234 27247 (chrome) write 1319220320295036-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 132 4 4
+1062 27234 27247 (chrome) write 1319220320295206-140 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 132 1024 1024
+1062 27234 27247 (chrome) write 1319220320295378-138 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 132 4 4
+1062 27234 27247 (chrome) write 1319220320295637-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 132 4 4
+1062 27234 27247 (chrome) write 1319220320295808-144 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 132 1024 1024
+1062 27234 27247 (chrome) write 1319220320295993-140 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 132 4 4
+1062 27234 27247 (chrome) read 1319220320296184-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 132 8 0
+1062 27234 27247 (chrome) close 1319220320298468-47 136 0
+1062 27234 27247 (chrome) write 1319220320298545-148 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 132 12 12
+1062 27234 27247 (chrome) close 1319220320311041-58 132 0
+1062 27234 27249 (chrome) open 1319220327335300-746 /home/isabellylr/.cache/google-chrome/Default/Cache/f_00068a 32962 384 130
+1062 27234 27249 (chrome) close 1319220327336072-76 130 0
+1062 27234 27249 (chrome) open 1319220327336267-642 /home/isabellylr/.cache/google-chrome/Default/Cache/f_00068a 32770 0 130
+1062 27234 27249 (chrome) close 1319220327337160-330859 130 0
+1062 27217 27217 (gnome-screensav) open 1319220335050304-62 /home/isabellylr/.icons/DMZ-White/cursors/00000000000000000000000000000000 0 438 -2
+1062 27888 27888 (gnome-screensav) open 1319220335281241-55 /home/isabellylr/.Xdefaults-celacanto 0 825307186 -2
+1062 27234 27247 (chrome) open 1319220351339209-750 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 32834 420 73
+1062 27234 27247 (chrome) open 1319220351339994-866 /home/isabellylr/.config/google-chrome/Default 32768 0 130
+1062 27234 27247 (chrome) write 1319220351341172-164 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 512 512
+1062 27234 27247 (chrome) write 1319220351341410-147 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220351341590-145 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 1024 1024
+1062 27234 27247 (chrome) write 1319220351341768-143 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220351341958-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220351342134-146 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 1024 1024
+1062 27234 27247 (chrome) write 1319220351342313-145 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220351342495-147 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220351342675-146 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 1024 1024
+1062 27234 27247 (chrome) write 1319220351342858-135 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220351343029-140 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220351343200-152 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 1024 1024
+1062 27234 27247 (chrome) write 1319220351343386-141 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220351343576-141 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220351343749-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 1024 1024
+1062 27234 27247 (chrome) write 1319220351343923-140 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220351344097-191 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220351344322-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 1024 1024
+1062 27234 27247 (chrome) write 1319220351344497-141 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220351344672-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220351344846-141 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 1024 1024
+1062 27234 27247 (chrome) write 1319220351345019-158 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220351345214-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220351345388-151 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 1024 1024
+1062 27234 27247 (chrome) write 1319220351345572-140 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220351345888-143 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220351346064-141 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 1024 1024
+1062 27234 27247 (chrome) write 1319220351346237-141 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) read 1319220351353789-167 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 8 0
+1062 27234 27247 (chrome) close 1319220351355745-48 130 0
+1062 27234 27247 (chrome) write 1319220351355824-152 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 12 12
+1062 27234 27247 (chrome) close 1319220351364708-62 73 0
+1062 27234 27247 (chrome) open 1319220388539913-672 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 32834 420 73
+1062 27234 27247 (chrome) open 1319220388540626-1433 /home/isabellylr/.config/google-chrome/Default 32768 0 99
+1062 27234 27247 (chrome) write 1319220388542344-161 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 512 512
+1062 27234 27247 (chrome) write 1319220388542985-146 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220388543164-141 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 1024 1024
+1062 27234 27247 (chrome) write 1319220388543338-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220388544583-146 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220388544761-143 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 1024 1024
+1062 27234 27247 (chrome) write 1319220388544938-163 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220388545694-143 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220388545869-141 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 1024 1024
+1062 27234 27247 (chrome) write 1319220388546043-140 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220388546293-141 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220388546467-149 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 1024 1024
+1062 27234 27247 (chrome) write 1319220388546648-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220388546899-143 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220388547074-141 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 1024 1024
+1062 27234 27247 (chrome) write 1319220388547248-140 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220388550031-150 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220388550213-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 1024 1024
+1062 27234 27247 (chrome) write 1319220388550388-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) read 1319220388550567-178 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 8 0
+1062 27234 27247 (chrome) close 1319220388552561-50 99 0
+1062 27234 27247 (chrome) write 1319220388552643-151 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 12 12
+1062 27234 27247 (chrome) close 1319220388559725-64 73 0
+1062 27234 27247 (chrome) open 1319220420156367-449 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 32834 420 63
+1062 27234 27247 (chrome) open 1319220420156855-316 /home/isabellylr/.config/google-chrome/Default 32768 0 86
+1062 27234 27247 (chrome) write 1319220420157458-160 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 512 512
+1062 27234 27247 (chrome) write 1319220420158091-148 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220420158271-143 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 1024 1024
+1062 27234 27247 (chrome) write 1319220420158446-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220420158713-143 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220420158888-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 1024 1024
+1062 27234 27247 (chrome) write 1319220420159063-141 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220420161138-169 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220420161340-144 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 1024 1024
+1062 27234 27247 (chrome) write 1319220420161542-156 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) read 1319220420162477-164 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 8 0
+1062 27234 27247 (chrome) close 1319220420164212-56 86 0
+1062 27234 27247 (chrome) write 1319220420164313-157 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 12 12
+1062 27234 27247 (chrome) close 1319220420169588-63 63 0
+1062 27234 27247 (chrome) open 1319220454331903-410 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 32834 420 63
+1062 27234 27247 (chrome) open 1319220454332354-306 /home/isabellylr/.config/google-chrome/Default 32768 0 83
+1062 27234 27247 (chrome) write 1319220454332933-180 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 512 512
+1062 27234 27247 (chrome) write 1319220454333571-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220454333745-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 1024 1024
+1062 27234 27247 (chrome) write 1319220454333915-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220454335210-176 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220454335457-167 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 1024 1024
+1062 27234 27247 (chrome) write 1319220454335656-143 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220454335932-143 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220454336144-146 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 1024 1024
+1062 27234 27247 (chrome) write 1319220454336325-154 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220454336608-545 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220454337187-152 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 1024 1024
+1062 27234 27247 (chrome) write 1319220454337370-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220454338094-144 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220454338268-140 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 1024 1024
+1062 27234 27247 (chrome) write 1319220454338438-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220454338683-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220454338853-138 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 1024 1024
+1062 27234 27247 (chrome) write 1319220454339022-140 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220454339719-140 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220454339890-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 1024 1024
+1062 27234 27247 (chrome) write 1319220454340063-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220454345341-152 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220454345529-154 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 1024 1024
+1062 27234 27247 (chrome) write 1319220454345718-143 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220454345935-145 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220454346481-143 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 1024 1024
+1062 27234 27247 (chrome) write 1319220454346655-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220454346898-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220454347068-138 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 1024 1024
+1062 27234 27247 (chrome) write 1319220454347238-138 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) read 1319220454347410-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 8 0
+1062 27234 27247 (chrome) close 1319220454349348-47 83 0
+1062 27234 27247 (chrome) write 1319220454349424-146 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 12 12
+1062 27234 27247 (chrome) close 1319220454360745-63 63 0
+1062 27234 27260 (chrome) open 1319220468954214-157966 /home/isabellylr/.config/google-chrome/Safe 33346 438 63
+1062 27234 27260 (chrome) open 1319220469112221-161667 /home/isabellylr/.config/google-chrome/Safe 32768 438 83
+1062 27234 27260 (chrome) fstat 1319220469273926-142 /var/lib/boinc-client/slots/2/fraction_done.txt 83 0
+1062 27234 27260 (chrome) read 1319220469274145-352 /home/isabellylr/.config/google-chrome/Safe 83 131072 131072
+1062 27234 27260 (chrome) read 1319220469283630-257 /home/isabellylr/.config/google-chrome/Safe 83 131072 131072
+1062 27234 27260 (chrome) fstat 1319220469657194-140 /etc/hosts 63 0
+1062 27234 27260 (chrome) read 1319220469677117-224 /home/isabellylr/.config/google-chrome/Safe 83 131072 131072
+1062 27234 27260 (chrome) read 1319220469684794-251 /home/isabellylr/.config/google-chrome/Safe 83 131072 131072
+1062 27234 27260 (chrome) read 1319220469699648-5425 /home/isabellylr/.config/google-chrome/Safe 83 4456448 4456448
+1062 27234 27260 (chrome) read 1319220469705101-291 /home/isabellylr/.config/google-chrome/Safe 83 131072 131072
+1062 27234 27260 (chrome) read 1319220469729795-1081 /home/isabellylr/.config/google-chrome/Safe 83 1048576 1048576
+1062 27234 27260 (chrome) read 1319220469730897-245 /home/isabellylr/.config/google-chrome/Safe 83 131072 125104
+1062 27234 27260 (chrome) close 1319220469736941-56 83 0
+1062 27234 27260 (chrome) write 1319220469737093-162 /home/isabellylr/.config/google-chrome/Safe 63 6520 6520
+1062 27234 27260 (chrome) read 1319220470055685-144 /home/isabellylr/.config/google-chrome/Safe 63 131072 6520
+1062 27234 27260 (chrome) write 1319220470465402-373 /home/isabellylr/.config/google-chrome/Safe 63 131072 131072
+1062 27234 27260 (chrome) write 1319220470466204-287 /home/isabellylr/.config/google-chrome/Safe 63 131072 131072
+1062 27234 27260 (chrome) write 1319220470466910-7621 /home/isabellylr/.config/google-chrome/Safe 63 4456448 4456448
+1062 27234 27260 (chrome) write 1319220470498073-346 /home/isabellylr/.config/google-chrome/Safe 63 131072 131072
+1062 27234 27260 (chrome) write 1319220470498436-1984 /home/isabellylr/.config/google-chrome/Safe 63 1048576 1048576
+1062 27234 27260 (chrome) write 1319220470506649-322 /home/isabellylr/.config/google-chrome/Safe 63 116916 116916
+1062 27234 27260 (chrome) close 1319220474315292-89 63 0
+1062 27234 27260 (chrome) open 1319220476445352-105461 /home/isabellylr/.config/google-chrome/Safe 33345 384 63
+1062 27234 27260 (chrome) write 1319220476550844-156 /home/isabellylr/.config/google-chrome/Safe 63 4 4
+1062 27234 27260 (chrome) write 1319220476551014-135 /home/isabellylr/.config/google-chrome/Safe 63 4 4
+1062 27234 27260 (chrome) write 1319220476551163-133 /home/isabellylr/.config/google-chrome/Safe 63 8 8
+1062 27234 27260 (chrome) write 1319220476551309-131 /home/isabellylr/.config/google-chrome/Safe 63 8 8
+1062 27234 27260 (chrome) write 1319220476551453-132 /home/isabellylr/.config/google-chrome/Safe 63 8 8
+1062 27234 27260 (chrome) write 1319220476551598-133 /home/isabellylr/.config/google-chrome/Safe 63 8 8
+1062 27234 27260 (chrome) write 1319220476551743-133 /home/isabellylr/.config/google-chrome/Safe 63 8 8
+1062 27234 27260 (chrome) write 1319220476551889-131 /home/isabellylr/.config/google-chrome/Safe 63 8 8
+1062 27234 27260 (chrome) write 1319220476552034-133 /home/isabellylr/.config/google-chrome/Safe 63 8 8
+1062 27234 27260 (chrome) write 1319220476552181-132 /home/isabellylr/.config/google-chrome/Safe 63 8 8
+1062 27234 27260 (chrome) write 1319220476552326-132 /home/isabellylr/.config/google-chrome/Safe 63 8 8
+1062 27234 27260 (chrome) write 1319220476552471-133 /home/isabellylr/.config/google-chrome/Safe 63 8 8
+1062 27234 27260 (chrome) write 1319220476552617-132 /home/isabellylr/.config/google-chrome/Safe 63 8 8
+1062 27234 27260 (chrome) write 1319220476552762-133 /home/isabellylr/.config/google-chrome/Safe 63 8 8
+1062 27234 27260 (chrome) write 1319220476552907-148 /home/isabellylr/.config/google-chrome/Safe 63 8 8
+1062 27234 27260 (chrome) write 1319220476553069-134 /home/isabellylr/.config/google-chrome/Safe 63 8 8
+1062 27234 27260 (chrome) write 1319220476553216-132 /home/isabellylr/.config/google-chrome/Safe 63 8 8
+1062 27234 27260 (chrome) write 1319220476553361-132 /home/isabellylr/.config/google-chrome/Safe 63 8 8
+1062 27234 27260 (chrome) write 1319220476553506-132 /home/isabellylr/.config/google-chrome/Safe 63 8 8
+1062 27234 27260 (chrome) write 1319220476553651-133 /home/isabellylr/.config/google-chrome/Safe 63 8 8
+1062 27234 27260 (chrome) write 1319220476553797-134 /home/isabellylr/.config/google-chrome/Safe 63 8 8
+1062 27234 27260 (chrome) write 1319220476553972-131 /home/isabellylr/.config/google-chrome/Safe 63 8 8
+1062 27234 27260 (chrome) write 1319220476554118-3326 /home/isabellylr/.config/google-chrome/Safe 63 1816854 1816854
+1062 27234 27260 (chrome) close 1319220476557467-1165086 63 0
+1062 27234 27247 (chrome) open 1319220491183305-12451 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 32834 420 63
+1062 27234 27247 (chrome) open 1319220491195795-15792 /home/isabellylr/.config/google-chrome/Default 32768 0 78
+1062 27234 27247 (chrome) write 1319220491211921-162 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 512 512
+1062 27234 27247 (chrome) write 1319220491212572-147 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220491212752-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 1024 1024
+1062 27234 27247 (chrome) write 1319220491212926-163 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220491214215-146 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220491214393-143 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 1024 1024
+1062 27234 27247 (chrome) write 1319220491214569-140 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220491214749-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220491214924-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 1024 1024
+1062 27234 27247 (chrome) write 1319220491215098-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220491215336-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220491215511-150 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 1024 1024
+1062 27234 27247 (chrome) write 1319220491215694-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220491215950-144 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220491216127-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 1024 1024
+1062 27234 27247 (chrome) write 1319220491216301-141 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220491216555-143 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220491216730-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 1024 1024
+1062 27234 27247 (chrome) write 1319220491216903-165 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220491217186-143 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220491217362-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 1024 1024
+1062 27234 27247 (chrome) write 1319220491217537-141 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) read 1319220491217714-152 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 8 0
+1062 27234 27247 (chrome) close 1319220491657915-48 78 0
+1062 27234 27247 (chrome) write 1319220491657997-156 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 12 12
+1062 27234 27247 (chrome) close 1319220492012061-62 63 0
+1062 27891 27891 (gnome-screensav) open 1319220516557933-86 /home/isabellylr/.Xdefaults-celacanto 0 825307186 -2
+1062 27119 27119 (gconfd-2) open 1319220517058838-551388 /home/isabellylr/.gconfd/saved_state 1089 438 70
+1062 27119 27119 (gconfd-2) fstat 1319220517610246-102 /var/lib/boinc-client/slots/2/fraction_done.txt 70 0
+1062 27119 27119 (gconfd-2) fstat 1319220517610401-93 /var/lib/boinc-client/slots/2/fraction_done.txt 70 0
+1062 27119 27119 (gconfd-2) write 1319220517610584-128 /home/isabellylr/.gconfd/saved_state 70 641 641
+1062 27119 27119 (gconfd-2) close 1319220522413533-1048262 70 0
+1062 27119 27119 (gconfd-2) open 1319220523465722-2253 /home/isabellylr/.gconfd/saved_state.tmp 577 448 70
+1062 27119 27119 (gconfd-2) write 1319220523467991-246 /home/isabellylr/.gconfd/saved_state.tmp 70 89146 89146
+1062 27119 27119 (gconfd-2) close 1319220523489658-42 70 0
+1062 27234 27247 (chrome) open 1319220531174287-249393 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 32834 420 63
+1062 27234 27247 (chrome) open 1319220531423719-78381 /home/isabellylr/.config/google-chrome/Default 32768 0 73
+1062 27234 27247 (chrome) write 1319220531502384-160 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 512 512
+1062 27234 27247 (chrome) write 1319220531503024-147 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220531503239-143 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 1024 1024
+1062 27234 27247 (chrome) write 1319220531503418-156 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220531503714-141 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220531503886-141 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 1024 1024
+1062 27234 27247 (chrome) write 1319220531504058-140 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220531504305-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220531504475-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 1024 1024
+1062 27234 27247 (chrome) write 1319220531504645-138 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220531504885-167 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220531505102-151 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 1024 1024
+1062 27234 27247 (chrome) write 1319220531505284-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220531505531-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220531505701-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 1024 1024
+1062 27234 27247 (chrome) write 1319220531505871-138 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220531506131-140 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220531506303-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 1024 1024
+1062 27234 27247 (chrome) write 1319220531506473-138 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220531510921-144 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) write 1319220531511097-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 1024 1024
+1062 27234 27247 (chrome) write 1319220531511267-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 4 4
+1062 27234 27247 (chrome) read 1319220531511439-147 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 8 0
+1062 27234 27247 (chrome) close 1319220531519103-46 73 0
+1062 27234 27247 (chrome) write 1319220531519181-152 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 63 12 12
+1062 27234 27247 (chrome) close 1319220532517008-81 63 0
+1062 27234 27249 (chrome) open 1319220536970173-268218 /home/isabellylr/.cache/google-chrome/Default/Cache/f_00068b 32962 384 84
+1062 27234 27249 (chrome) close 1319220537238421-53 84 0
+1062 27234 27249 (chrome) open 1319220537238614-190566 /home/isabellylr/.cache/google-chrome/Default/Cache/f_00068b 32770 0 84
+1062 27234 27249 (chrome) close 1319220537429466-610355 84 0
+1062 27234 27245 (chrome) open 1319220012092358-747 /home/isabellylr/.config/google-chrome/.com.google.chrome.muLCUY 32962 384 63
+1062 27234 27245 (chrome) fstat 1319220012093259-135 /home/isabellylr/.config/google-chrome/.com.google.chrome.muLCUY 63 0
+1062 27234 27245 (chrome) write 1319220012093511-183 /home/isabellylr/.config/google-chrome/.com.google.chrome.muLCUY 63 27044 27044
+1062 27234 27245 (chrome) close 1319220012093709-3486 63 0
+1062 27234 27247 (chrome) open 1319220039572557-479 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 32834 420 77
+1062 27234 27247 (chrome) open 1319220039573123-519 /home/isabellylr/.config/google-chrome/Default 32768 0 79
+1062 27234 27247 (chrome) write 1319220039573936-164 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 77 512 512
+1062 27234 27247 (chrome) write 1319220039574610-146 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 77 4 4
+1062 27234 27247 (chrome) write 1319220039574788-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 77 1024 1024
+1062 27234 27247 (chrome) write 1319220039574959-138 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 77 4 4
+1062 27234 27247 (chrome) write 1319220039576150-140 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 77 4 4
+1062 27234 27247 (chrome) write 1319220039576321-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 77 1024 1024
+1062 27234 27247 (chrome) write 1319220039576491-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 77 4 4
+1062 27234 27247 (chrome) write 1319220039576733-138 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 77 4 4
+1062 27234 27247 (chrome) write 1319220039576902-165 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 77 1024 1024
+1062 27234 27247 (chrome) write 1319220039577108-140 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 77 4 4
+1062 27234 27247 (chrome) write 1319220039577351-138 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 77 4 4
+1062 27234 27247 (chrome) write 1319220039577520-147 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 77 1024 1024
+1062 27234 27247 (chrome) write 1319220039577698-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 77 4 4
+1062 27234 27247 (chrome) write 1319220039577939-138 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 77 4 4
+1062 27234 27247 (chrome) write 1319220039578108-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 77 1024 1024
+1062 27234 27247 (chrome) write 1319220039578278-138 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 77 4 4
+1062 27234 27247 (chrome) write 1319220039578518-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 77 4 4
+1062 27234 27247 (chrome) write 1319220039578688-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 77 1024 1024
+1062 27234 27247 (chrome) write 1319220039578857-138 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 77 4 4
+1062 27234 27247 (chrome) write 1319220039581829-143 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 77 4 4
+1062 27234 27247 (chrome) write 1319220039582003-140 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 77 1024 1024
+1062 27234 27247 (chrome) write 1319220039582174-138 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 77 4 4
+1062 27234 27247 (chrome) read 1319220039582346-148 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 77 8 0
+1062 27234 27247 (chrome) close 1319220039584040-52 79 0
+1062 27234 27247 (chrome) write 1319220039584124-151 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 77 12 12
+1062 27234 27247 (chrome) close 1319220039594069-52 77 0
+1062 27860 27860 (gnome-screensav) open 1319220055412121-337 /home/isabellylr/.Xdefaults-celacanto 0 825307186 -2
+1062 27119 27119 (gconfd-2) open 1319220055463500-758 /home/isabellylr/.gconfd/saved_state 1089 438 70
+1062 27119 27119 (gconfd-2) fstat 1319220055464275-95 /home/isabellylr/.gconfd/saved_state 70 0
+1062 27119 27119 (gconfd-2) fstat 1319220055464410-90 /home/isabellylr/.gconfd/saved_state 70 0
+1062 27119 27119 (gconfd-2) write 1319220055464566-108 /home/isabellylr/.gconfd/saved_state 70 641 641
+1062 27536 27536 (soffice.bin) open 1319220063747434-88 /home/isabellylr/.icons/DMZ-White/cursors/left_ptr 0 438 -2
+1062 27119 27119 (gconfd-2) write 1319220072417701-112 /home/isabellylr/.gconfd/saved_state 70 644 644
+1062 27119 27119 (gconfd-2) close 1319220072418107-11537 70 0
+1062 27119 27119 (gconfd-2) open 1319220072432635-1268 /home/isabellylr/.gconfd/saved_state.tmp 577 448 68
+1062 27119 27119 (gconfd-2) write 1319220072433919-245 /home/isabellylr/.gconfd/saved_state.tmp 68 88505 88505
+1062 27119 27119 (gconfd-2) close 1319220072442944-44 68 0
+1062 27234 27247 (chrome) open 1319220089608629-463 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 32834 420 93
+1062 27234 27247 (chrome) open 1319220089609121-475 /home/isabellylr/.config/google-chrome/Default 32768 0 97
+1062 27234 27247 (chrome) write 1319220089609883-174 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 512 512
+1062 27234 27247 (chrome) write 1319220089610600-153 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 4 4
+1062 27234 27247 (chrome) write 1319220089610788-144 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 1024 1024
+1062 27234 27247 (chrome) write 1319220089610966-141 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 4 4
+1062 27234 27247 (chrome) write 1319220089611267-183 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 4 4
+1062 27234 27247 (chrome) write 1319220089611497-164 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 1024 1024
+1062 27234 27247 (chrome) write 1319220089611696-155 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 4 4
+1062 27234 27247 (chrome) write 1319220089612013-179 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 4 4
+1062 27234 27247 (chrome) write 1319220089612266-155 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 1024 1024
+1062 27234 27247 (chrome) write 1319220089612490-194 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 4 4
+1062 27234 27247 (chrome) write 1319220089615587-152 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 4 4
+1062 27234 27247 (chrome) write 1319220089615804-165 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 1024 1024
+1062 27234 27247 (chrome) write 1319220089616004-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 4 4
+1062 27234 27247 (chrome) write 1319220089616219-738 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 4 4
+1062 27234 27247 (chrome) write 1319220089617045-182 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 1024 1024
+1062 27234 27247 (chrome) write 1319220089617263-140 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 4 4
+1062 27234 27247 (chrome) write 1319220089617506-145 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 4 4
+1062 27234 27247 (chrome) write 1319220089617705-157 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 1024 1024
+1062 27234 27247 (chrome) write 1319220089617897-157 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 4 4
+1062 27234 27247 (chrome) write 1319220089618094-180 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 4 4
+1062 27234 27247 (chrome) write 1319220089618337-156 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 1024 1024
+1062 27234 27247 (chrome) write 1319220089618527-146 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 4 4
+1062 27234 27247 (chrome) write 1319220089618723-154 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 4 4
+1062 27234 27247 (chrome) write 1319220089618928-195 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 1024 1024
+1062 27234 27247 (chrome) write 1319220089619157-141 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 4 4
+1062 27234 27247 (chrome) write 1319220089619362-156 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 4 4
+1062 27234 27247 (chrome) write 1319220089619555-167 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 1024 1024
+1062 27234 27247 (chrome) write 1319220089619757-181 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 4 4
+1062 27234 27247 (chrome) write 1319220089620048-158 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 4 4
+1062 27234 27247 (chrome) write 1319220089620241-177 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 1024 1024
+1062 27234 27247 (chrome) write 1319220089620464-173 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 4 4
+1062 27234 27247 (chrome) write 1319220089621585-181 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 4 4
+1062 27234 27247 (chrome) write 1319220089621801-168 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 1024 1024
+1062 27234 27247 (chrome) write 1319220089622005-154 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 4 4
+1062 27234 27247 (chrome) write 1319220089622288-171 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 4 4
+1062 27234 27247 (chrome) write 1319220089622518-168 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 1024 1024
+1062 27234 27247 (chrome) write 1319220089622721-182 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 4 4
+1062 27234 27247 (chrome) read 1319220089623034-162 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 8 0
+1062 27234 27247 (chrome) close 1319220089625252-52 97 0
+1062 27234 27247 (chrome) write 1319220089625339-181 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 12 12
+1062 27234 27247 (chrome) close 1319220089638704-69 93 0
+1062 27234 27249 (chrome) open 1319220090318553-2918 /home/isabellylr/.cache/google-chrome/Default/Cache/f_000681 32962 384 93
+1062 27234 27249 (chrome) close 1319220090321498-51 93 0
+1062 27234 27249 (chrome) open 1319220090321677-6564 /home/isabellylr/.cache/google-chrome/Default/Cache/f_000681 32770 0 93
+1062 27234 27249 (chrome) close 1319220090328512-2489 93 0
+1062 27234 27249 (chrome) open 1319220090358930-714 /home/isabellylr/.cache/google-chrome/Default/Cache/f_000682 32962 384 93
+1062 27234 27249 (chrome) close 1319220090359670-49 93 0
+1062 27234 27249 (chrome) open 1319220090359831-541 /home/isabellylr/.cache/google-chrome/Default/Cache/f_000682 32770 0 93
+1062 27234 27249 (chrome) close 1319220090360690-2450 93 0
+1062 27234 27249 (chrome) open 1319220090463058-39731 /home/isabellylr/.cache/google-chrome/Default/Cache/f_000683 32962 384 93
+1062 27234 27249 (chrome) close 1319220090502819-52 93 0
+1062 27234 27249 (chrome) open 1319220090503005-544 /home/isabellylr/.cache/google-chrome/Default/Cache/f_000683 32770 0 93
+1062 27234 27249 (chrome) close 1319220090503803-2648 93 0
+1062 27375 27375 (chrome) open 1319220093681950-551 /home/isabellylr/.adobe/Flash_Player/AssetCache 624640 -1248474260 26
+1062 27375 27375 (chrome) close 1319220093683237-46 26 0
+1062 27375 27375 (chrome) open 1319220093809006-553 /home/isabellylr/.macromedia/Flash_Player/#SharedObjects 624640 -1248474260 26
+1062 27375 27375 (chrome) close 1319220093810486-46 26 0
+1062 27375 27375 (chrome) open 1319220093851377-819 /home/isabellylr/.macromedia/Flash_Player/macromedia.com/support/flashplayer/sys/settings.sol 32768 438 26
+1062 27375 27375 (chrome) fstat 1319220093852231-191 /home/isabellylr/.macromedia/Flash_Player/macromedia.com/support/flashplayer/sys/settings.sol 26 0
+1062 27375 27375 (chrome) fstat 1319220093852506-184 /home/isabellylr/.macromedia/Flash_Player/macromedia.com/support/flashplayer/sys/settings.sol 26 0
+1062 27375 27375 (chrome) read 1319220093852719-81573 /home/isabellylr/.macromedia/Flash_Player/macromedia.com/support/flashplayer/sys/settings.sol 26 462 462
+1062 27375 27375 (chrome) close 1319220093934348-48 26 0
+1062 27234 27247 (chrome) open 1319220119625778-412 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 32834 420 93
+1062 27234 27247 (chrome) open 1319220119626218-369 /home/isabellylr/.config/google-chrome/Default 32768 0 97
+1062 27234 27247 (chrome) write 1319220119626855-155 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 512 512
+1062 27234 27247 (chrome) write 1319220119627462-143 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 4 4
+1062 27234 27247 (chrome) write 1319220119627636-140 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 1024 1024
+1062 27234 27247 (chrome) write 1319220119627807-138 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 4 4
+1062 27234 27247 (chrome) write 1319220119628076-140 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 4 4
+1062 27234 27247 (chrome) write 1319220119628247-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 1024 1024
+1062 27234 27247 (chrome) write 1319220119628417-138 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 4 4
+1062 27234 27247 (chrome) write 1319220119628593-140 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 4 4
+1062 27234 27247 (chrome) write 1319220119628765-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 1024 1024
+1062 27234 27247 (chrome) write 1319220119628934-156 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 4 4
+1062 27234 27247 (chrome) write 1319220119629130-146 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 4 4
+1062 27234 27247 (chrome) write 1319220119629642-152 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 1024 1024
+1062 27234 27247 (chrome) write 1319220119629826-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 4 4
+1062 27234 27247 (chrome) write 1319220119630066-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 4 4
+1062 27234 27247 (chrome) write 1319220119630236-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 1024 1024
+1062 27234 27247 (chrome) write 1319220119630406-140 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 4 4
+1062 27234 27247 (chrome) write 1319220119633133-144 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 4 4
+1062 27234 27247 (chrome) write 1319220119633308-140 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 1024 1024
+1062 27234 27247 (chrome) write 1319220119633479-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 4 4
+1062 27234 27247 (chrome) read 1319220119633652-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 8 0
+1062 27234 27247 (chrome) close 1319220119635195-47 97 0
+1062 27234 27247 (chrome) write 1319220119635270-145 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 93 12 12
+1062 27234 27247 (chrome) close 1319220119643376-60 93 0
+1062 27234 27249 (chrome) open 1319220133687286-759 /home/isabellylr/.cache/google-chrome/Default/Cache/f_000684 32962 384 99
+1062 27234 27249 (chrome) close 1319220133688071-50 99 0
+1062 27234 27249 (chrome) open 1319220133688232-570 /home/isabellylr/.cache/google-chrome/Default/Cache/f_000684 32770 0 99
+1062 27234 27249 (chrome) close 1319220133689119-2423 99 0
+1062 27375 27375 (chrome) open 1319220145282250-38792 /home/isabellylr/.pulse/client.conf 32768 438 -2
+1062 27375 27375 (chrome) open 1319220145336631-1084 /home/isabellylr/.pulse-cookie 33090 384 30
+1062 27375 27375 (chrome) read 1319220145338090-14241 /home/isabellylr/.pulse-cookie 30 256 256
+1062 27375 27375 (chrome) close 1319220145352706-126 30 0
+1062 27375 27375 (chrome) open 1319220145448699-555 /home/isabellylr/.pulse-cookie 33090 384 32
+1062 27375 27375 (chrome) read 1319220145449580-642 /home/isabellylr/.pulse-cookie 32 256 256
+1062 27375 27375 (chrome) close 1319220145450508-77 32 0
+1062 27145 27145 (nautilus) open 1319220146421429-338 /home/isabellylr/.local/share/applications/nautilus-folder-handler.desktop 32768 0 -2
+1062 27234 27247 (chrome) open 1319220155886485-434 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 32834 420 94
+1062 27234 27247 (chrome) open 1319220155886962-307 /home/isabellylr/.config/google-chrome/Default 32768 0 101
+1062 27234 27247 (chrome) write 1319220155887548-160 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 94 512 512
+1062 27234 27247 (chrome) write 1319220155888188-147 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 94 4 4
+1062 27234 27247 (chrome) write 1319220155888368-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 94 1024 1024
+1062 27234 27247 (chrome) write 1319220155888544-141 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 94 4 4
+1062 27234 27247 (chrome) write 1319220155888812-143 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 94 4 4
+1062 27234 27247 (chrome) write 1319220155888988-175 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 94 1024 1024
+1062 27234 27247 (chrome) write 1319220155889197-141 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 94 4 4
+1062 27234 27247 (chrome) write 1319220155889457-143 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 94 4 4
+1062 27234 27247 (chrome) write 1319220155889633-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 94 1024 1024
+1062 27234 27247 (chrome) write 1319220155889808-141 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 94 4 4
+1062 27234 27247 (chrome) write 1319220155891509-146 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 94 4 4
+1062 27234 27247 (chrome) write 1319220155891687-151 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 94 1024 1024
+1062 27234 27247 (chrome) write 1319220155891871-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 94 4 4
+1062 27234 27247 (chrome) write 1319220155892057-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 94 4 4
+1062 27234 27247 (chrome) write 1319220155892232-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 94 1024 1024
+1062 27234 27247 (chrome) write 1319220155892407-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 94 4 4
+1062 27234 27247 (chrome) write 1319220155893322-174 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 94 4 4
+1062 27234 27247 (chrome) write 1319220155893561-141 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 94 1024 1024
+1062 27234 27247 (chrome) write 1319220155893737-173 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 94 4 4
+1062 27234 27247 (chrome) write 1319220155894074-145 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 94 4 4
+1062 27234 27247 (chrome) write 1319220155894254-143 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 94 1024 1024
+1062 27234 27247 (chrome) write 1319220155894432-140 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 94 4 4
+1062 27234 27247 (chrome) write 1319220155894718-144 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 94 4 4
+1062 27234 27247 (chrome) write 1319220155894914-163 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 94 1024 1024
+1062 27234 27247 (chrome) write 1319220155895114-168 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 94 4 4
+1062 27234 27247 (chrome) write 1319220155895390-152 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 94 4 4
+1062 27234 27247 (chrome) write 1319220155897064-150 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 94 1024 1024
+1062 27234 27247 (chrome) write 1319220155897248-141 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 94 4 4
+1062 27234 27247 (chrome) read 1319220155897425-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 94 8 0
+1062 27234 27247 (chrome) close 1319220155899250-48 101 0
+1062 27234 27247 (chrome) write 1319220155899328-150 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 94 12 12
+1062 27234 27247 (chrome) close 1319220155909428-62 94 0
+1062 27234 27247 (chrome) open 1319220187051127-632 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 32834 420 99
+1062 27234 27247 (chrome) open 1319220187051791-1474 /home/isabellylr/.config/google-chrome/Default 32768 0 104
+1062 27234 27247 (chrome) write 1319220187053541-159 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 512 512
+1062 27234 27247 (chrome) write 1319220187054163-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 4 4
+1062 27234 27247 (chrome) write 1319220187054336-140 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 1024 1024
+1062 27234 27247 (chrome) write 1319220187054507-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 4 4
+1062 27234 27247 (chrome) write 1319220187054762-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 4 4
+1062 27234 27247 (chrome) write 1319220187054932-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 1024 1024
+1062 27234 27247 (chrome) write 1319220187055102-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 4 4
+1062 27234 27247 (chrome) write 1319220187057667-148 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 4 4
+1062 27234 27247 (chrome) write 1319220187057882-141 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 1024 1024
+1062 27234 27247 (chrome) write 1319220187058091-149 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 4 4
+1062 27234 27247 (chrome) write 1319220187058351-140 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 4 4
+1062 27234 27247 (chrome) write 1319220187058522-149 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 1024 1024
+1062 27234 27247 (chrome) write 1319220187058702-140 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 4 4
+1062 27234 27247 (chrome) write 1319220187058947-140 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 4 4
+1062 27234 27247 (chrome) write 1319220187059118-139 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 1024 1024
+1062 27234 27247 (chrome) write 1319220187059288-164 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 4 4
+1062 27234 27247 (chrome) write 1319220187059557-143 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 4 4
+1062 27234 27247 (chrome) write 1319220187059798-141 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 1024 1024
+1062 27234 27247 (chrome) write 1319220187059975-141 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 4 4
+1062 27234 27247 (chrome) read 1319220187060152-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 8 0
+1062 27234 27247 (chrome) close 1319220187063931-47 104 0
+1062 27234 27247 (chrome) write 1319220187064009-152 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 99 12 12
+1062 27234 27247 (chrome) close 1319220187072698-58 99 0
+1062 27234 27247 (chrome) open 1319220219681389-434 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 32834 420 73
+1062 27234 27247 (chrome) open 1319220219681854-483 /home/isabellylr/.config/google-chrome/Default 32768 0 79
+1062 27234 27247 (chrome) write 1319220219682623-167 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 512 512
+1062 27234 27247 (chrome) write 1319220219683353-144 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220219683533-130 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 1024 1024
+1062 27234 27247 (chrome) write 1319220219683694-149 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220219685224-160 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220219685425-140 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 1024 1024
+1062 27234 27247 (chrome) write 1319220219685597-144 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220219685884-156 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220219686077-151 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 1024 1024
+1062 27234 27247 (chrome) write 1319220219686263-151 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220219686540-153 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220219686726-165 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 1024 1024
+1062 27234 27247 (chrome) write 1319220219686926-152 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220219687211-152 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220219687397-149 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 1024 1024
+1062 27234 27247 (chrome) write 1319220219687582-152 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220219687875-154 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220219688065-154 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 1024 1024
+1062 27234 27247 (chrome) write 1319220219688256-153 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220219688452-152 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220219688640-152 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 1024 1024
+1062 27234 27247 (chrome) write 1319220219688828-152 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220219690813-168 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220219691017-153 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 1024 1024
+1062 27234 27247 (chrome) write 1319220219691205-175 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220219691457-146 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220219691671-157 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 1024 1024
+1062 27234 27247 (chrome) write 1319220219691864-151 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220219692055-153 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220219692252-151 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 1024 1024
+1062 27234 27247 (chrome) write 1319220219692442-180 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220219692671-152 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220219692859-190 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 1024 1024
+1062 27234 27247 (chrome) write 1319220219693084-179 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220219693438-8040 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220219701522-161 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 1024 1024
+1062 27234 27247 (chrome) write 1319220219701726-149 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220219702145-157 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220219702337-151 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 1024 1024
+1062 27234 27247 (chrome) write 1319220219702523-149 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220219703413-198 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) write 1319220219703647-156 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 1024 1024
+1062 27234 27247 (chrome) write 1319220219703875-142 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 4 4
+1062 27234 27247 (chrome) read 1319220219708446-169 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 8 0
+1062 27234 27247 (chrome) close 1319220219710883-58 79 0
+1062 27234 27247 (chrome) write 1319220219710987-160 /home/isabellylr/.config/google-chrome/Default/Cookies-journal 73 12 12
+1062 27234 27247 (chrome) close 1319220219730516-74 73 0
+1062 27234 27249 (chrome) open 1319220221203323-3404 /home/isabellylr/.cache/google-chrome/Default/Cache/f_000685 32962 384 77
+1062 27234 27249 (chrome) close 1319220221206757-51 77 0
+1062 27234 27249 (chrome) open 1319220221206950-593 /home/isabellylr/.cache/google-chrome/Default/Cache/f_000685 32770 0 77
+1062 27234 27249 (chrome) close 1319220221207814-3098 77 0

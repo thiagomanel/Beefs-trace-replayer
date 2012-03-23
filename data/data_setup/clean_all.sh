@@ -1,23 +1,29 @@
-python ../clean_trace.py < /local/tracer/processed/abelhinha/20111014/2011_10_14-abelhinha > /local/tracer/processed/abelhinha/20111014/2011_10_14-abelhinha.clean 2> /local/tracer/processed/abelhinha/20111014/2011_10_14-abelhinha.clean.err
-python ../clean_trace.py < /local/tracer/processed/abelhinha/20111021/2011_10_21-abelhinha > /local/tracer/processed/abelhinha/20111021/2011_10_21-abelhinha.clean 2> /local/tracer/processed/abelhinha/20111021/2011_10_21-abelhinha.clean.err
-python ../clean_trace.py < /local/tracer/processed/bandeira/20111014/2011_10_14-bandeira > /local/tracer/processed/bandeira/20111014/2011_10_14-bandeira.clean 2> /local/tracer/processed/bandeira/20111014/2011_10_14-bandeira.clean.err
-python ../clean_trace.py < /local/tracer/processed/bandeira/20111021/2011_10_21-bandeira > /local/tracer/processed/bandeira/20111021/2011_10_21-bandeira.clean 2> /local/tracer/processed/bandeira/20111021/2011_10_21-bandeira.clean.err
-python ../clean_trace.py < /local/tracer/processed/celacanto/20111014/2011_10_14-celacanto > /local/tracer/processed/celacanto/20111014/2011_10_14-celacanto.clean 2> /local/tracer/processed/celacanto/20111014/2011_10_14-celacanto.clean.err
-python ../clean_trace.py < /local/tracer/processed/celacanto/20111021/2011_10_21-celacanto > /local/tracer/processed/celacanto/20111021/2011_10_21-celacanto.clean 2> /local/tracer/processed/celacanto/20111021/2011_10_21-celacanto.clean.err
-python ../clean_trace.py < /local/tracer/processed/celacanto/20111019/2011_10_19-celacanto > /local/tracer/processed/celacanto/20111019/2011_10_19-celacanto.clean 2> /local/tracer/processed/celacanto/20111019/2011_10_19-celacanto.clean.err
-python ../clean_trace.py < /local/tracer/processed/charroco/20111014/2011_10_14-charroco > /local/tracer/processed/charroco/20111014/2011_10_14-charroco.clean 2> /local/tracer/processed/charroco/20111014/2011_10_14-charroco.clean.err
-python ../clean_trace.py < /local/tracer/processed/charroco/20111021/2011_10_21-charroco > /local/tracer/processed/charroco/20111021/2011_10_21-charroco.clean 2> /local/tracer/processed/charroco/20111021/2011_10_21-charroco.clean.err
-python ../clean_trace.py < /local/tracer/processed/cherne/20111014/2011_10_14-cherne > /local/tracer/processed/cherne/20111014/2011_10_14-cherne.clean 2> /local/tracer/processed/cherne/20111014/2011_10_14-cherne.clean.err
-python ../clean_trace.py < /local/tracer/processed/cherne/20111021/2011_10_21-cherne > /local/tracer/processed/cherne/20111021/2011_10_21-cherne.clean 2> /local/tracer/processed/cherne/20111021/2011_10_21-cherne.clean.err
-python ../clean_trace.py < /local/tracer/processed/gupi/20111014/2011_10_14-gupi > /local/tracer/processed/gupi/20111014/2011_10_14-gupi.clean 2> /local/tracer/processed/gupi/20111014/2011_10_14-gupi.clean.err
-python ../clean_trace.py < /local/tracer/processed/gupi/20111021/2011_10_21-gupi > /local/tracer/processed/gupi/20111021/2011_10_21-gupi.clean 2> /local/tracer/processed/gupi/20111021/2011_10_21-gupi.clean.err
-python ../clean_trace.py < /local/tracer/processed/jurupoca/20111014/2011_10_14-jurupoca > /local/tracer/processed/jurupoca/20111014/2011_10_14-jurupoca.clean 2> /local/tracer/processed/jurupoca/20111014/2011_10_14-jurupoca.clean.err
-python ../clean_trace.py < /local/tracer/processed/jurupoca/20111021/2011_10_21-jurupoca > /local/tracer/processed/jurupoca/20111021/2011_10_21-jurupoca.clean 2> /local/tracer/processed/jurupoca/20111021/2011_10_21-jurupoca.clean.err
-python ../clean_trace.py < /local/tracer/processed/morcego/20111014/2011_10_14-morcego > /local/tracer/processed/morcego/20111014/2011_10_14-morcego.clean 2> /local/tracer/processed/morcego/20111014/2011_10_14-morcego.clean.err
-python ../clean_trace.py < /local/tracer/processed/mulato/20111014/2011_10_14-mulato > /local/tracer/processed/morcego/20111014/2011_10_14-morcego.clean 2> /local/tracer/processed/morcego/20111014/2011_10_14-morcego.clean.err
-python ../clean_trace.py < /local/tracer/processed/mulato/20111021/2011_10_21-mulato > /local/tracer/processed/mulato/20111021/2011_10_21-mulato.clean 2> /local/tracer/processed/mulato/20111021/2011_10_21-mulato.clean.err
-python ../clean_trace.py < /local/tracer/processed/mussum/20111014/2011_10_14-mussum > /local/tracer/processed/mussum/20111014/2011_10_14-mussum.clean 2> /local/tracer/processed/mussum/20111014/2011_10_14-mussum.clean.err
-python ../clean_trace.py < /local/tracer/processed/mussum/20111021/2011_10_21-mussum > /local/tracer/processed/mussum/20111021/2011_10_21-mussum.clean 2> /local/tracer/processed/mussum/20111021/2011_10_21-mussum.clean.err
-python ../clean_trace.py < /local/tracer/processed/ourico/20111014/2011_10_14-ourico > /local/tracer/processed/ourico/20111014/2011_10_14-ourico.clean 2> /local/tracer/processed/ourico/20111014/2011_10_14-ourico.clean.err
-python ../clean_trace.py < /local/tracer/processed/ourico/20111021/2011_10_21-ourico > /local/tracer/processed/ourico/20111021/2011_10_21-ourico.clean 2> /local/tracer/processed/ourico/20111021/2011_10_21-ourico.clean.err
-python ../clean_trace.py < /local/tracer/processed/palmito/20111014/2011_10_14-palmito > /local/tracer/processed/palmito/20111014/2011_10_14-palmito.clean 2> /local/tracer/processed/palmito/20111014/2011_10_14-palmito.clean.err
+#!/bin/bash
+
+# It cleans any processed data out withing a directory. Processed data
+# follows this pattern:
+# /mnt/backup_storage3/pepino/20111014/2011_10_14-pepino
+# /mnt/backup_storage3/pepino/20111021/2011_10_21-pepino
+# /mnt/backup_storage3/pepino/20111019/2011_10_19-pepino
+
+if [ $# -ne 1 ]; then
+    echo "Usage: $0 processed_dir_root"
+    exit 1
+fi
+
+processed_dir_root=$1
+
+if [ ! -d $processed_dir_root ]; then
+    echo $processed_dir_root " does not exist. Usage: $0 processed_dir_root"
+    exit 1
+fi
+
+for machine_dir in `ls -t $processed_dir_root`
+do
+    machine_name=`basename $machine_dir`
+    processed_files=`find /mnt/backup_storage3/processed/ -type f -name "*$machine_name"`
+    for file in $processed_files
+    do
+        python ../clean_trace.py < $file > $file.clean 2> $file.clean.err
+    done
+done

@@ -1,0 +1,220 @@
+0 1625 21177 (automount) open 1319220184282546-39 /home 624640 2514932 5
+0 1625 21177 (automount) close 1319220184282683-24 5 0
+1221 12067 12245 (dropbox) open 1319220192828208-911 /home/edigley/Dropbox/tmp/mestrado/hyphenation 624640 171374516 40
+1221 12067 12245 (dropbox) close 1319220192830020-43 40 0
+1221 12067 12245 (dropbox) rmdir 1319220192830735-327 /home/edigley/Dropbox/tmp/mestrado/hyphenation -39
+1221 12067 12245 (dropbox) open 1319220192831208-399 /home/edigley/Dropbox/tmp/mestrado/hyphenation 624640 171374516 40
+1221 12067 12245 (dropbox) close 1319220192832601-64 40 0
+1221 12067 12245 (dropbox) open 1319220192866699-1009 /home/edigley/Dropbox/.dropbox.cache 624640 171248436 40
+1221 12067 12245 (dropbox) close 1319220192868335-59 40 0
+1221 12067 12245 (dropbox) open 1319220193851788-470 /home/edigley/Dropbox/tmp/mestrado 624640 169532084 40
+1221 12067 12245 (dropbox) close 1319220193852852-60 40 0
+1221 12067 12245 (dropbox) rmdir 1319220193853315-385 /home/edigley/Dropbox/tmp/mestrado -39
+1221 12067 12245 (dropbox) open 1319220193853894-362 /home/edigley/Dropbox/tmp/mestrado 624640 169532084 40
+1221 12067 12245 (dropbox) close 1319220193855021-43 40 0
+1221 12067 12245 (dropbox) open 1319220193885534-489 /home/edigley/Dropbox/.dropbox.cache 624640 171248436 40
+1221 12067 12245 (dropbox) close 1319220193886279-43 40 0
+1221 12067 12245 (dropbox) open 1319220222941819-330 /home/edigley/Dropbox/tmp/mestrado/hyphenation 624640 169532084 40
+1221 12067 12245 (dropbox) close 1319220222943269-44 40 0
+1221 12067 12245 (dropbox) rmdir 1319220222943928-393 /home/edigley/Dropbox/tmp/mestrado/hyphenation -39
+1221 12067 12245 (dropbox) open 1319220222944463-411 /home/edigley/Dropbox/tmp/mestrado/hyphenation 624640 169532084 40
+1221 12067 12245 (dropbox) close 1319220222945762-36 40 0
+1221 12067 12245 (dropbox) open 1319220222978563-1289 /home/edigley/Dropbox/.dropbox.cache 624640 171374516 40
+1221 12067 12245 (dropbox) close 1319220222981615-74 40 0
+1221 12067 12245 (dropbox) open 1319220224095879-5474 /home/edigley/Dropbox/tmp/mestrado 624640 171452276 40
+1221 12067 12245 (dropbox) close 1319220224107236-69 40 0
+1221 12067 12245 (dropbox) rmdir 1319220224107872-4283 /home/edigley/Dropbox/tmp/mestrado -39
+1221 12067 12245 (dropbox) open 1319220224112371-5077 /home/edigley/Dropbox/tmp/mestrado 624640 171452276 40
+1221 12067 12245 (dropbox) close 1319220224122925-87 40 0
+1221 12067 12245 (dropbox) open 1319220224267359-4992 /home/edigley/Dropbox/.dropbox.cache 624640 -1380252652 40
+1221 12067 12245 (dropbox) close 1319220224272685-65 40 0
+1221 12067 12245 (dropbox) open 1319220253039607-828 /home/edigley/Dropbox/tmp/mestrado/hyphenation 624640 169876340 40
+1221 12067 12245 (dropbox) close 1319220253041419-51 40 0
+1221 12067 12245 (dropbox) rmdir 1319220253042543-345 /home/edigley/Dropbox/tmp/mestrado/hyphenation -39
+1221 12067 12245 (dropbox) open 1319220253043139-1372 /home/edigley/Dropbox/tmp/mestrado/hyphenation 624640 169876340 40
+1221 12067 12245 (dropbox) close 1319220253045462-118 40 0
+1221 12067 12245 (dropbox) open 1319220253082266-638 /home/edigley/Dropbox/.dropbox.cache 624640 -1377450284 40
+1221 12067 12245 (dropbox) close 1319220253083165-44 40 0
+1221 12067 12245 (dropbox) open 1319220254301015-2539 /home/edigley/Dropbox/tmp/mestrado 624640 169557524 40
+1221 12067 12245 (dropbox) close 1319220254304295-43 40 0
+1221 12067 12245 (dropbox) rmdir 1319220254304634-458 /home/edigley/Dropbox/tmp/mestrado -39
+1221 12067 12245 (dropbox) open 1319220254305312-611 /home/edigley/Dropbox/tmp/mestrado 624640 169557524 40
+1221 12067 12245 (dropbox) close 1319220254306904-58 40 0
+1221 12067 12245 (dropbox) open 1319220254341501-1304 /home/edigley/Dropbox/.dropbox.cache 624640 -1377450284 40
+1221 12067 12245 (dropbox) close 1319220254343228-76 40 0
+0 1625 21224 (automount) open 1319220259320694-50 /home 624640 2514932 5
+0 1625 21224 (automount) close 1319220259320887-47 5 0
+1221 12067 12245 (dropbox) open 1319220283121838-360 /home/edigley/Dropbox/tmp/mestrado/hyphenation 624640 169557524 40
+1221 12067 12245 (dropbox) close 1319220283123186-60 40 0
+1221 12067 12245 (dropbox) rmdir 1319220283124178-492 /home/edigley/Dropbox/tmp/mestrado/hyphenation -39
+1221 12067 12245 (dropbox) open 1319220283124967-1239 /home/edigley/Dropbox/tmp/mestrado/hyphenation 624640 169557524 40
+1221 12067 12245 (dropbox) close 1319220283127564-63 40 0
+1221 12067 12245 (dropbox) open 1319220283159829-582 /home/edigley/Dropbox/.dropbox.cache 624640 169876340 40
+1221 12067 12245 (dropbox) close 1319220283160659-44 40 0
+1221 12067 12245 (dropbox) open 1319220284379246-615 /home/edigley/Dropbox/tmp/mestrado 624640 -1380252652 40
+1221 12067 12245 (dropbox) close 1319220284380548-58 40 0
+1221 12067 12245 (dropbox) rmdir 1319220284381008-386 /home/edigley/Dropbox/tmp/mestrado -39
+1221 12067 12245 (dropbox) open 1319220284381603-561 /home/edigley/Dropbox/tmp/mestrado 624640 -1380252652 40
+1221 12067 12245 (dropbox) close 1319220284382780-42 40 0
+1221 12067 12245 (dropbox) open 1319220284416947-1111 /home/edigley/Dropbox/.dropbox.cache 624640 169876340 40
+1221 12067 12245 (dropbox) close 1319220284418749-67 40 0
+1221 12067 12245 (dropbox) open 1319220313348939-9211 /home/edigley/Dropbox/tmp/mestrado/hyphenation 624640 -1380252652 40
+1221 12067 12245 (dropbox) close 1319220313362153-49 40 0
+1221 12067 12245 (dropbox) rmdir 1319220313362954-4325 /home/edigley/Dropbox/tmp/mestrado/hyphenation -39
+1221 12067 12245 (dropbox) open 1319220313367624-9601 /home/edigley/Dropbox/tmp/mestrado/hyphenation 624640 -1380252652 40
+1221 12067 12245 (dropbox) close 1319220313383196-47 40 0
+1221 12067 12245 (dropbox) open 1319220313534266-4101 /home/edigley/Dropbox/.dropbox.cache 624640 -1377450284 40
+1221 12067 12245 (dropbox) close 1319220313538846-74 40 0
+1221 12067 12245 (dropbox) open 1319220316003223-25134 /home/edigley/Dropbox/tmp/mestrado 624640 171374516 40
+1221 12067 12245 (dropbox) close 1319220316052430-44 40 0
+1221 12067 12245 (dropbox) rmdir 1319220316052780-14491 /home/edigley/Dropbox/tmp/mestrado -39
+1221 12067 12245 (dropbox) open 1319220316067828-10707 /home/edigley/Dropbox/tmp/mestrado 624640 171374516 40
+1221 12067 12245 (dropbox) close 1319220316090179-69 40 0
+1221 12067 12245 (dropbox) open 1319220316197760-715 /home/edigley/Dropbox/.dropbox.cache 624640 169876340 40
+1221 12067 12245 (dropbox) close 1319220316198876-62 40 0
+0 1625 21282 (automount) open 1319220334370719-36 /home 624640 2514932 5
+0 1625 21282 (automount) close 1319220334370901-35 5 0
+1221 12067 12245 (dropbox) open 1319220343597893-532 /home/edigley/Dropbox/tmp/mestrado/hyphenation 624640 169876340 40
+1221 12067 12245 (dropbox) close 1319220343599375-66 40 0
+1221 12067 12245 (dropbox) rmdir 1319220343600518-594 /home/edigley/Dropbox/tmp/mestrado/hyphenation -39
+1221 12067 12245 (dropbox) open 1319220343601447-723 /home/edigley/Dropbox/tmp/mestrado/hyphenation 624640 169876340 40
+1221 12067 12245 (dropbox) close 1319220343603113-58 40 0
+1221 12067 12245 (dropbox) open 1319220343646837-3230 /home/edigley/Dropbox/.dropbox.cache 624640 171525076 40
+1221 12067 12245 (dropbox) close 1319220343650497-48 40 0
+1221 12067 12245 (dropbox) open 1319220346238849-468 /home/edigley/Dropbox/tmp/mestrado 624640 169557524 40
+1221 12067 12245 (dropbox) close 1319220346240222-73 40 0
+1221 12067 12245 (dropbox) rmdir 1319220346240850-366 /home/edigley/Dropbox/tmp/mestrado -39
+1221 12067 12245 (dropbox) open 1319220346241509-581 /home/edigley/Dropbox/tmp/mestrado 624640 169557524 40
+1221 12067 12245 (dropbox) close 1319220346243264-66 40 0
+1221 12067 12245 (dropbox) open 1319220346277620-644 /home/edigley/Dropbox/.dropbox.cache 624640 169876340 40
+1221 12067 12245 (dropbox) close 1319220346278726-59 40 0
+1221 12067 12238 (dropbox) open 1319220354691253-556 /home/edigley/.dropbox/config.db-journal 32834 420 37
+1221 12067 12238 (dropbox) open 1319220354691842-522 /home/edigley/.dropbox 32768 0 38
+1221 12067 12238 (dropbox) write 1319220354692675-159 /home/edigley/.dropbox/config.db-journal 37 512 512
+1221 12067 12238 (dropbox) write 1319220354693502-179 /home/edigley/.dropbox/config.db-journal 37 4 4
+1221 12067 12238 (dropbox) write 1319220354693719-163 /home/edigley/.dropbox/config.db-journal 37 1024 1024
+1221 12067 12238 (dropbox) write 1319220354693917-124 /home/edigley/.dropbox/config.db-journal 37 4 4
+1221 12067 12238 (dropbox) write 1319220354694088-138 /home/edigley/.dropbox/config.db-journal 37 4 4
+1221 12067 12238 (dropbox) write 1319220354694302-128 /home/edigley/.dropbox/config.db-journal 37 1024 1024
+1221 12067 12238 (dropbox) write 1319220354694501-163 /home/edigley/.dropbox/config.db-journal 37 4 4
+1221 12067 12238 (dropbox) write 1319220354694708-160 /home/edigley/.dropbox/config.db-journal 37 4 4
+1221 12067 12238 (dropbox) write 1319220354694937-126 /home/edigley/.dropbox/config.db-journal 37 1024 1024
+1221 12067 12238 (dropbox) write 1319220354695100-123 /home/edigley/.dropbox/config.db-journal 37 4 4
+1221 12067 12238 (dropbox) write 1319220354695292-124 /home/edigley/.dropbox/config.db-journal 37 4 4
+1221 12067 12238 (dropbox) write 1319220354695481-154 /home/edigley/.dropbox/config.db-journal 37 1024 1024
+1221 12067 12238 (dropbox) write 1319220354695701-131 /home/edigley/.dropbox/config.db-journal 37 4 4
+1221 12067 12238 (dropbox) write 1319220354695953-121 /home/edigley/.dropbox/config.db-journal 37 4 4
+1221 12067 12238 (dropbox) write 1319220354696112-128 /home/edigley/.dropbox/config.db-journal 37 1024 1024
+1221 12067 12238 (dropbox) write 1319220354696308-123 /home/edigley/.dropbox/config.db-journal 37 4 4
+1221 12067 12238 (dropbox) write 1319220354696495-122 /home/edigley/.dropbox/config.db-journal 37 4 4
+1221 12067 12238 (dropbox) write 1319220354696654-141 /home/edigley/.dropbox/config.db-journal 37 1024 1024
+1221 12067 12238 (dropbox) write 1319220354696834-162 /home/edigley/.dropbox/config.db-journal 37 4 4
+1221 12067 12238 (dropbox) write 1319220354697029-125 /home/edigley/.dropbox/config.db-journal 37 4 4
+1221 12067 12238 (dropbox) write 1319220354697192-126 /home/edigley/.dropbox/config.db-journal 37 1024 1024
+1221 12067 12238 (dropbox) write 1319220354697354-166 /home/edigley/.dropbox/config.db-journal 37 4 4
+1221 12067 12238 (dropbox) write 1319220354697792-96 /home/edigley/.dropbox/config.db-journal 37 4 4
+1221 12067 12238 (dropbox) write 1319220354697913-100 /home/edigley/.dropbox/config.db-journal 37 1024 1024
+1221 12067 12238 (dropbox) write 1319220354698038-89 /home/edigley/.dropbox/config.db-journal 37 4 4
+1221 12067 12238 (dropbox) write 1319220354698157-90 /home/edigley/.dropbox/config.db-journal 37 4 4
+1221 12067 12238 (dropbox) write 1319220354698271-90 /home/edigley/.dropbox/config.db-journal 37 1024 1024
+1221 12067 12238 (dropbox) write 1319220354698386-89 /home/edigley/.dropbox/config.db-journal 37 4 4
+1221 12067 12238 (dropbox) write 1319220354698504-101 /home/edigley/.dropbox/config.db-journal 37 4 4
+1221 12067 12238 (dropbox) write 1319220354698630-89 /home/edigley/.dropbox/config.db-journal 37 1024 1024
+1221 12067 12238 (dropbox) write 1319220354698745-89 /home/edigley/.dropbox/config.db-journal 37 4 4
+1221 12067 12238 (dropbox) write 1319220354698863-90 /home/edigley/.dropbox/config.db-journal 37 4 4
+1221 12067 12238 (dropbox) write 1319220354698977-90 /home/edigley/.dropbox/config.db-journal 37 1024 1024
+1221 12067 12238 (dropbox) write 1319220354699091-89 /home/edigley/.dropbox/config.db-journal 37 4 4
+1221 12067 12238 (dropbox) write 1319220354699209-89 /home/edigley/.dropbox/config.db-journal 37 4 4
+1221 12067 12238 (dropbox) write 1319220354699323-96 /home/edigley/.dropbox/config.db-journal 37 1024 1024
+1221 12067 12238 (dropbox) write 1319220354699445-88 /home/edigley/.dropbox/config.db-journal 37 4 4
+1221 12067 12238 (dropbox) write 1319220354699563-103 /home/edigley/.dropbox/config.db-journal 37 4 4
+1221 12067 12238 (dropbox) write 1319220354699691-90 /home/edigley/.dropbox/config.db-journal 37 1024 1024
+1221 12067 12238 (dropbox) write 1319220354699806-106 /home/edigley/.dropbox/config.db-journal 37 4 4
+1221 12067 12238 (dropbox) read 1319220354700095-91 /home/edigley/.dropbox/config.db-journal 37 8 0
+1221 12067 12238 (dropbox) close 1319220354702246-47 38 0
+1221 12067 12238 (dropbox) write 1319220354702318-100 /home/edigley/.dropbox/config.db-journal 37 12 12
+1221 12067 12238 (dropbox) close 1319220354744227-51 37 0
+1221 12067 12238 (dropbox) open 1319220354755436-529 /home/edigley/.dropbox/config.db-journal 32834 420 37
+1221 12067 12238 (dropbox) open 1319220354755989-451 /home/edigley/.dropbox 32768 0 38
+1221 12067 12238 (dropbox) write 1319220354756621-115 /home/edigley/.dropbox/config.db-journal 37 512 512
+1221 12067 12238 (dropbox) write 1319220354757157-92 /home/edigley/.dropbox/config.db-journal 37 4 4
+1221 12067 12238 (dropbox) write 1319220354757274-90 /home/edigley/.dropbox/config.db-journal 37 1024 1024
+1221 12067 12238 (dropbox) write 1319220354757388-90 /home/edigley/.dropbox/config.db-journal 37 4 4
+1221 12067 12238 (dropbox) write 1319220354757510-96 /home/edigley/.dropbox/config.db-journal 37 4 4
+1221 12067 12238 (dropbox) write 1319220354757631-90 /home/edigley/.dropbox/config.db-journal 37 1024 1024
+1221 12067 12238 (dropbox) write 1319220354757745-89 /home/edigley/.dropbox/config.db-journal 37 4 4
+1221 12067 12238 (dropbox) write 1319220354757874-89 /home/edigley/.dropbox/config.db-journal 37 4 4
+1221 12067 12238 (dropbox) write 1319220354757988-89 /home/edigley/.dropbox/config.db-journal 37 1024 1024
+1221 12067 12238 (dropbox) write 1319220354758102-89 /home/edigley/.dropbox/config.db-journal 37 4 4
+1221 12067 12238 (dropbox) write 1319220354758342-91 /home/edigley/.dropbox/config.db-journal 37 4 4
+1221 12067 12238 (dropbox) write 1319220354758473-228 /home/edigley/.dropbox/config.db-journal 37 1024 1024
+1221 12067 12238 (dropbox) write 1319220354758799-161 /home/edigley/.dropbox/config.db-journal 37 4 4
+1221 12067 12238 (dropbox) read 1319220354758988-88 /home/edigley/.dropbox/config.db-journal 37 8 0
+1221 12067 12238 (dropbox) close 1319220354760543-44 38 0
+1221 12067 12238 (dropbox) write 1319220354760611-153 /home/edigley/.dropbox/config.db-journal 37 12 12
+1221 12067 12238 (dropbox) close 1319220354765757-34 37 0
+1221 12067 12238 (dropbox) open 1319220354783152-581 /home/edigley/.dropbox/filecache.db-journal 32834 420 37
+1221 12067 12238 (dropbox) open 1319220354783758-428 /home/edigley/.dropbox 32768 0 38
+1221 12067 12238 (dropbox) write 1319220354784370-117 /home/edigley/.dropbox/filecache.db-journal 37 512 512
+1221 12067 12238 (dropbox) write 1319220354784902-93 /home/edigley/.dropbox/filecache.db-journal 37 4 4
+1221 12067 12238 (dropbox) write 1319220354785020-91 /home/edigley/.dropbox/filecache.db-journal 37 1024 1024
+1221 12067 12238 (dropbox) write 1319220354785135-91 /home/edigley/.dropbox/filecache.db-journal 37 4 4
+1221 12067 12238 (dropbox) write 1319220354785258-90 /home/edigley/.dropbox/filecache.db-journal 37 4 4
+1221 12067 12238 (dropbox) write 1319220354785373-90 /home/edigley/.dropbox/filecache.db-journal 37 1024 1024
+1221 12067 12238 (dropbox) write 1319220354785488-97 /home/edigley/.dropbox/filecache.db-journal 37 4 4
+1221 12067 12238 (dropbox) write 1319220354787017-137 /home/edigley/.dropbox/filecache.db-journal 37 4 4
+1221 12067 12238 (dropbox) write 1319220354787219-129 /home/edigley/.dropbox/filecache.db-journal 37 1024 1024
+1221 12067 12238 (dropbox) write 1319220354787403-125 /home/edigley/.dropbox/filecache.db-journal 37 4 4
+1221 12067 12238 (dropbox) read 1319220354787569-155 /home/edigley/.dropbox/filecache.db-journal 37 8 0
+1221 12067 12238 (dropbox) close 1319220354789267-75 38 0
+1221 12067 12238 (dropbox) write 1319220354789433-266 /home/edigley/.dropbox/filecache.db-journal 37 12 12
+1221 12067 12238 (dropbox) close 1319220354795287-36 37 0
+1221 12067 12171 (dropbox) open 1319220354824072-1916 /home/edigley/.dropbox/l/4ea1b0fd 33345 438 37
+1221 12067 12171 (dropbox) fstat 1319220354826779-144 /home/edigley/.dropbox/l/4ea1b0fd 37 0
+1221 12067 12171 (dropbox) fstat 1319220354826977-124 /home/edigley/.dropbox/l/4ea1b0fd 37 0
+1221 12067 12171 (dropbox) write 1319220354827155-187 /home/edigley/.dropbox/l/4ea1b0fd 37 8192 8192
+1221 12067 12171 (dropbox) write 1319220354828144-164 /home/edigley/.dropbox/l/4ea1b0fd 37 5216 5216
+1221 12067 12171 (dropbox) close 1319220354828334-3643 37 0
+1221 12067 12171 (dropbox) open 1319220354832352-373 /home/edigley/.dropbox/l 624640 169532084 37
+1221 12067 12171 (dropbox) close 1319220354834441-65 37 0
+1221 12067 12171 (dropbox) open 1319220354834604-1144 /home/edigley/.dropbox/l/4ea1b0fd 32768 438 40
+1221 12067 12171 (dropbox) fstat 1319220354835785-112 /home/edigley/.dropbox/l/4ea1b0fd 40 0
+1221 12067 12171 (dropbox) fstat 1319220354835923-90 /home/edigley/.dropbox/l/4ea1b0fd 40 0
+1221 12067 12171 (dropbox) fstat 1319220354836039-98 /home/edigley/.dropbox/l/4ea1b0fd 40 0
+1221 12067 12171 (dropbox) read 1319220354836200-109 /home/edigley/.dropbox/l/4ea1b0fd 40 8192 8192
+1221 12067 12171 (dropbox) read 1319220354836321-182 /home/edigley/.dropbox/l/4ea1b0fd 40 8192 5216
+1221 12067 12171 (dropbox) read 1319220354836544-124 /home/edigley/.dropbox/l/4ea1b0fd 40 8192 0
+1221 12067 12171 (dropbox) close 1319220354836688-35 40 0
+1221 12067 12171 (dropbox) open 1319220356362713-751 /home/edigley/.dropbox/l 624640 169532084 40
+1221 12067 12171 (dropbox) close 1319220356364043-38 40 0
+1221 21297 21297 (floaters) open 1319220357896100-46 /home/edigley/.Xdefaults-ourico 0 540553530 -2
+0 1625 21427 (automount) open 1319220559535899-31 /home 624640 2514932 5
+0 1625 21427 (automount) close 1319220559536029-24 5 0
+1221 12067 12245 (dropbox) open 1319220559797363-3084 /home/edigley/Dropbox/tmp/mestrado/hyphenation 624640 171248436 40
+1221 12067 12245 (dropbox) close 1319220559803322-43 40 0
+1221 12067 12245 (dropbox) rmdir 1319220559804161-2521 /home/edigley/Dropbox/tmp/mestrado/hyphenation -39
+1221 12067 12245 (dropbox) open 1319220559807028-3415 /home/edigley/Dropbox/tmp/mestrado/hyphenation 624640 171248436 40
+1221 12067 12245 (dropbox) close 1319220559812541-43 40 0
+1221 12067 12245 (dropbox) open 1319220559865864-1237 /home/edigley/Dropbox/.dropbox.cache 624640 -1377539980 40
+1221 12067 12245 (dropbox) close 1319220559867353-44 40 0
+1221 12067 12245 (dropbox) open 1319220566043366-509 /home/edigley/Dropbox/tmp/mestrado 624640 169554004 40
+1221 12067 12245 (dropbox) close 1319220566045163-68 40 0
+1221 12067 12245 (dropbox) rmdir 1319220566046100-686 /home/edigley/Dropbox/tmp/mestrado -39
+1221 12067 12245 (dropbox) open 1319220566047051-734 /home/edigley/Dropbox/tmp/mestrado 624640 169554004 40
+1221 12067 12245 (dropbox) close 1319220566048626-43 40 0
+1221 12067 12245 (dropbox) open 1319220566089859-673 /home/edigley/Dropbox/.dropbox.cache 624640 171248436 40
+1221 12067 12245 (dropbox) close 1319220566090808-44 40 0
+1221 12067 12245 (dropbox) open 1319220589910180-538 /home/edigley/Dropbox/tmp/mestrado/hyphenation 624640 169532084 40
+1221 12067 12245 (dropbox) close 1319220589911549-43 40 0
+1221 12067 12245 (dropbox) rmdir 1319220589912240-332 /home/edigley/Dropbox/tmp/mestrado/hyphenation -39
+1221 12067 12245 (dropbox) open 1319220589912721-396 /home/edigley/Dropbox/tmp/mestrado/hyphenation 624640 169532084 40
+1221 12067 12245 (dropbox) close 1319220589913995-36 40 0
+1221 12067 12245 (dropbox) open 1319220589965902-1293 /home/edigley/Dropbox/.dropbox.cache 624640 169533332 40
+1221 12067 12245 (dropbox) close 1319220589967647-88 40 0
+1221 12067 12245 (dropbox) open 1319220597811922-1614 /home/edigley/Dropbox/tmp/mestrado 624640 169533332 40
+1221 12067 12245 (dropbox) close 1319220597815129-43 40 0
+1221 12067 12245 (dropbox) rmdir 1319220597815421-1329 /home/edigley/Dropbox/tmp/mestrado -39
+1221 12067 12245 (dropbox) open 1319220597816939-1511 /home/edigley/Dropbox/tmp/mestrado 624640 169533332 40
+1221 12067 12245 (dropbox) close 1319220597820419-64 40 0
+1221 12067 12245 (dropbox) open 1319220597983516-2214 /home/edigley/Dropbox/.dropbox.cache 624640 169554484 40
+1221 12067 12245 (dropbox) close 1319220597986125-55 40 0

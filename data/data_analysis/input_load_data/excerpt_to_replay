@@ -1,0 +1,6 @@
+date -d @1319220000
+Fri Oct 21 15:00:00 BRT 2011
+date -d @1319220600
+Fri Oct 21 15:10:00 BRT 2011
+
+1319217000000000 10 13 ('stuart', 20L) ('charroco', 2371L) ('abelhinha', 89518L) ('mussum', 2273L) ('sargento', 5548L) ('cherne', 30205L) ('mulato', 20598L) ('pepino', 7282L) ('traira', 15076L) ('roncador', 256L) ('pitu', 10876L) ('celacanto', 118855L) ('ourico', 70L) 

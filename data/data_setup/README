@@ -22,4 +22,11 @@ steps to process data
             |-- 20111021102209-abelhinha.log.97.filtered
             |-- 20111021102209-abelhinha.log.98.filtered
 
-2. sorts *filtered files. After sorting delete filtered files
+   Usage: bash filter_and_group.sh $raw_data_dir $output_data_dir
+
+2. sorts *filtered files. After sorting delete filtered files. It outputs *filtered.sort files
+   Usage: bash sort_and_remove_old_data.sh $filtered_data_dir
+
+3. Concats *filtered.sort files into based on creation date and sequence number.
+   It sorts this concatened file
+   Usage: python join_by_date_and_sort.py $data_dir

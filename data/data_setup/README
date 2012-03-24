@@ -28,5 +28,5 @@ steps to process data
    Usage: bash sort_and_remove_old_data.sh $filtered_data_dir
 
 3. Concats *filtered.sort files into based on creation date and sequence number.
-   It sorts this concatened file
-   Usage: python join_by_date_and_sort.py $data_dir
+   The resulting output need to be sort. See the join_all.sh
+   Usage: python join_by_date.py $data_dir

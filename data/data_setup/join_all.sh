@@ -30,6 +30,12 @@ do
     machine_name=`basename $raw_dir`
     for day_dir in `ls -t $processed_dir_root/$machine_name/`
     do
-        python join_by_date_and_sort.py $processed_dir_root/$machine_name/$day_dir
+        #it outputs a *.join file
+        python join_by_date.py $processed_dir_root/$machine_name/$day_dir
+        for file in `ls -t $processed_dir_root/$machine_name/$day_dir/*.join`
+        do
+            cat $file | sort -T /tmp -n -k 6,6.17 > $file.sort
+            mv $file.sort $file
+        done
     done
 done < $raw_dir_file

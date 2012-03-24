@@ -39,8 +39,8 @@ def cat(filenames, output):
     subprocess.call(["cat"] + filenames, stdout=output)
 
 if __name__ == "__main__":
-    """It concats .sort files based on creation date and sequence number.
-       It sorts this concatened file"""
+    """ It concats .sort files based on creation date and sequence number.
+        It outputs a *.join file """
     data_dir = sys.argv[1]
     files_by_date = group_by_date(os.listdir(data_dir))
 
@@ -51,6 +51,6 @@ if __name__ == "__main__":
         machine_name = machine(sorted_by_seq[0][1])
         date_str = "_".join([str(date[0]), str(date[1]), str(date[2])])
 
-        with open(data_dir + "/" + date_str + "-" + machine_name, 'w') as cat_file:
+        with open(data_dir + "/" + date_str + "-" + machine_name + ".join", 'w') as cat_file:
             filenames = [data_dir + "/" + filename for (stamp, filename) in stamp_filenames]
             cat(filenames, cat_file)

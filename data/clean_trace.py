@@ -152,7 +152,7 @@ def clean(lines, out_collector, err_collector, begin=None, end=None):
         _call = call(tokens)
         try:
             _stamp = long(syscall_timestamp(tokens).split("-")[0])
-        except ValueError:
+        except (ValueError, IndexError):#I saw a missed-timestamp line, it causes a IndexError
             sys.stderr.write(" ".join(["problems on parsing", line, "\n"]))
             continue
         if between(_stamp, begin, end):

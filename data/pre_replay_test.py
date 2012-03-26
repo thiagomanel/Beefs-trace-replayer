@@ -67,7 +67,8 @@ class TestTraceWalk(unittest.TestCase):
                 ]
 
         #test if a path cannot be shown twice
-        to_create = build_namespace("/tmp/replay", lines)
+        to_create_dirs, to_create_files = build_namespace("/tmp/replay", lines)
+        self.assertTrue("/ok_rmdir/lib/" in to_create_dirs)
 
 if __name__ == '__main__':
     unittest.main()

@@ -101,7 +101,6 @@ def build_namespace(replay_dir, workflow_lines):#FIXME TEST-IT
        it returns a 2-tuple of list ([created_dirs], [created_files]) ordered as they
        were created
     """
-
     def is_dir(to_create):
         return fs_type(to_create) is "d"
 
@@ -111,66 +110,98 @@ def build_namespace(replay_dir, workflow_lines):#FIXME TEST-IT
     def fs_type(to_create):
         return to_create[1]
 
-    def mkdir_p(path):
-        try:
-            os.makedirs(path)
-        except OSError as exc: # Python >2.5
-            if exc.errno == errno.EEXIST:
-                pass
-            else: raise
-
-    def create_file(path):
-        open(path, 'w').close()
-     
-    if os.path.exists(replay_dir):
-        raise Exception("replay_dir should be created by replay_code")
-    os.mkdir(replay_dir)
-
     _fs_tree = fs_tree(workflow_lines)
 
-    created_dirs = []
-    created_files = []
+    created_dirs = set()#we want to list them
+    created_files = set()
 
     for (parent, children) in _fs_tree.iteritems():
         _parent_path = replay_dir + fs_object(parent)
-        if is_dir(parent):
-            mkdir_p(_parent_path)
-            created_dirs.append(_parent_path)
+        if is_dir(parent) and not os.path.exists(_parent_path):
+            created_dirs.add(_parent_path)
         for child in children:
             if is_dir(child):
-                mkdir_p(_parent_path)#FIXME is this correct ?
-                created_dirs.append(_parent_path)
+                if not os.path.exists(_parent_path):
+                    created_dirs.add(_parent_path)
             else:
                 filepath = replay_dir + fs_object(child)
                 if not os.path.exists(_parent_path):
                     parents = dirs(parent_path(filepath))
                     for parent in parents:
-                        mkdir_p(parent)#FIXME we do not need this if we use mkdir_p
-                        created_dirs.append(parent_path)
-                create_file(filepath)
-                created_files.append(filepath)
+                        if not os.path.exists(_parent_path):
+                            created_dirs.add(_parent_path)
+                if not os.path.exists(filepath):
+                    created_files.add(filepath)
 
     return (created_dirs, created_files)
 
-def expand_file(filename, newsize):
-    if newsize:
-         with open(filename, 'w') as _file:
-            _file.truncate(newsize)
-
 if __name__ == "__main__":
-    """Usage: python pre_replay.py replay_dir_path replay_input_path join_file_path"""
+
+    """
+        We operate in one of two modes: "f" or "s"
+
+        If -f options was given, it find the namespace to be created, it means file and directories
+        that are used in workflow data but are not present in replay_dir_path. It outputs file or
+        directories names and its type, "f" or "d", separated by \t
+
+        If -s option was given it tries to find the file size of files found by the this module using
+        -f option. It outpus file name, type and file size separated by \t. If it was not possible to
+        find the size for a given file, it assumes -1 to mark this lack of information
+    """
+    #FIXME use opt
+
+    usage_msg = "Usage: python pre_replay.py replay_dir [-f] [-s to_create_namespace_file_path join_file_path] replay_input_path\n"
+
+    if (len(sys.argv) < 3):
+        sys.stderr.write(usage_msg)
+        sys.exit(1)
 
     replay_dir = sys.argv[1]
-    with open(sys.argv[2], 'r') as workflow_file:
-        workflow_lines = workflow_file.readlines()[1:]
-        created_dirs, created_files = build_namespace(replay_dir, workflow_lines)
+    mode = sys.argv[2]
 
-        workflow_file.seek(0)
-        workflow_lines = workflow_file.readlines()[1:]
+    if mode == "-f":
+        if not len(sys.argv) == 4:
+            sys.stderr.write(usage_msg)
+            sys.exit(1)
+
+        with open(sys.argv[3], 'r') as workflow_file:
+            workflow_lines = workflow_file.readlines()[1:]
+            created_dirs, created_files = build_namespace(replay_dir, workflow_lines)
+            for _dir in created_dirs:
+                sys.stdout.write("\t".join([_dir, "d", "\n"]))
+            for _file in created_files:
+                sys.stdout.write("\t".join([_file, "f", "\n"]))
+    elif mode == "-s":
+        if not len(sys.argv) == 6:
+            sys.stderr.write(usage_msg)
+            sys.exit(1)
+
+        with open(sys.argv[3]) as namespace_to_create:
+            created_dirs, created_files = set(), set()
+            for fs_obj in namespace_to_create:
+                tokens = fs_obj.split()
+                ftype = tokens[-1]
+                if ftype == "d":
+                    created_dirs.add(tokens[0])
+                elif ftype == "f":
+                    created_files.add(tokens[0])
+       
+        with open(sys.argv[5], 'r') as workflow_file:
+            workflow_lines = workflow_file.readlines()[1:]
 
         path_to_timestamp = find_timestamps(replay_dir, created_files, workflow_lines)
         #FIXME it's possible to get None timestamps here
-        with open(sys.argv[3], 'r') as join_data_file:
-            for filepath, size in find_file_size(join_data_file.readlines(), path_to_timestamp).iteritems():
-                if size:
-                    expand_file(filepath, size)
+        files_sizes = {}
+        with open(sys.argv[4], 'r') as join_data_file:
+            files_sizes = find_file_size(join_data_file.readlines(), path_to_timestamp)
+
+        for _dir in created_dirs:
+            sys.stdout.write("\t".join([_dir, "d", "\n"]))
+        for _file in created_files:
+            if _file in files_sizes:
+                sys.stdout.write("\t".join([_file, "f", str(files_sizes[_file]), "\n"]))
+            else:
+                sys.stdout.write("\t".join([_file, "f", "-1", "\n"]))
+    else:
+        sys.stderr.write("We need a mode: -f or -s\n")
+        sys.exit(-1)

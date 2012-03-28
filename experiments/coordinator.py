@@ -1,6 +1,7 @@
 import sys
-import subprocess
 import os
+import subprocess
+import random
 
 def copy_package(tarball_path, dst_dir, machine_addr):
     remote = ":".join([machine_addr, dst_dir])
@@ -18,114 +19,102 @@ def execute(remote_command, machine_addr, delay=None):
                                           remote_command]), shell=True,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.STDOUT)
-    return process.communicate()
-
-def install_package(remote_path, tarball_name, machine_addr):
-    remote_tar_path = remote_path + "/" + tarball_name
-    return execute(" ".join(["tar", "xjvf", remote_tar_path, "-C", remote_path]), machine_addr)
+    out, err = process.communicate()
+    return out, err, process.returncode
 
 def time(machine_addr):
-    out, err = execute("date +%s", machine_addr)
+    out, err, rcode = execute("date +%s", machine_addr)
     return long(out)
 
 def umount_client(addr, mount_point):
-    pass
+    return execute(" ".join(["umount", mount_point]), addr)
 
 def mount_client(addr, mount_point):
-    pass
+    return execute(" ".join(["mount", mount_point]), addr)
 
 def check_mount(addr, mount_point):
-    return True
+    out, err, rcode = execute("mount | grep /local/thiagoepdc/espadarte_nfs/home", addr)
+    return out#if it is mounted, out is not empty, so it is true
 
 if __name__ == "__main__":
     """ 
         We assume:
              worker node have had their clocks syncronized
+             worker nodes share a remote distributed file system to get replay input data and binaries (see /home/thiagoepdc/experiments/nfs/ below)
+             communication to worker nodes is made by no-pass ssh
     """
-
-    if len(sys.argv) < 6:
-        sys.stderr.write("Usage: python coordinator.py num_samples machines_file tarball_path base_remote_path mount_point\n")
+    if len(sys.argv) < 5:
+        sys.stderr.write("Usage: python coordinator.py num_samples machines_file base_remote_path mount_point\n")
         sys.exit(-1)
 
     num_samples = int(sys.argv[1])
     with open(sys.argv[2]) as machine_addr_file:
-		machines_addr = [addr.strip() for addr in machine_addr_file.readlines()]
+        machines_addr2replay_input = {}
+        for line in machine_addr_file:
+            addr, r_input = line.split()
+            machines_addr2replay_input[addr.strip()] = r_input.strip()
+        machines_addr = machines_addr2replay_input.keys()
+
     sys.stdout.write(" ".join(["loaded machines", str(machines_addr), "\n"]))
 
-    tarball_path = sys.argv[3]
-    remote_path = sys.argv[4]
-    mount_point = sys.argv[5]
-
-    for addr in machines_addr:
-        sys.stdout.write(" ".join(["copying", tarball_path, "to", addr, "\n"]))
-        out, err = copy_package(tarball_path, remote_path, addr)
-        sys.stdout.write(" ".join(["DONE", "out", str(out), "err", str(err), "\n"]))
-        if err:
-            sys.exit(-1)
-
-    for addr in machines_addr:
-        sys.stdout.write(" ".join(["Installing package", tarball_path, "to", addr, "\n"]))
-        out, err = install_package(remote_path, os.path.basename(tarball_path), addr)
-        sys.stdout.write(" ".join(["DONE", "out", str(out), "err", str(err), "\n"]))
-        if err:
-            sys.exit(-1)
+    remote_path = sys.argv[3]
+    mount_point = sys.argv[4]
 
     for sample in range(num_samples):
+        sys.stdout.write("Running sample " +  str(sample) + "\n")
 
         for addr in machines_addr:
+            sys.stdout.write(" ".join(["Umounting", addr, mount_point, "\n"]))
             umount_client(addr, mount_point)
 
         #no clients should be mounted
-        clients_mount_status = [ (addr, 
+        clients_mount_status = [(addr, 
                                    check_mount(addr, mount_point))
                                    for addr in machines_addr]
         if any([up for (machine, up) in clients_mount_status]):
-            sys.stderr.write("Error on umounting clients" +
+            sys.stderr.write("Error on umounting clients " +
                               " ".join([str(status) 
                                         for status in clients_mount_status])
                               + "\n")
             continue
         
         for addr in machines_addr:
+            sys.stdout.write(" ".join(["Mounting", addr, mount_point, "\n"]))
             mount_client(addr, mount_point)
         #now, we want everybody up
         clients_mount_status = [ (addr, 
                                    check_mount(addr, mount_point))
                                    for addr in machines_addr]
-
         if not all([up for (machine, up) in clients_mount_status]):
-            sys.stderr.write("Error on mounting clients" +
+            sys.stderr.write("Error on mounting clients " +
                               " ".join([str(status) 
                                         for status in clients_mount_status])
                               + "\n")
             continue
-        
+
         #executing pre-replay
-            #maybe we can run the pre-replay at server side instead of
-		    #before each sample. To do so, is safer to keep one data set equals to
-            #nfs extraction.
-        pre_replay_path = "/".join([remote_path, "replayer", "pre_replay.py"])
-        pre_replay_args = ["replay_dir_path", "replay_input_path", "join_file_path"]
+        sys.stdout.write("executing pre_replay\n")
+        out, err, rcode = execute("python /home/thiagoepdc/experiments/nfs/do_pre_replay.py < /home/thiagoepdc/experiments/nfs/pre_replay_on_server_side.all", "espadarte")
 
-        for addr in machines_addr:
-            execute("python " + pre_replay_path, pre_replay_args, addr)
+        sys.stdout.write("checking pre_replay\n")
+        out, err, rcode = execute("bash /home/thiagoepdc/experiments/nfs/do_pre_replay_check.sh /home/thiagoepdc/experiments/nfs/pre_replay_on_server_side.all", "espadarte")
+        if not rcode == 0:
+            sys.stderr.write("pre_replay didn't work\n")
 
-
-        pre_replay_path = "/".join([remote_path, "replayer", "beefs_replayer"])
-
-        date_millis = date(machines_addr[0])
-        for addr in machines_addr:
-            pre_replay_args = ["/".join([remote_path, "replayer", "beefs_replayer"])]
-            execute("python " + pre_replay_path, pre_replay_args, addr)
-
+        #date_millis = date(machines_addr[0])
         #executing replay
-        for addr in machines_addr:
-            replay_path = ["/".join([remote_path, "replayer", "beefs_replayer"])]
-            execute(replay_path, replay_args, addr)
+        for addr, r_input in machines_addr2replay_input.iteritems():
+            sys.stdout.write("executing replay addr " + addr + " input " + r_input + "\n")
+            base_out = "/tmp/" + addr + "." + str(sample) + "." + str(int(random.random() * 10000000))
+            out_file = base_out + ".replay.out"
+            err_file = base_out + ".replay.err"
+            execute("/home/thiagoepdc/experiments/nfs/beefs_replayer " + r_input + " > " + out_file + " 2> " + err_file,
+                           addr)
 
-        #collecting results
-        #TODO
-
+        for addr, r_input in machines_addr2replay_input.iteritems():
+            sys.stdout.write("collection results " + addr + "\n")
+            execute("cp /tmp/*replay* /home/thiagoepdc/experiments/nfs/results/", addr)
+"""
         #rolling back file system modifications
-        for addr in machines_addr:
-            execute("bash " + "rollbackfs.sh", addr)
+        #sys.stdout.write("rolling back\n")
+        #execute("/home/thiagoepdc/experiments/nfs/rollbackfs.sh", "espadarte")"""

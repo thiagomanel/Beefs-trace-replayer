@@ -29,7 +29,7 @@ def find_timestamps(replay_dir, created_files, workflow_lines):
 
     return result
             
-def find_file_size(join_data_lines, path_and_timestamps):
+def find_file_size(join_data_file, path_and_timestamps):
     """ 
         join_data_lines is the input data to clean_trace.py
         path_and_timestamps is a list of tuple as
@@ -64,34 +64,36 @@ def find_file_size(join_data_lines, path_and_timestamps):
 
     join_calls_with_size = ["sys_read", "sys_write", "sys_llseek"]
     timestamp_to_find = [timestamp(stamp_str) 
-				 for stamp_str in path_and_timestamps.values()]
-
-    first_stamp = min(timestamp_to_find)
-    last_stamp = max(timestamp_to_find)
-
-    to_find = {}
-    #invert dict
-    for path, stamp_str in path_and_timestamps.iteritems():
-        stamp = timestamp(stamp_str)
-        if not stamp in to_find:
-            to_find[stamp] = set()
-        to_find[stamp].add((path, stamp))
+				 for stamp_str in path_and_timestamps.values()
+                                  if stamp_str]#excluding stamps equals to None
 
     result = {}
+    if timestamp_to_find:
+        first_stamp = min(timestamp_to_find)
+        #last_stamp = max(timestamp_to_find)
 
-    for line in join_data_lines:
-        line_timestamp = join_line_timestamp(line)
-        if first_stamp <= line_timestamp:
-            if line_timestamp in to_find:
-                _syscall = join_line_syscall(line)
-                if _syscall in join_calls_with_size:
-                    for path, stamp in to_find[line_timestamp]:
-                        #we can have multiple lines in in the same timestamp
-                        if basename(path) in line:
-                            file_size = join_line_file_size(line)
-                            result[path] = file_size
-        if line_timestamp > last_stamp:
-            break
+        to_find = {}
+        #invert dict
+        for path, stamp_str in path_and_timestamps.iteritems():
+            if stamp_str:
+                stamp = timestamp(stamp_str)
+                if not stamp in to_find:
+                    to_find[stamp] = set()
+                to_find[stamp].add((path, stamp))
+
+        for line in join_data_file:
+            line_timestamp = join_line_timestamp(line)
+            if first_stamp <= line_timestamp:
+                if line_timestamp in to_find:
+                    _syscall = join_line_syscall(line)
+                    if _syscall in join_calls_with_size:
+                        for path, stamp in to_find[line_timestamp]:
+                            #we can have multiple lines in in the same timestamp
+                            if basename(path) in line:
+                                file_size = join_line_file_size(line)
+                                result[path] = file_size
+            #if line_timestamp > last_stamp:
+             #   break
 
     return result
 
@@ -165,8 +167,8 @@ if __name__ == "__main__":
             sys.exit(1)
 
         with open(sys.argv[3], 'r') as workflow_file:
-            workflow_lines = workflow_file.readlines()[1:]
-            created_dirs, created_files = build_namespace(replay_dir, workflow_lines)
+            workflow_file.readline()#excluding header
+            created_dirs, created_files = build_namespace(replay_dir, workflow_file.readlines())
             for _dir in created_dirs:
                 sys.stdout.write("\t".join([_dir, "d", "\n"]))
             for _file in created_files:
@@ -187,21 +189,24 @@ if __name__ == "__main__":
                     created_files.add(tokens[0])
        
         with open(sys.argv[5], 'r') as workflow_file:
-            workflow_lines = workflow_file.readlines()[1:]
+            workflow_file.readline()#excluding header
+            workflow_lines = workflow_file.readlines()
 
         path_to_timestamp = find_timestamps(replay_dir, created_files, workflow_lines)
         #FIXME it's possible to get None timestamps here
         files_sizes = {}
         with open(sys.argv[4], 'r') as join_data_file:
-            files_sizes = find_file_size(join_data_file.readlines(), path_to_timestamp)
+            files_sizes = find_file_size(join_data_file, path_to_timestamp)
 
         for _dir in created_dirs:
             sys.stdout.write("\t".join([_dir, "d", "\n"]))
         for _file in created_files:
             if _file in files_sizes:
-                sys.stdout.write("\t".join([_file, "f", str(files_sizes[_file]), "\n"]))
+                sys.stdout.write("\t".join([_file, "f", str(files_sizes[_file]),
+                                            str(path_to_timestamp[_file]), "\n"]))
             else:
-                sys.stdout.write("\t".join([_file, "f", "-1", "\n"]))
+                sys.stdout.write("\t".join([_file, "f", "-1",
+                                            str(path_to_timestamp[_file]), "\n"]))
     else:
         sys.stderr.write("We need a mode: -f or -s\n")
         sys.exit(-1)

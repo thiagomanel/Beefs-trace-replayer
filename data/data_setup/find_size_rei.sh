@@ -6,9 +6,9 @@
 # /mnt/backup_storage3/pepino/20111021/2011_10_21-pepino
 # /mnt/backup_storage3/pepino/20111019/2011_10_19-pepino
 
-#machines="pepino  pitu  roncador  sargento  stuart  traira  viola  surubim  pimpim"
-machines="pepino  pitu  roncador  traira  viola"
-processed_dir="/mnt/backup_storage3/processed"
+#machines="abelhinha bandeira celacanto charroco cherne gupi jurupoca morcego mulato mussum ourico palmito"
+machines="abelhinha celacanto charroco cherne mulato mussum"
+processed_dir="/local/tracer/processed"
 
 for machine in $machines
 do

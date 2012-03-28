@@ -330,7 +330,9 @@ int do_replay (struct replay_command* cmd) {
 					open (args[0].argm->cprt_val, args[1].argm->i_val, args[2].argm->i_val);
 
 			int traced_fd = cmd->expected_retval;
-			map_fd (cmd->caller->pid, traced_fd, replayed_fd);
+			if (traced_fd > 0) {
+				map_fd (cmd->caller->pid, traced_fd, replayed_fd);
+			}
 		}
 		break;
 		case READ_OP: {
@@ -491,7 +493,11 @@ Workflow_element* take () {
 
 double delay_on_trace (struct replay_command* earlier, struct replay_command* later) {
 	double delay = (double) (later->traced_begin - earlier->traced_begin);
-	assert (delay >= 0);
+	if (delay < 0) {
+		fprintf (stderr, "earlier->begin=%f later->begin=%f.\n",
+				earlier->traced_begin, later->traced_begin);
+	}
+//	assert (delay >= 0);
 	return delay;
 }
 
@@ -650,7 +656,7 @@ Replay_result* replay (Replay_workload* rep_workload) {
 	pthread_t producer;
 	pthread_create (&producer, NULL, produce, 0);
 
-	int max_consumers = 50;
+	int max_consumers = 10;
 	int num_consumers = (workload->num_cmds >= max_consumers)
 			? max_consumers : workload->num_cmds;
 

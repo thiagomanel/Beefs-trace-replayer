@@ -14,11 +14,19 @@ def copy_package(tarball_path, dst_dir, machine_addr):
     return process.communicate()
 
 def execute(remote_command, machine_addr, delay=None):
-    process = subprocess.Popen(" ".join(["ssh",
+    if machine_addr != "espadarte":
+        process = subprocess.Popen(" ".join(["ssh -i /home/patrickjem/cloudigley/.euca/patrick_key.private",
+                                         "root@"+machine_addr,
+                                          remote_command]), shell=True,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.STDOUT)
+    else:
+        process = subprocess.Popen(" ".join(["ssh",
                                          machine_addr,
                                           remote_command]), shell=True,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.STDOUT)
+
     out, err = process.communicate()
     return out, err, process.returncode
 
@@ -33,8 +41,8 @@ def mount_client(addr, mount_point):
     return execute(" ".join(["mount", mount_point]), addr)
 
 def check_mount(addr, mount_point):
-    out, err, rcode = execute("mount | grep /home", addr)
-    return out#if it is mounted, out is not empty, so it is true
+	out, err, rcode = execute("mount | grep 150.165.85.239:/local/nfs_manel", addr)
+	return out#if it is mounted, out is not empty, so it is true
 
 if __name__ == "__main__":
     """ 
@@ -94,10 +102,10 @@ if __name__ == "__main__":
 
         #executing pre-replay
         sys.stdout.write("executing pre_replay\n")
-        out, err, rcode = execute("python /root/nfs_lsd/thiagoepdc/experiments/nfs/do_pre_replay.py < /root/nfs_lsd/thiagoepdc/experiments/nfs/pre_replay_on_server_side.all", "espadarte")
+        out, err, rcode = execute("python /home/thiagoepdc/experiments/nfs/do_pre_replay.py < /home/thiagoepdc/experiments/nfs/pre_replay_on_server_side.all", "espadarte")
 
         sys.stdout.write("checking pre_replay\n")
-        out, err, rcode = execute("bash /root/nfs_lsd/thiagoepdc/experiments/nfs/do_pre_replay_check.sh /root/nfs_lsd/thiagoepdc/experiments/nfs/pre_replay_on_server_side.all", "espadarte")
+        out, err, rcode = execute("bash /home/thiagoepdc/experiments/nfs/do_pre_replay_check.sh /home/thiagoepdc/experiments/nfs/pre_replay_on_server_side.all", "espadarte")
         if not rcode == 0:
             sys.stderr.write("pre_replay didn't work\n")
 
@@ -111,9 +119,9 @@ if __name__ == "__main__":
             execute("/root/nfs_lsd/thiagoepdc/experiments/nfs/beefs_replayer " + r_input + " > " + out_file + " 2> " + err_file,
                            addr)
 
-        for addr, r_input in machines_addr2replay_input.iteritems():
-            sys.stdout.write("collection results " + addr + "\n")
-            execute("cp /tmp/*replay* /root/nfs_lsd/thiagoepdc/experiments/nfs/results/", addr)
+#        for addr, r_input in machines_addr2replay_input.iteritems():
+#            sys.stdout.write("collection results " + addr + "\n")
+#            execute("cp /tmp/*replay* /home/thiagoepdc/experiments/nfs/results/", addr)
 """
         #rolling back file system modifications
         #sys.stdout.write("rolling back\n")

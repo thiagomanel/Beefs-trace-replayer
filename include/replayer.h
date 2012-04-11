@@ -104,6 +104,11 @@ typedef struct _command_replay_result {
 	struct timeval *dispatch_begin;
 	struct timeval *dispatch_end;
 	double delay;
+
+	//These analysis is specially important for read/write to check
+	//acessed number of bytes and for check returned errors codes.
+	int expected_rvalue;
+	int actual_rvalue;
 } command_replay_result ;
 
 typedef struct replay_workload {

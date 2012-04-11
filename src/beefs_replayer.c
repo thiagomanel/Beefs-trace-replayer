@@ -39,11 +39,13 @@ int main (int argc, const char* argv[]) {
 	Replay_result *result = replay (rep_wld);
 	for (int i = 0; i < result->replayed_commands; i++) {
 		command_replay_result *cmd_result = &(result->cmds_replay_result[i]);
-		printf ("%ld %ld %ld %ld %f\n",
+		printf ("%ld %ld %ld %ld %f %d %d\n",
 				cmd_result->dispatch_begin->tv_sec,
 				cmd_result->dispatch_begin->tv_usec,
 				cmd_result->dispatch_end->tv_sec,
 				cmd_result->dispatch_end->tv_usec,
-				cmd_result->delay);
+				cmd_result->delay,
+				cmd_result->expected_rvalue,
+				cmd_result->actual_rvalue);
 	}
 }

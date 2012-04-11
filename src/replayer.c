@@ -310,24 +310,31 @@ void map_fd (int traced_pid, int traced_fd, int replayed_fd) {
 	fd_pairs[traced_fd] = replayed_fd;
 }
 
-int do_replay (struct replay_command* cmd) {
+/**
+ * Execute syscall specified on replay_command pointed by cmd. If syscall executes
+ * properly, it returns REPLAY_SUCCESS or -1 otherwise. Executed syscall's
+ * returned value is copied to call_rvalue in case of REPLAY_SUCCESS.
+ */
+int do_replay (struct replay_command* cmd, int *call_rvalue) {
 
 	assert (cmd != NULL);
 	Parms* args = cmd->params;
 
 	switch (cmd->command) {
 		case MKDIR_OP: {
-			mkdir (args[0].argm->cprt_val, args[1].argm->i_val);
+			*call_rvalue = mkdir (args[0].argm->cprt_val, args[1].argm->i_val);
 		}
 		break;
 		case STAT_OP: {
 			struct stat sb;
-			stat(args[0].argm->cprt_val, &sb);
+			*call_rvalue = stat(args[0].argm->cprt_val, &sb);
 		}
 		break;
 		case OPEN_OP: {
 			int replayed_fd =
 					open (args[0].argm->cprt_val, args[1].argm->i_val, args[2].argm->i_val);
+
+			*call_rvalue = replayed_fd;
 
 			int traced_fd = cmd->expected_retval;
 			if (traced_fd > 0) {
@@ -342,7 +349,7 @@ int do_replay (struct replay_command* cmd) {
 			//FIXME should share a big bufer to avoid malloc'ing time wasting ?
 			int read_count = args[2].argm->i_val;
 			char* buf = (char*) malloc (sizeof (char) * read_count);
-			read (repl_fd, buf, read_count);
+			*call_rvalue = read (repl_fd, buf, read_count);
 		}
 		break;
 		case WRITE_OP: {
@@ -352,13 +359,13 @@ int do_replay (struct replay_command* cmd) {
 			//FIXME should share a big bufer to avoid malloc'ing time wasting ?
 			int write_count = args[2].argm->i_val;
 			char* buf = (char*) malloc (sizeof (char) * write_count);
-			write (repl_fd, buf, write_count);
+			*call_rvalue = write (repl_fd, buf, write_count);
 		}
 		break;
 		case CLOSE_OP: {
 			int traced_fd = args[0].argm->i_val;
 			int repl_fd = replayed_fd (cmd->caller->pid, traced_fd);
-			close (repl_fd);
+			*call_rvalue = close (repl_fd);
 			//FIXME should we set the fd mapping to something impossible as -1
 			//i think i this way we do not mask programming errors
 		}
@@ -367,11 +374,11 @@ int do_replay (struct replay_command* cmd) {
 			struct stat sb;
 			int traced_fd = args[1].argm->i_val;
 			int repl_fd = replayed_fd (cmd->caller->pid, traced_fd);
-			fstat(repl_fd, &sb);
+			*call_rvalue = fstat(repl_fd, &sb);
 		}
 		break;
 		case RMDIR_OP: {
-			unlink (args[0].argm->cprt_val);
+			*call_rvalue = unlink (args[0].argm->cprt_val);
 		}
 		break;
 		default:
@@ -546,14 +553,14 @@ double delay (Workflow_element* to_replay) {
 	return dlay_trace - elapsed;
 }
 
-static int wait_count = 0;
-
 /**
  * 1.take a command C from produced queue
  * 2.dispatch C
  * 3.add C to consumed queue
  */
 void *consume (void *arg) {
+
+	int actual_rvalue = 0;
 
 	while (1) {
 
@@ -577,7 +584,12 @@ void *consume (void *arg) {
 			command_replay_result *cmd_result = replay_result (element->id);
 			fill_command_replay_result (cmd_result);
 			gettimeofday (cmd_result->dispatch_begin, NULL);
-			int result = do_replay (element->command);
+			int result = do_replay (element->command, &actual_rvalue);
+			//assigning actual syscall returning value. We do not check
+			//REPLAY_SUCCESS because it will lead to program termination if it
+			//does not succeded properly anyway
+			//FIXME: We need to set expected rvalue
+			cmd_result->actual_rvalue = actual_rvalue;
 			gettimeofday (cmd_result->dispatch_end, NULL);
 
 			pthread_mutex_lock (&lock);
@@ -625,10 +637,27 @@ void fill_shared_buffer (Replay_workload* workload, sbuffs_t* shared) {
 
 	//stamping root
 	command_replay_result *root_result = replay_result (ROOT_ID);
+
+	root_result->actual_rvalue = -666;
+	root_result->delay = 0;
+
 	fill_command_replay_result (root_result);
 	gettimeofday (root_result->dispatch_begin, NULL);
 	gettimeofday (root_result->dispatch_end, NULL);
 }
+
+/**
+ * Fill command_replay_result array with expected_rvalues from input workload
+ */
+void fill_expected_rvalue(command_replay_result *results, Replay_workload *wld) {
+
+	int i;
+	for (i = 0; i < wld->num_cmds ; i++) {
+		results[i].expected_rvalue
+			= wld->element_list[i].command->expected_retval;
+	}
+}
+
 
 Replay_result* replay (Replay_workload* rep_workload) {
 
@@ -650,6 +679,7 @@ Replay_result* replay (Replay_workload* rep_workload) {
 			sizeof (command_replay_result) * workload->num_cmds);
 
 	fill_shared_buffer (workload, shared_buff);
+	fill_expected_rvalue(result->cmds_replay_result, workload);
 
 	pthread_mutex_init (&lock, NULL);
 

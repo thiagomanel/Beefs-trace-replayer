@@ -4,6 +4,8 @@ import subprocess
 import random
 import time
 
+EXPERIMENT_INPUT_DIR="/home/thiagoepdc/experiments/"
+
 def execute(remote_command, machine_addr, delay=None):
     if machine_addr.startswith("150"):#cloudgley machine, for lan we use names
         process = subprocess.Popen(" ".join(["ssh -i /home/patrickjem/cloudigley/.euca/patrick_key.private",
@@ -95,11 +97,14 @@ if __name__ == "__main__":
             continue
 
         #executing pre-replay
+	pre_replay_path = EXPERIMENT_INPUT_DIR + "/nfs/do_pre_replay.py"
+	pre_replay_input = EXPERIMENT_INPUT_DIR + "/nfs/pre_replay_on_server_side.all"
         sys.stdout.write("executing pre_replay\n")
-        out, err, rcode = execute("python /home/thiagoepdc/experiments/nfs/do_pre_replay.py < /home/thiagoepdc/experiments/nfs/pre_replay_on_server_side.all", "espadarte.lsd.ufcg.edu.br")
+        out, err, rcode = execute("python " + pre_replay_path + " < " + pre_replay_input, "espadarte.lsd.ufcg.edu.br")
 
         sys.stdout.write("checking pre_replay\n")
-        out, err, rcode = execute("bash /home/thiagoepdc/experiments/nfs/do_pre_replay_check.sh /home/thiagoepdc/experiments/nfs/pre_replay_on_server_side.all", "espadarte.lsd.ufcg.edu.br")
+	check_pre_replay_path = EXPERIMENT_INPUT_DIR + "/nfs/do_pre_replay_check.sh"
+        out, err, rcode = execute("bash " + check_pre_replay_path + " " + pre_replay_input, "espadarte.lsd.ufcg.edu.br")
         if not rcode == 0:
             sys.stderr.write("pre_replay didn't work\n")
 
@@ -108,6 +113,10 @@ if __name__ == "__main__":
         deadline = now_epoch_secs + 30
         sys.stdout.write("now is: " + str(now_epoch_secs) + " deadline will be " + str(deadline) + "\n")
 
+	wait_and_replay = EXPERIMENT_INPUT_DIR + "/nfs/wait_and_replay.sh"
+	beefs_replayer = EXPERIMENT_INPUT_DIR + "/nfs/beefs_replayer"
+	output_dir = EXPERIMENT_INPUT_DIR + "/nfs/results/"
+
         for addr, r_input in machines_addr2replay_input.iteritems():
             sys.stdout.write("executing replay addr " + addr + " input " + r_input + "\n")
 
@@ -115,8 +124,8 @@ if __name__ == "__main__":
             out_file = base_out + ".replay.out"
             err_file = base_out + ".replay.err"
 
-            execute(" ".join(["bash /home/thiagoepdc/experiments/nfs/wait_and_replay.sh",
-                              "/root/nfs_lsd/thiagoepdc/experiments/nfs/beefs_replayer",
+            execute(" ".join(["bash " + wait_and_replay,
+		              beefs_replayer,
                               str(deadline),
                               r_input, out_file, err_file,
                               "&"]),
@@ -129,8 +138,8 @@ if __name__ == "__main__":
 
         for addr, r_input in machines_addr2replay_input.iteritems():
             sys.stdout.write("collection results " + addr + "\n")
-            execute("cp /tmp/*replay* /home/thiagoepdc/experiments/nfs/results/", addr)
+            execute("cp /tmp/*replay* " + output_dir, addr)
 """
         #rolling back file system modifications
         #sys.stdout.write("rolling back\n")
-        #execute("/home/thiagoepdc/experiments/nfs/rollbackfs.sh", "espadarte.lsd.ufcg.edu.br")"""
+        #execute(EXPERIMENT_INPUT_DIR + "/nfs/rollbackfs.sh", "espadarte.lsd.ufcg.edu.br")"""

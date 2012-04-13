@@ -1,1 +1,25 @@
+coordinator is our do-the-job script. Before running it, configure worker nodes. Mainly to allow no-pass ssh. Check cloudgley.README also.
 
+Experiment uses input data and code stored and LSD nfs. To do so, we need to mount this file system at worker nodes.
+We also need to sync worker node clocks, worker nodes must to their job as a group.
+
+Each sample runs according to this sketch:
+
+	sync_clock(worker_nodes)
+
+	for i in range(num_samples)
+		foreach worker_node:
+			umount(replay_file_system)
+			mount(replay_file_system)
+
+		pre_replay(replay_file_system)
+		check_pre_replay(replay_file_system)
+
+		foreach worker_node:
+			start_replay(worker_node, start_stamp)#they should start at the same time
+
+		wait_replay(worker_nodes)
+		foreach worker_node:
+			copy_results(worker_node)#copy to nfs home
+
+		roll_back_filesystem()

@@ -40,7 +40,7 @@ def replayer_is_running(addr):
     return out#if it is running, out it not emptu, so it's is true
 
 if __name__ == "__main__":
-    """ 
+    """
         We assume:
              worker node have had their clocks syncronized
              worker nodes share a remote distributed file system to get replay input data
@@ -70,36 +70,36 @@ if __name__ == "__main__":
             umount_client(addr, mount_point)
 
         #no clients should be mounted
-        clients_mount_status = [(addr, 
+        clients_mount_status = [(addr,
                                    check_mount(addr, mount_point))
                                    for addr in machines_addr]
         if any([up for (machine, up) in clients_mount_status]):
             sys.stderr.write("Error on umounting clients " +
-                              " ".join([str(status) 
+                              " ".join([str(status)
                                         for status in clients_mount_status])
                               + "\n")
             continue
-        
+
         for addr in machines_addr:
             sys.stdout.write(" ".join(["Mounting", addr, mount_point, "\n"]))
             mount_client(addr, mount_point)
         #now, we want everybody up
-        clients_mount_status = [ (addr, 
+        clients_mount_status = [ (addr,
                                    check_mount(addr, mount_point))
                                    for addr in machines_addr]
         if not all([up for (machine, up) in clients_mount_status]):
             sys.stderr.write("Error on mounting clients " +
-                              " ".join([str(status) 
+                              " ".join([str(status)
                                         for status in clients_mount_status])
                               + "\n")
             continue
 
         #executing pre-replay
         sys.stdout.write("executing pre_replay\n")
-        out, err, rcode = execute("python /home/thiagoepdc/experiments/nfs/do_pre_replay.py < /home/thiagoepdc/experiments/nfs/pre_replay_on_server_side.all", "espadarte")
+        out, err, rcode = execute("python /home/thiagoepdc/experiments/nfs/do_pre_replay.py < /home/thiagoepdc/experiments/nfs/pre_replay_on_server_side.all", "espadarte.lsd.ufcg.edu.br")
 
         sys.stdout.write("checking pre_replay\n")
-        out, err, rcode = execute("bash /home/thiagoepdc/experiments/nfs/do_pre_replay_check.sh /home/thiagoepdc/experiments/nfs/pre_replay_on_server_side.all", "espadarte")
+        out, err, rcode = execute("bash /home/thiagoepdc/experiments/nfs/do_pre_replay_check.sh /home/thiagoepdc/experiments/nfs/pre_replay_on_server_side.all", "espadarte.lsd.ufcg.edu.br")
         if not rcode == 0:
             sys.stderr.write("pre_replay didn't work\n")
 
@@ -124,6 +124,7 @@ if __name__ == "__main__":
 
         #wait for replay termination in all nodes
         while any([replayer_is_running(addr) for addr in machines_addr]):
+            sys.stdout.write("Waiting worker nodes job termination\n")
             time.sleep(30)
 
         for addr, r_input in machines_addr2replay_input.iteritems():
@@ -132,4 +133,4 @@ if __name__ == "__main__":
 """
         #rolling back file system modifications
         #sys.stdout.write("rolling back\n")
-        #execute("/home/thiagoepdc/experiments/nfs/rollbackfs.sh", "espadarte")"""
+        #execute("/home/thiagoepdc/experiments/nfs/rollbackfs.sh", "espadarte.lsd.ufcg.edu.br")"""

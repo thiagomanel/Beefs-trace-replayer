@@ -1,0 +1,5 @@
+we need to:
+
+- allocate a number of instances. type "./allocate_cloudgley.sh $the_number"
+- config no-pass. type "./config_cloudgley_ssh.sh"
+- config cloudgley fstabs. type "./config_mount_points.sh"

@@ -4,7 +4,7 @@
 
 if [ $# -ne 1 ]
 then
-	"Usage:" $0 "number_instances_to_allocate"
+	echo "Usage:" $0 "number_instances_to_allocate"
 	exit 1
 fi
 

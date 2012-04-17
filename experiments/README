@@ -3,9 +3,15 @@ coordinator is our do-the-job script. Before running it, configure worker nodes.
 Experiment uses input data and code stored and LSD nfs. To do so, we need to mount this file system at worker nodes.
 We also need to sync worker node clocks, worker nodes must to their job as a group.
 
-Each sample runs according to this sketch:
+So, before proper execution we need the following config steps
+	- allocate a number of instances. see "./allocate_cloudgley.sh $the_number"
+      	- config no-pass. see "./config_cloudgley_ssh.sh"
+        - config cloudgley fstabs. see "./config_cloudgley_input_nfs.sh"
+	- sync clocks. see "./sync_clock.sh
+	- gives some permissive permissions to output directory
+	- install 32 bits packages. see "install_libs32.sh"
 
-	sync_clock(worker_nodes)
+Each sample runs according to this sketch:
 
 	for i in range(num_samples)
 		foreach worker_node:

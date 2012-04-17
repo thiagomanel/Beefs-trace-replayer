@@ -23,4 +23,4 @@ secs_to_wait=`echo "${now} - ${deadline}" | bc`
 
 sleep $secs_to_wait
 
-$replayer_path $r_input > $r_out 2> $r_err
+$replayer_path $r_input > $r_out 2> $r_err &

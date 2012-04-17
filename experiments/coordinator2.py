@@ -2,24 +2,24 @@ import sys
 import os
 import subprocess
 import random
-import time
+from time import sleep
 
 EXPERIMENT_INPUT_DIR="/home/thiagoepdc/experiments/"
 
 def execute(remote_command, machine_addr, delay=None):
-    if machine_addr.startswith("150"):#cloudgley machine, for lan we use names
-        process = subprocess.Popen(" ".join(["ssh -i /home/patrickjem/cloudigley/.euca/patrick_key.private",
-                                         "root@"+machine_addr,
-                                          remote_command]), shell=True,
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.STDOUT)
-    else:
-        process = subprocess.Popen(" ".join(["ssh",
-                                         machine_addr,
-                                          remote_command]), shell=True,
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.STDOUT)
-
+    #if machine_addr.startswith("150"):#cloudgley machine, for lan we use names
+    #    process = subprocess.Popen(" ".join(["ssh -i /home/patrickjem/cloudigley/.euca/patrick_key.private",
+    #                                     "root@"+machine_addr,
+    #                                      remote_command]), shell=True,
+    #                            stdout=subprocess.PIPE,
+    #                            stderr=subprocess.STDOUT)
+    #else:
+    process = subprocess.Popen(" ".join(["ssh",
+	                                     machine_addr,
+                                             remote_command]),
+					shell=True,
+                                        stdout=subprocess.PIPE,
+                                        stderr=subprocess.STDOUT)
     out, err = process.communicate()
     return out, err, process.returncode
 
@@ -48,21 +48,22 @@ if __name__ == "__main__":
              worker nodes share a remote distributed file system to get replay input data
              communication to worker nodes is made by no-pass ssh
     """
-    if len(sys.argv) < 4:
-        sys.stderr.write("Usage: python coordinator.py num_samples machines_file mount_point\n")
+    if len(sys.argv) < 5:
+        sys.stderr.write("Usage: python coordinator.py num_samples machines_file trace_file mount_point\n")
         sys.exit(-1)
 
     num_samples = int(sys.argv[1])
-    with open(sys.argv[2]) as machine_addr_file:
-        machines_addr2replay_input = {}
-        for line in machine_addr_file:
-            addr, r_input = line.split()
-            machines_addr2replay_input[addr.strip()] = r_input.strip()
-        machines_addr = machines_addr2replay_input.keys()
+    with open(sys.argv[2]) as machines:
+        with open(sys.argv[3]) as traces:
+            machines_addr2replay_input = {}
+            for addr in machines:
+                trace_line = traces.readline()
+                machines_addr2replay_input[addr.strip()] = trace_line.strip()
+            machines_addr = machines_addr2replay_input.keys()
 
     sys.stdout.write(" ".join(["loaded machines", str(machines_addr), "\n"]))
 
-    mount_point = sys.argv[3]
+    mount_point = sys.argv[4]
 
     for sample in range(num_samples):
         sys.stdout.write("Running sample " +  str(sample) + "\n")
@@ -124,9 +125,10 @@ if __name__ == "__main__":
             out_file = base_out + ".replay.out"
             err_file = base_out + ".replay.err"
 
-            execute(" ".join(["bash " + wait_and_replay,
-		              beefs_replayer,
+            execute(" ".join(["bash",
+                              wait_and_replay,
                               str(deadline),
+		              beefs_replayer,
                               r_input, out_file, err_file,
                               "&"]),
                            addr)
@@ -134,11 +136,12 @@ if __name__ == "__main__":
         #wait for replay termination in all nodes
         while any([replayer_is_running(addr) for addr in machines_addr]):
             sys.stdout.write("Waiting worker nodes job termination\n")
-            time.sleep(30)
+            sleep(30)
 
         for addr, r_input in machines_addr2replay_input.iteritems():
             sys.stdout.write("collection results " + addr + "\n")
-            execute("cp /tmp/*replay* " + output_dir, addr)
+            out, err, rcode = execute("mv /tmp/*replay* " + output_dir, addr)
+            print out, err, rcode
 """
         #rolling back file system modifications
         #sys.stdout.write("rolling back\n")

@@ -28,9 +28,9 @@ def find_timestamps(replay_dir, created_files, workflow_lines):
                 to_find.remove(to_replay_fullpath)
 
     return result
-            
+
 def find_file_size(join_data_file, path_and_timestamps):
-    """ 
+    """
         join_data_lines is the input data to clean_trace.py
         path_and_timestamps is a list of tuple as
         [(path1, timestamp2) ... (pathn, timestampn)] where timestamp
@@ -63,7 +63,7 @@ def find_file_size(join_data_file, path_and_timestamps):
             return None
 
     join_calls_with_size = ["sys_read", "sys_write", "sys_llseek"]
-    timestamp_to_find = [timestamp(stamp_str) 
+    timestamp_to_find = [timestamp(stamp_str)
 				 for stamp_str in path_and_timestamps.values()
                                   if stamp_str]#excluding stamps equals to None
 
@@ -125,6 +125,8 @@ def build_namespace(replay_dir, workflow_lines):#FIXME TEST-IT
             if is_dir(child):
                 if not os.path.exists(_parent_path):
                     created_dirs.add(_parent_path)
+                child_path = replay_dir + fs_object(child)
+                created_dirs.add(child_path)
             else:
                 filepath = replay_dir + fs_object(child)
                 if not os.path.exists(_parent_path):
@@ -187,7 +189,7 @@ if __name__ == "__main__":
                     created_dirs.add(tokens[0])
                 elif ftype == "f":
                     created_files.add(tokens[0])
-       
+
         with open(sys.argv[5], 'r') as workflow_file:
             workflow_file.readline()#excluding header
             workflow_lines = workflow_file.readlines()

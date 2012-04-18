@@ -1,4 +1,5 @@
 import unittest
+import os
 from pre_replay import *
 
 class TestTraceWalk(unittest.TestCase):
@@ -33,7 +34,7 @@ class TestTraceWalk(unittest.TestCase):
         file2timestamps = find_timestamps("", [
                           "/ok_stat/__SummaryInfo__/cpu_idle.rrd",
                           "/ok_read/1079/mounts",
-                          "/ok_write/1079/mounts", 
+                          "/ok_write/1079/mounts",
                           "/ok_llseek/R-ex/file"],
                         lines)
 
@@ -53,7 +54,7 @@ class TestTraceWalk(unittest.TestCase):
                  "4 1 3 1 5 1159 2364 32311 (eclipse) unlink 1318539134533662-8118 /error_unlink/ourgrid/debug_no_store_hash_fn_imps.hpp1 -1",
                  "5 1 4 1 6 65534 1856 1867 (gmetad) stat 1319227151896626-113 /ok_stat/__SummaryInfo__/cpu_idle.rrd 0",
                  "6 1 5 1 7 65534 1856 1867 (gmetad) stat 1319227151896626-113 /error_stat/__SummaryInfo__/cpu_idle.rrd -1",
-                 "7 1 6 1 8 0 1079 921 (automount) read 1319227058854877-191 /ok_read/1079/mounts 5 1024 1024", 
+                 "7 1 6 1 8 0 1079 921 (automount) read 1319227058854877-191 /ok_read/1079/mounts 5 1024 1024",
                  "8 1 7 1 9 0 1079 921 (automount) read 1319227058854877-191 /error_read/1079/mounts 5 1024 -3",
                  "9 1 8 1 10 0 1079 921 (automount) write 1319227058854877-191 /ok_write/1079/mounts 5 1024 1024",
                  "10 1 9 1 11 0 1079 921 (automount) write 1319227058854877-191 /error_write/1079/mounts 5 1024 -3",
@@ -68,7 +69,20 @@ class TestTraceWalk(unittest.TestCase):
 
         #test if a path cannot be shown twice
         to_create_dirs, to_create_files = build_namespace("/tmp/replay", lines)
-        self.assertTrue("/ok_rmdir/lib/" in to_create_dirs)
+        self.assertTrue("/ok_rmdir/lib" in to_create_dirs)
+
+    def test_create_dir_on_open(self):
+        # it was due a bug on replay
+        if os.path.exists("/tmp/home/tiagohsl/.java/"):
+            os.removedirs("/tmp/home/tiagohsl/.java/")
+        os.makedirs("/tmp/home/tiagohsl/.java/")
+
+        lines = ["1 0 - 0 - 1007 19656 19834 (eclipse) open 1319217018156867-563 /home/tiagohsl/.java/.userPrefs/.user.lock.tiagohsl 65 384 108"]
+        to_create_dirs, to_create_files = build_namespace("/tmp", lines)
+        print to_create_dirs, to_create_files
+        self.assertTrue("/tmp/home/tiagohsl/.java/.userPrefs" in to_create_dirs)
+
+        os.removedirs("/tmp/home/tiagohsl/.java/")
 
 if __name__ == '__main__':
     unittest.main()

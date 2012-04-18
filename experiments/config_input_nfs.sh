@@ -13,7 +13,3 @@ instance_ip=$1
 m_point="150.165.85.161:/home /home nfs defaults 0 0"
 ssh root@$instance_ip "echo $m_point >> /etc/fstab"
 ssh root@$instance_ip "mount -a"
-
-replay_m_point="150.165.85.239:/local/nfs_manel /tmp/home nfs defaults 0 0"
-ssh root@$instance_ip "mkdir /tmp/home"
-ssh root@$instance_ip "echo $replay_m_point >> /etc/fstab"

@@ -108,6 +108,8 @@ if __name__ == "__main__":
         out, err, rcode = execute("bash " + check_pre_replay_path + " " + pre_replay_input, "espadarte.lsd.ufcg.edu.br")
         if not rcode == 0:
             sys.stderr.write("pre_replay didn't work\n")
+            sys.stderr.write("pre_replay out " + str(out) + "\n")
+            sys.stderr.write("pre_replay err " + str(err) + "\n")
 
         #executing replay
         now_epoch_secs = time(machines_addr[0])

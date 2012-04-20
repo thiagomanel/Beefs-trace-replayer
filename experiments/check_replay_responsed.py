@@ -25,12 +25,17 @@ if __name__ == "__main__":
             r_input.readline()#it skips total lines descriptor
             r_output.readline()#it skips fake root line
             for in_line in r_input:
+                out_line = r_output.readline()
                 if is_write(in_line) or is_read(in_line):
-                    out_line = r_output.readline()
                     r_expected = expected(out_line)
                     r_actual = actual(out_line)
-                    line_id = in_line.split()[0]
+                    in_tokens = in_line.split()
+                    line_id = in_tokens[0]
+                    rw_path = in_tokens[-4]
                     sys.stdout.write(" ".join([str(r_expected == r_actual),
                                         line_id,
                                         r_expected,
-                                        r_actual]) + "\n")
+                                        r_actual,
+                                        rw_path,
+                                        "< " + in_line.strip() + " >",
+                                        "# " + out_line.strip() + " #"]) + "\n")

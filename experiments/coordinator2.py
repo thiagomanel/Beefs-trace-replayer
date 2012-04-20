@@ -144,7 +144,7 @@ if __name__ == "__main__":
             sys.stdout.write("collection results " + addr + "\n")
             out, err, rcode = execute("mv /tmp/*replay* " + output_dir, addr)
             print out, err, rcode
-"""
+
         #rolling back file system modifications
-        #sys.stdout.write("rolling back\n")
-        #execute(EXPERIMENT_INPUT_DIR + "/nfs/rollbackfs.sh", "espadarte.lsd.ufcg.edu.br")"""
+        sys.stdout.write("rolling back\n")
+        execute(EXPERIMENT_INPUT_DIR + "/nfs/rollbackfs.sh", "espadarte.lsd.ufcg.edu.br")

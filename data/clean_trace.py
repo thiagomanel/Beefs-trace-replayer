@@ -46,7 +46,7 @@ def syscall_fullpath(tokens):
     elif syscall in ["unlink", "mkdir", "rmdir", "stat", "llseek", "fstat"]:
         return pathcall_fullpath(tokens)
     elif syscall in ["open"]:
-         return tokens[5] 
+         return tokens[6] 
     raise Exception("It is not possible to get full path from " + str(tokens)) 
 
 #FIXME BOTH FD AND FULLPATH ARE AT INDEX 6 ?

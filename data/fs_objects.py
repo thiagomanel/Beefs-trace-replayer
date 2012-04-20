@@ -13,7 +13,7 @@ def success(call_tokens):#FIXME move this to clean_trace.py module
     return_value = int(call_tokens[-1])
     if return_value < 0:
         return False
-    return True 
+    return True
 
 def fullpath(call_tokens):
     return call_tokens[6]#FIXME move this to clean_trace.py module
@@ -28,11 +28,11 @@ def dirs(fullpath):
 
 def accessed_and_created(tokens):
     """
-        for a tokenized workflow line, extract the collection of touched and 
-        created diretories and files as a 4-tuple of lists 
+        for a tokenized workflow line, extract the collection of touched and
+        created diretories and files as a 4-tuple of lists
         ([touched_dirs], [touched_files], [created_dirs], [created_files])
     """
-    #we do not handle close and fstat because its information was already processed on the 
+    #we do not handle close and fstat because its information was already processed on the
     #associated open call
     if success(tokens):
         _fullpath = fullpath(tokens)
@@ -49,8 +49,10 @@ def accessed_and_created(tokens):
         elif _call == "open":
             parent = parent_path(_fullpath)
             if open_to_create(tokens):
+                #print "acessed and create open to create path=", tokens
                 return (dirs(parent), [], [], [_fullpath])
             else:
+                #print "acessed and create open NOT to create path=", tokens
                 return (dirs(parent), [_fullpath], [], [])
 
     return ([], [], [], [])
@@ -80,14 +82,39 @@ def fs_tree(workflow_lines):
     def syscall(line_id):
         w_line = w_lines_by_id[line_id]
         return WorkflowLine(w_line.split()).syscall
-                    
+
     parents_to_children = {}
     created_paths = set()
 
-    for node_and_child in bfs(graph(workflow_lines), 1):
+    the_graph = graph(workflow_lines)
+    #print "the_graph before", the_graph
+
+    #FIMXE this code does not add fake root to orphan nodes. so, bfs does not work properly.
+    #so, it is a hack to add the fake root
+    num_nodes = len(workflow_lines)
+    orphan_nodes = set(range(1, num_nodes + 1))#at the begin we think everyone is a orphan
+
+    for father, children in the_graph.iteritems():
+        for child in children:
+            if child in orphan_nodes:
+                orphan_nodes.remove(child)
+
+    #adding fake root
+    fake_root_id = 0
+    the_graph[fake_root_id] = []
+    for orphan in orphan_nodes:
+        the_graph[fake_root_id].append(orphan)
+
+    #print "the_graph after", the_graph
+
+    for node_and_child in bfs(the_graph, 0):
+        #print "node_and_child", node_and_child
         child_id = int(node_and_child[1])
+        if (child_id == 0):
+            continue#argg
         node_syscall = syscall(child_id)
         ac_dirs, ac_files, c_dirs, c_files = accessed_and_created(node_syscall.split())
+        #print "ac_dirs, ac_files, c_dirs, c_files", ac_dirs, ac_files, c_dirs, c_files
 
         for c_dir in c_dirs:
             created_paths.add(c_dir)
@@ -109,7 +136,7 @@ def fs_tree(workflow_lines):
                     parents_to_children[(parent, "d")] = set()
                 parents_to_children[(parent, "d")].add((a_file, "f"))
 
-    #accessed_and_created method is not reliable, for example 
+    #accessed_and_created method is not reliable, for example
     #it is possible to directories be opened and closed, also llseeked
     #for this reason, ac_files can return directories, to get over it
     #we make a second pass to see if an acessed file was also identified as

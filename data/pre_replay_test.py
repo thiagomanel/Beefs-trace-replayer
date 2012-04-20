@@ -73,16 +73,25 @@ class TestTraceWalk(unittest.TestCase):
 
     def test_create_dir_on_open(self):
         # it was due a bug on replay
-        if os.path.exists("/tmp/home/tiagohsl/.java/"):
-            os.removedirs("/tmp/home/tiagohsl/.java/")
-        os.makedirs("/tmp/home/tiagohsl/.java/")
+        if os.path.exists("/tmp/test/home/tiagohsl/.java/"):
+            os.removedirs("/tmp/test/home/tiagohsl/.java/")
+        os.makedirs("/tmp/test/home/tiagohsl/.java/")
 
-        lines = ["1 0 - 0 - 1007 19656 19834 (eclipse) open 1319217018156867-563 /home/tiagohsl/.java/.userPrefs/.user.lock.tiagohsl 65 384 108"]
-        to_create_dirs, to_create_files = build_namespace("/tmp", lines)
+        lines = [
+                 "1 0 - 0 - 1007 19656 19834 (eclipse) open 1319217018156867-563 /home/tiagohsl/.java/.userPrefs/.user.lock.tiagohsl 65 384 108",
+                 "2 0 - 0 - 1007 23211 23221 (chromium-browse) open 1319217020939991-757 /home/tiagohsl/.config/chromium/Default/Cookies-journal 32834 420 79"]
+
+        to_create_dirs, to_create_files = build_namespace("/tmp/test", lines)
         print to_create_dirs, to_create_files
-        self.assertTrue("/tmp/home/tiagohsl/.java/.userPrefs" in to_create_dirs)
+        self.assertTrue("/tmp/test/home/tiagohsl/.java/.userPrefs" in to_create_dirs)
+        self.assertTrue("/tmp/test/home/tiagohsl/.config" in to_create_dirs)
+        self.assertTrue("/tmp/test/home/tiagohsl/.config/chromium" in to_create_dirs)
+        self.assertTrue("/tmp/test/home/tiagohsl/.config/chromium/Default" in to_create_dirs)
 
-        os.removedirs("/tmp/home/tiagohsl/.java/")
+        os.rmdir("/tmp/test/home/tiagohsl/.java/")
+        os.rmdir("/tmp/test/home/tiagohsl/")
+        os.rmdir("/tmp/test/home")
+        os.rmdir("/tmp/test/")
 
 if __name__ == '__main__':
     unittest.main()

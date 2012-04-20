@@ -39,5 +39,5 @@ fi
 for machine in $machines
 do
     filename="2011_10_21-${machine}"
-    python pre_replay.py $replay_dir -f $replay_input_dir/$filename.clean.cut.pidfid_order > $output_dir/$filename.clean.cut.pidfid_order.to_create 2> $output_dir/$filename.clean.cut.pidfid_order.to_create.err
+    python ../pre_replay.py $replay_dir -f $replay_input_dir/$filename.clean.cut.pidfid_order > $output_dir/$filename.clean.cut.pidfid_order.to_create 2> $output_dir/$filename.clean.cut.pidfid_order.to_create.err
 done

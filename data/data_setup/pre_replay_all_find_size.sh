@@ -8,11 +8,11 @@
 if [ `hostname` == "rei" ]
 then
 	processed_dir="/local/tracer/processed/"
-	machines="pepino  pitu  roncador  sargento  stuart  traira  viola  surubim  pimpim"
+	machines="abelhinha  charroco  cherne mulato  mussum"
 elif [ `hostname` == "linguado" ]
 then
-	raw_data_dir="/mnt/backup_storage3/processed/"
-	machines="pepino  pitu  roncador  traira  viola"
+	processed_dir="/mnt/backup_storage3/processed/"
+	machines="pepino  pitu  roncador  sargento  surubim  traira"
 else
 	echo "We support linguado and rei only"
 	exit 1
@@ -25,19 +25,13 @@ then
 fi
 
 replay_input_dir=$1
-#moint point storing fs to replay
+#moint point storing fs to replay(in the case of find_size it does not need to be mounted)
 replay_dir=$2
 output_dir=$3
 
 if [ ! -d $replay_input_dir ]
 then
 	echo "traces_input_dir" $replay_input_dir "does not exist"
-	exit 1
-fi
-
-if [ ! -d $replay_dir ]
-then
-	echo "replay_dir" $replay_dir "does not exist"
 	exit 1
 fi
 
@@ -50,6 +44,5 @@ fi
 for machine in $machines
 do
     filename="2011_10_21-${machine}"
-    python ../pre_replay.py $replay_dir -f $replay_input_dir/$filename.clean.cut.pidfid_order > $output_dir/$filename.clean.cut.pidfid_order.to_create 2> $output_dir/$filename.clean.cut.pidfid_order.to_create.err
-    python ../pre_replay.py $replay_dir -s $filename.clean.cut.pidfid_order.to_create $processed_dir/$machine/20111021/$filename.join $replay_input_dir/$filename.clean.cut.pidfid_order > $output_dir/$filename.clean.cut.pidfid_order.pre_replay 2> $output_dir/$filename.clean.cut.pidfid_order.pre_replay.err
+    python pre_replay.py $replay_dir -s $output_dir/$filename.clean.cut.pidfid_order.to_create $processed_dir/$machine/20111021/$filename.join $replay_input_dir/$filename.clean.cut.pidfid_order > $output_dir/$filename.clean.cut.pidfid_order.pre_replay 2> $output_dir/$filename.clean.cut.pidfid_order.pre_replay.err
 done

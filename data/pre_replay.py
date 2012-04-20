@@ -113,6 +113,7 @@ def build_namespace(replay_dir, workflow_lines):#FIXME TEST-IT
         return to_create[1]
 
     _fs_tree = fs_tree(workflow_lines)
+    #print "_fs_tree", _fs_tree
 
     created_dirs = set()#we want to list them
     created_files = set()

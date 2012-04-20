@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "../pre_replay.py", line 184, in <module>
+    with open(sys.argv[3]) as namespace_to_create:
+IOError: [Errno 2] No such file or directory: '/home/thiagoepdc//data_package/pre_replay_results/2011_10_21-surubim.clean.cut.pidfid_order.to_create'

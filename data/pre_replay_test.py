@@ -28,12 +28,28 @@ class TestTraceWalk(unittest.TestCase):
                  WorkflowLine(14, [13], [15], CleanCall("65534", "1856", "1856", "(gmetad)", "mkdir", "1318615768915818-17", ["/error_mkdir/rrds/__SummaryInfo__", "493"], "-17")),
                  WorkflowLine(15, [14], [16], CleanCall("0", "940", "940", "(tar)", "open", "1319227153693893-147", ["/ok_open/lib/euc_jp.pyc", "2", "384"], "5")),
                  WorkflowLine(16, [15], [17], CleanCall("0", "940", "940", "(tar)", "open", "1319227153693893-147", ["/create/lib/euc_jp.pyc", "66", "384"], "5")),#open to create
-                 WorkflowLine(17, [16], [], CleanCall("940", "940", "(tar)", "open", "1319227153693893-147", ["/error_open/lib/euc_jp.pyc", "32961", "384"], "-3"))
+                 WorkflowLine(17, [16], [], CleanCall("0", "940", "940", "(tar)", "open", "1319227153693893-147", ["/error_open/lib/euc_jp.pyc", "32961", "384"], "-3"))
                 ]
-
         #test if a path cannot be shown twice
-        to_create_dirs, to_create_files = build_namespace("/tmp/replay", lines)
-        self.assertTrue("/ok_rmdir/lib" in to_create_dirs)
+        replay_dir = "/tmp/replay"
+        to_create_dirs, to_create_files = build_namespace(replay_dir, lines)
+        #print to_create_dirs, to_create_files
+
+        self.assertTrue(replay_dir + "/ok_rmdir/lib/gp_hash_table_map_" in to_create_dirs)
+        self.assertTrue(replay_dir + "/ok_rmdir/lib" in to_create_dirs)
+        self.assertTrue(replay_dir + "/ok_rmdir" in to_create_dirs)
+        self.assertFalse(replay_dir + "/error_rmdir/lib/gp_hash_table_map_2" in to_create_dirs)
+        self.assertFalse(replay_dir + "/error_rmdir/lib" in to_create_dirs)
+        self.assertFalse(replay_dir + "/error_rmdir" in to_create_dirs)
+
+        self.assertTrue(replay_dir + "/ok_unlink/ourgrid" in to_create_dirs)
+        self.assertTrue(replay_dir + "/ok_unlink" in to_create_dirs)
+        self.assertTrue(replay_dir + "/ok_unlink/ourgrid/debug_no_store_hash_fn_imps.hpp" in to_create_files)
+        self.assertFalse(replay_dir + "/error_unlink/ourgrid/debug_no_store_hash_fn_imps.hpp1" in to_create_files)
+        self.assertFalse(replay_dir + "/error_unlink/ourgrid" in to_create_dirs)
+        self.assertFalse(replay_dir + "/error_unlink" in to_create_dirs)
+        #FIXME add assert for all of lines list
+
 
     def test_create_dir_on_open(self):
         # it was due a bug on replay
@@ -42,8 +58,8 @@ class TestTraceWalk(unittest.TestCase):
         os.makedirs("/tmp/test/home/tiagohsl/.java/")
 
         lines = [
-                 "1 0 - 0 - 1007 19656 19834 (eclipse) open 1319217018156867-563 /home/tiagohsl/.java/.userPrefs/.user.lock.tiagohsl 65 384 108",
-                 "2 0 - 0 - 1007 23211 23221 (chromium-browse) open 1319217020939991-757 /home/tiagohsl/.config/chromium/Default/Cookies-journal 32834 420 79"]
+                 WorkflowLine(1, [], [], CleanCall("1007", "19656", "19834", "(eclipse)", "open", "1319217018156867-563",["/home/tiagohsl/.java/.userPrefs/.user.lock.tiagohsl", "65", "384"], "108")),
+                 WorkflowLine(2, [], [], CleanCall("1007", "23211", "23221", "(chromium-browse)", "open", "1319217020939991-757", ["/home/tiagohsl/.config/chromium/Default/Cookies-journal", "32834", "420"], "79"))]
 
         to_create_dirs, to_create_files = build_namespace("/tmp/test", lines)
         print to_create_dirs, to_create_files

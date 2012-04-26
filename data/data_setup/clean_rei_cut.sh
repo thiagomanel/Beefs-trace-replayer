@@ -12,5 +12,5 @@ processed_dir="/local/tracer/processed"
 for machine in $machines
 do
     #from Fri Oct 21 14:11:00 BRT 2011 to Fri Oct 21 14:20:00 BRT 2011
-    python ../clean_trace.py 1319217000000000 1319217600000000 < $processed_dir/$machine/20111021/2011_10_21-$machine > $processed_dir/$machine/20111021/2011_10_21-$machine.clean.cut 2> $processed_dir/$machine/20111021/2011_10_21-$machine.clean.cut.err
+    python ../clean_trace.py 1319217000000000 1319217600000000 < $processed_dir/$machine/20111021/2011_10_21-$machine.join > $processed_dir/$machine/20111021/2011_10_21-$machine.clean.cut 2> $processed_dir/$machine/20111021/2011_10_21-$machine.clean.cut.err
 done

@@ -1,22 +1,13 @@
 from clean_trace import *
 from fileutil import *
-from workflow2graph import *
-from workflow_objects import *
+from workflow import *
 from itertools import *
+from bfs import *
 
 #TODO: after using this module do we guarantee all file system hierarchy was created ? So, replayer
 	#can run fine ?
-def open_to_create(tokens):
-    return CREATION_FLAGS.O_CREAT in creation_flags(open_flags(tokens))
-
-def success(call_tokens):#FIXME move this to clean_trace.py module
-    return_value = int(call_tokens[-1])
-    if return_value < 0:
-        return False
-    return True
-
-def fullpath(call_tokens):
-    return call_tokens[6]#FIXME move this to clean_trace.py module
+def open_to_create(clean_call):
+    return CREATION_FLAGS.O_CREAT in creation_flags(open_flags(clean_call))
 
 def dirs(fullpath):
     _dirs = []
@@ -26,18 +17,22 @@ def dirs(fullpath):
         _dirs.extend(dirs(fullpath[:last_slash_index]))
     return _dirs
 
-def accessed_and_created(tokens):
+def accessed_and_created(clean_call):
     """
-        for a tokenized workflow line, extract the collection of touched and
+        for a CleanCall instance, extract the collection of touched and
         created diretories and files as a 4-tuple of lists
         ([touched_dirs], [touched_files], [created_dirs], [created_files])
     """
+    def success(clean_call):
+        return int(clean_call.rvalue) >= 0
+
     #we do not handle close and fstat because its information was already processed on the
     #associated open call
-    if success(tokens):
-        _fullpath = fullpath(tokens)
-        _call = call(tokens)
-        if (_call == "unlink" or _call == "stat" or _call == "read" or _call == "write" or _call == "llseek"):
+    if success(clean_call):
+        _fullpath = clean_call.fullpath()
+        _call = clean_call.call
+        if _call == "unlink" or _call == "stat" or _call == "read" or \
+            _call == "write" or _call == "llseek":
             #FIXME we can make basename and dirs to manage this
             parent = parent_path(_fullpath)
             return (dirs(parent), [_fullpath], [], [])
@@ -48,21 +43,16 @@ def accessed_and_created(tokens):
             return (dirs(parent), [], [_fullpath], [])
         elif _call == "open":
             parent = parent_path(_fullpath)
-            if open_to_create(tokens):
-                #print "acessed and create open to create path=", tokens
+            if open_to_create(clean_call):
                 return (dirs(parent), [], [], [_fullpath])
             else:
-                #print "acessed and create open NOT to create path=", tokens
                 return (dirs(parent), [_fullpath], [], [])
 
     return ([], [], [], [])
 
 def fs_tree(workflow_lines):
     """ gives the fs tree as view in workflow begin """
-    w_lines_by_id = dict(
-                          [ (WorkflowLine(w_line.split())._id,  w_line)
-                           for w_line in workflow_lines]
-                         )
+    w_lines_by_id = dict([(w_line._id,  w_line) for w_line in workflow_lines])
 
     def path_graph(dirs):
         """ ["/a/b/c", "/a/b", "/a"] -> {"/a":"/a/b", "/a/b":"/a/b/c"} """
@@ -79,15 +69,14 @@ def fs_tree(workflow_lines):
                 _graph[parent] = child
         return _graph
 
-    def syscall(line_id):
+    def clean_call(line_id):
         w_line = w_lines_by_id[line_id]
-        return WorkflowLine(w_line.split()).syscall
+        return w_line.clean_call
 
     parents_to_children = {}
     created_paths = set()
 
     the_graph = graph(workflow_lines)
-    #print "the_graph before", the_graph
 
     #FIMXE this code does not add fake root to orphan nodes. so, bfs does not work properly.
     #so, it is a hack to add the fake root
@@ -105,16 +94,12 @@ def fs_tree(workflow_lines):
     for orphan in orphan_nodes:
         the_graph[fake_root_id].append(orphan)
 
-    #print "the_graph after", the_graph
-
     for node_and_child in bfs(the_graph, 0):
-        #print "node_and_child", node_and_child
         child_id = int(node_and_child[1])
         if (child_id == 0):
             continue#argg
-        node_syscall = syscall(child_id)
-        ac_dirs, ac_files, c_dirs, c_files = accessed_and_created(node_syscall.split())
-        #print "ac_dirs, ac_files, c_dirs, c_files", ac_dirs, ac_files, c_dirs, c_files
+        node_clean_call = clean_call(child_id)
+        ac_dirs, ac_files, c_dirs, c_files = accessed_and_created(node_clean_call)
 
         for c_dir in c_dirs:
             created_paths.add(c_dir)

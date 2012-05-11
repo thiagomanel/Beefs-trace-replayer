@@ -21,34 +21,21 @@ class WorkflowLine:
         self.parents = parents
         self.children = children
         self.clean_call = clean_call
-"""
-    @classmethod
-    def from_str(cls, _str):
-        tokens = _str.split()
-        #our workflow format is shit ! this "-" when empty parents or children is BS
-        self._id = int(tokens[0])
-        self.n_parents = int(tokens[1])
 
-        if self.n_parents:
-            self.parents = [int(parent) for parent in tokens[2:2 + self.n_parents]]
-        else:
-            self.parents = []
+    def __str__(self):
+        def list2str(_list):
+            if _list:
+                return str(_list).replace("[", "").replace("]", "").replace(",", "")
+            else:
+                return "-"
 
-        if self.n_parents > 1:
-            n_children_pos = 2 + self.n_parents
-        else:
-            n_children_pos = 3
-
-        self.n_children = int(tokens[n_children_pos])
-        if self.n_children:
-            self.children = [int(child) for child in tokens[n_children_pos + 1:n_children_pos + 1 + self.n_children]]
-            syscall_index = n_children_pos + 1 + self.n_children
-        else:
-            self.children = []
-            syscall_index = n_children_pos + 2
-
-        self.syscall = " ".join(tokens[syscall_index:])"""
-
+        return " ".join([str(self._id)] +
+                        [str(len(self.parents))] + 
+                        [list2str(self.parents)] + 
+                        [str(len(self.children))] + 
+                        [list2str(self.children)] + 
+                        [str(self.clean_call)]
+                       )
 
 def graph(workflow_lines, bottom_up=False):
     """ 

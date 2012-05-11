@@ -2,8 +2,6 @@
 import sys
 
 HOME = "/home"
-#"sys_lstat",
-#sys_lstat64
 
 class CleanCall():
 

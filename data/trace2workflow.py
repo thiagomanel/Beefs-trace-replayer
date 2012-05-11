@@ -17,7 +17,12 @@ def trace_line2workflowstr(line):
     return " ".join([str(line[0])] + [str(n_parents)] + [list2str(parents)] + [str(n_children)] + [list2str(children)] + map(str, syscall)) 
 
 if __name__ == "__main__":
-    #python trace2workflow.py < file.clean > file.pidfid_order
+    """
+       It converts from a cleaned data file to workflow data. To do so, input is ordered
+       using pid fid order and fs dependency algorithms.
+
+       Usage: python trace2workflow.py < file.clean > file.pidfid_order
+    """
     #FIXME do not print pidfid order result, pass them to fsdependency instead
     lines = sys.stdin.readlines()
     pidfid_lines = sorted(order_by_pidfid(lines), key=lambda line: line[0])#sort by _id

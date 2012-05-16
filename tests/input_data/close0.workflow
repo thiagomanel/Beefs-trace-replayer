@@ -1,11 +1,9 @@
 [
     {
         "args": [
-            "workflow_samples/workflow_single_command_open", 
-            "34816", 
-            "0"
+            "7"
         ], 
-        "call": "open", 
+        "call": "close", 
         "caller": {
             "exec": "(udisks-daemon)", 
             "pid": 2097, 
@@ -15,10 +13,10 @@
         "children": [], 
         "id": 1, 
         "parents": [], 
-        "rvalue": 7, 
+        "rvalue": 0, 
         "stamp": {
-            "begin": 1318539063003892.0, 
-            "elapsed": 2505
+            "begin": 1318539063006403.0, 
+            "elapsed": 37
         }
     }
 ]

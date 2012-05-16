@@ -1,7 +1,7 @@
 [
     {
         "args": [
-            "workflow_samples/workflow_single_command_open", 
+            "/dev/sdb", 
             "34816", 
             "0"
         ], 

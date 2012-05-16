@@ -1,10 +1,9 @@
 [
     {
         "args": [
-            "/tmp/jdt-images", 
-            "511"
+            "/local/thiagoepdc/workspace_beefs/.metadata/.plugins/org.eclipse.jdt.ui/jdt-images/1.png"
         ], 
-        "call": "mkdir", 
+        "call": "unlink", 
         "caller": {
             "exec": "(eclipse)", 
             "pid": 2364, 
@@ -16,8 +15,8 @@
         "parents": [], 
         "rvalue": 0, 
         "stamp": {
-            "begin": 1318539134542649.0, 
-            "elapsed": 479
+            "begin": 1318539134533662.0, 
+            "elapsed": 8118
         }
     }
 ]

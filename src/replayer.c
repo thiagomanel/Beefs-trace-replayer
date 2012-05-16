@@ -104,29 +104,6 @@ Workflow_element* get_parent (Workflow_element* child, int parent_index) {
 	return element(workload, parent_id);
 }
 
-void w_element_info(Workflow_element* element) {
-	printf("w_element id=%d n_children=%d n_parent=%d produced=%d consumed=%d\n",
-				element->id, element->n_children, element->n_parents, element->produced,
-				element->consumed);
-}
-
-void print_w_element (Workflow_element* element) {
-
-	printf ("Info\t");
-	w_element_info(element);
-
-	int i;
-	for (i = 0; i < element->n_children; i++) {
-		printf ("child_i=%d id=%d info=\t", i, element->children_ids[i]);
-		w_element_info (get_child (element, i));
-	}
-
-	for (i = 0; i < element->n_parents; i++) {
-		printf ("parent_i=%d id=%d info=\t", i, element->parents_ids[i]);
-		w_element_info (get_parent(element, i));
-	}
-}
-
 int is_child (Workflow_element* parent, Workflow_element* child) {
 	int i;
 	for (i = 0; i < parent->n_children; i++) {
@@ -152,16 +129,6 @@ struct frontier {//we can use a generic list instead of this struct
 	struct workflow_element* w_element;
 	struct frontier* next;
 };
-
-void print_frontier (struct frontier* frontier) {
-
-	printf("frontier_ptr=%p\n", frontier);
-	if (frontier != NULL) {
-		printf ("frontier->element=%p frontier->next=%p\n", frontier->w_element,
-			frontier->next);
-		print_w_element(frontier->w_element);
-	}
-}
 
 typedef struct _sbuffs_t {
 

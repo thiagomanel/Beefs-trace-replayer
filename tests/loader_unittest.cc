@@ -284,7 +284,10 @@ TEST(LoaderTest, LoadReadCall) {
 }
 
 TEST(LoaderTest, LoadLLseekCall) {
-//1 0 - 1 2 1159 2364 2364 (eclipse) llseek 1318539072857083-113 /local/thiagoepdc/eclipse/configuration/org.eclipse.core.runtime/.mainData.4 30 0 931001 SEEK_SET 931001";
+//1 0 - 1 2 1159 2364 2364 (eclipse) llseek 1318539072857083-113
+//	/local/thiagoepdc/eclipse/configuration/org.eclipse.core.runtime/.mainData.4
+//	30 0 931001 SEEK_SET 931001";
+
 	Workflow_element* w_element = load_and_basic_test("tests/input_data/llseek16.workflow");
 	struct replay_command* loaded_cmd = w_element->command;
 
@@ -716,6 +719,29 @@ TEST(ReplayTest, sequencial_open_read_close_same_file) {
 
 	EXPECT_EQ (4, actual_result->replayed_commands);//boostrap + 3
 	EXPECT_EQ (4, actual_result->produced_commands);//boostrap + 2
+	fclose(input_f);
+}
+
+TEST(ReplayTest, open_seek_close) {
+//3
+//1 0 - 0 - 0 2097 2097 (udisks-daemon) open 1318539063003892-2505 workflow_samples/workflow_open_seek_close 34816 0 7
+//2 1 3 1 1 0 2097 2097 (udisks-daemon) read 1318539063004000-329 workflow_samples/workflow_open_seek_close 7 0 0 SEEK_CUR 0
+//3 1 2 0 - 0 2097 2097 (udisks-daemon) close 1318539063006403-37 7 0
+	Replay_workload* rep_wld
+		= (Replay_workload*) malloc (sizeof (Replay_workload));
+	FILE * input_f = fopen("tests/replay_input/workflow_samples/workflow_sequencial_open_seek_close_same_file", "r");
+	load(rep_wld, input_f);
+
+	Replay_result* actual_result = replay (rep_wld);
+
+	EXPECT_EQ (4, actual_result->replayed_commands);
+	EXPECT_EQ (4, actual_result->produced_commands);
+
+	command_replay_result llseek_result = actual_result->cmds_replay_result[1];
+	command_replay_result close_result = actual_result->cmds_replay_result[2];
+	EXPECT_EQ (0, llseek_result.actual_rvalue);
+	EXPECT_EQ (0, close_result.actual_rvalue);
+
 	fclose(input_f);
 }
 

@@ -62,6 +62,23 @@ static struct lookuptab {
 
 };
 
+static struct lookupwhence {
+	char *string;
+	int whence;
+} whence_tab[] = {
+	{"SEEK_CUR",	SEEK_CUR},
+	{"SEEK_END",	SEEK_END},
+	{"SEEK_SET",	SEEK_SET},
+};
+
+int str2whence(const char *string) {
+	int i;
+	for (i = 0; i < sizeof(whence_tab) / sizeof(whence_tab[0]); i++)
+		if (strcmp(whence_tab[i].string, string) == 0)
+			return whence_tab[i].whence;
+	return -1;
+}
+
 int marker2operation(const char *string) {
 	int i;
 	for (i = 0; i < sizeof(tab) / sizeof(tab[0]); i++)
@@ -88,9 +105,8 @@ Parms* alloc_and_parse_parms (op_t cmd_type,  json_t *replay_object) {
 	}
 
 	switch (cmd_type) {
-	case OPEN_OP:
-		{
-			parm = (Parms*) malloc(3 * sizeof(Parms)); //it should be done at each switch case
+		case OPEN_OP: {
+			parm = (Parms*) malloc(3 * sizeof(Parms));
 			const char *fullpath = json_string_value (json_array_get (args, 0));
 			parm[0].argm = (arg*) malloc (sizeof (arg));
 			parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
@@ -103,20 +119,18 @@ Parms* alloc_and_parse_parms (op_t cmd_type,  json_t *replay_object) {
 			const char *mode = json_string_value (json_array_get (args, 2));
 			parm[2].argm = (arg*) malloc (sizeof (arg));
 			parm[2].argm->i_val = atoi(mode);
-			break;
 		}
-	case DUP2_OP:
-	case DUP3_OP:
-		{
-			parm = (Parms*) malloc(2 * sizeof(Parms)); //it should be done at each switch case
+		break;
+		case DUP2_OP:
+		case DUP3_OP: {
+			parm = (Parms*) malloc(2 * sizeof(Parms));
 			const char *oldfd = json_string_value (json_array_get (args, 0));
 			const char *newfd = json_string_value (json_array_get (args, 1));
-			break;
 		}
-	case WRITE_OP:
-	case READ_OP: //TODO: write and read have the same token sequence than open
-		{
-			parm = (Parms*) malloc(3 * sizeof(Parms)); //it should be done at each switch case
+		break;
+		case WRITE_OP:
+		case READ_OP: {//TODO: write and read have the same token sequence than open
+			parm = (Parms*) malloc(3 * sizeof(Parms));
 			const char *fullpath = json_string_value (json_array_get (args, 0));
 			parm[0].argm = (arg*) malloc (sizeof (arg));
 			parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
@@ -129,21 +143,35 @@ Parms* alloc_and_parse_parms (op_t cmd_type,  json_t *replay_object) {
 			const char *count = json_string_value (json_array_get (args, 2));
 			parm[2].argm = (arg*) malloc (sizeof (arg));
 			parm[2].argm->i_val = atoi(count);
-			break;
 		}
-	case LLSEEK_OP: //TODO: write and read have the same token sequence than open
-		{
-			parm = (Parms*) malloc(2 * sizeof(Parms)); //it should be done at each switch case
+		break;
+		case LLSEEK_OP: {//TODO: write and read have the same token sequence than open
+			parm = (Parms*) malloc (5 * sizeof (Parms));
 			const char *fullpath = json_string_value (json_array_get (args, 0));
+			parm[0].argm = (arg*) malloc (sizeof (arg));
+			parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
+			strcpy(parm[0].argm->cprt_val, fullpath);
+
 			const char *fd = json_string_value (json_array_get (args, 0));
-			const char *offset_high = json_string_value (json_array_get (args, 0));
-			const char *offset_low = json_string_value (json_array_get (args, 0));
+			parm[1].argm = (arg*) malloc (sizeof (arg));
+			parm[1].argm->i_val = atoi(fd);
+
+			unsigned long offset_high = atol (json_string_value
+					(json_array_get (args, 0)));
+			unsigned long offset_low = atol (json_string_value
+					(json_array_get (args, 0)));
+
+			off_t off = (offset_high<<32) | offset_low;
+			parm[2].argm = (arg*) malloc (sizeof (arg));
+			parm[1].argm->l_val = (long) off;
+
 			const char *whence_str = json_string_value (json_array_get (args, 0));
-			break;
+			parm[3].argm = (arg*) malloc (sizeof (arg));
+			parm[3].argm->i_val = str2whence(whence_str);
 		}
-	case MKDIR_OP:
-		{
-			parm = (Parms*) malloc(2 * sizeof(Parms)); //it should be done at each switch case
+		break;
+		case MKDIR_OP: {
+			parm = (Parms*) malloc(2 * sizeof(Parms));
 			const char *fullpath = json_string_value (json_array_get (args, 0));
 			parm[0].argm = (arg*) malloc (sizeof (arg));
 			parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
@@ -152,53 +180,47 @@ Parms* alloc_and_parse_parms (op_t cmd_type,  json_t *replay_object) {
 			const char *mode = json_string_value (json_array_get (args, 1));
 			parm[1].argm = (arg*) malloc (sizeof (arg));
 			parm[1].argm->i_val = atoi(mode);
-			break;
 		}
-	case MKNOD_OP:
-		{
-			parm = (Parms*) malloc(2 * sizeof(Parms)); //it should be done at each switch case
+		break;
+		case MKNOD_OP: {
+			parm = (Parms*) malloc(2 * sizeof(Parms));
 			const char *fullpath = json_string_value (json_array_get (args, 0));
 			const char *mode = json_string_value (json_array_get (args, 1));
 			const char *dev = json_string_value (json_array_get (args, 2));
-			break;
 		}
-	case SYMLINK_OP:
-		{
-			parm = (Parms*) malloc(2 * sizeof(Parms)); //it should be done at each switch case
+		break;
+		case SYMLINK_OP: {
+			parm = (Parms*) malloc(2 * sizeof(Parms));
 			const char *fullpath_oldname = json_string_value (json_array_get (args, 0));
 			const char *fullpath_newname = json_string_value (json_array_get (args, 1));
-			break;
 		}
-	case GETXATTR_OP:
-	case REMOVEXATTR_OP:
-	case SETXATTR_OP:
-	case LISTXATTR_OP:
-	case LREMOVEXATTR_OP:
-	case LLISTXATTR_OP:
-		{
-			parm = (Parms*) malloc(2 * sizeof(Parms)); //it should be done at each switch case
+		break;
+		case GETXATTR_OP:
+		case REMOVEXATTR_OP:
+		case SETXATTR_OP:
+		case LISTXATTR_OP:
+		case LREMOVEXATTR_OP:
+		case LLISTXATTR_OP: {
+			parm = (Parms*) malloc(2 * sizeof(Parms));
 			const char *fullpath = json_string_value (json_array_get (args, 0));
-			break;
 		}
-	case LSETXATTR_OP:
-		{
-			parm = (Parms*) malloc(2 * sizeof(Parms)); //it should be done at each switch case
+		break;
+		case LSETXATTR_OP: {
+			parm = (Parms*) malloc(2 * sizeof(Parms));
 			const char *fullpath = json_string_value (json_array_get (args, 0));
 			const char *name = json_string_value (json_array_get (args, 1));
 			const char *value = json_string_value (json_array_get (args, 2));
 			const char *flag = json_string_value (json_array_get (args, 3));
-			break;
 		}
-	case CLOSE_OP:
-		{
-			parm = (Parms*) malloc(sizeof(Parms)); //it should be done at each switch case
+		break;
+		case CLOSE_OP: {
+			parm = (Parms*) malloc(sizeof(Parms));
 			const char *fd = json_string_value (json_array_get (args, 0));
 			parm[0].argm = (arg*) malloc (sizeof (arg));
 			parm[0].argm->i_val = atoi(fd);
-			break;
 		}
-	case FSTAT_OP:
-		{
+		break;
+		case FSTAT_OP: {
 			parm = (Parms*) malloc(3 * sizeof(Parms));
 			const char *fullpath = json_string_value (json_array_get (args, 0));
 			parm[0].argm = (arg*) malloc (sizeof (arg));
@@ -208,17 +230,16 @@ Parms* alloc_and_parse_parms (op_t cmd_type,  json_t *replay_object) {
 			const char *fd = json_string_value (json_array_get (args, 1));
 			parm[1].argm = (arg*) malloc (sizeof (arg));
 			parm[1].argm->i_val = atoi(fd);
-			break;
 		}
-	default: //FIXME we need a case to NONE_OP, test it
-		{
-			parm = (Parms*) malloc(sizeof(Parms)); //it should be done at each switch case
+		break;
+		default: {//FIXME we need a case to NONE_OP, test it
+			parm = (Parms*) malloc(sizeof(Parms));
 			const char *_arg = json_string_value (json_array_get (args, 0));
 			parm[0].argm = (arg*) malloc (sizeof (arg));
 			parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
 			strcpy(parm[0].argm->cprt_val, _arg);
-			break;
 		}
+		break;
 	}
 	return parm;
 }

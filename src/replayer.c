@@ -26,6 +26,9 @@
 #include <string.h>
 #include <assert.h>
 #include <sys/time.h>
+#include <unistd.h>
+#include <linux/unistd.h>
+#include <linux/types.h>
 
 #define PID_MAX 32768
 //FIXME: FD_MAX is a way to high. I doubt trace has a single pid so high.
@@ -346,6 +349,15 @@ int do_replay (struct replay_command* cmd, int *call_rvalue) {
 		break;
 		case RMDIR_OP: {
 			*call_rvalue = unlink (args[0].argm->cprt_val);
+		}
+		break;
+		case LLSEEK_OP: {
+			int traced_fd = args[1].argm->i_val;
+			int repl_fd = replayed_fd (cmd->caller->pid, traced_fd);
+
+			off_t offset = (off_t) args[2].argm->l_val;
+			int whence = args[3].argm->i_val;
+			lseek (repl_fd, offset, whence);
 		}
 		break;
 		default:

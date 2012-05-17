@@ -13,19 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//#include "../src/loader.h"
 #include "loader.h"
 #include "replayer.h"
 #include "gtest/gtest.h"
 #include <stdlib.h>
 
+//FIXME test args for the loaded syscalls
+//FIXME test timestamp for the loaded syscalls.
+//FIXME test for a misformatted op
+
 TEST(LoaderTest, EmptyInputFile) {
     Replay_workload rep_wld;
     FILE * input_f = fopen("tests/input_data/empty_input", "r");
     int ret = load (&rep_wld, input_f);
-    EXPECT_EQ(0, ret);
-    EXPECT_EQ(0, rep_wld.num_cmds);
-    EXPECT_EQ(0, rep_wld.current_cmd);
+    EXPECT_EQ(PARSING_ERROR, ret);
     fclose(input_f);
 }
 
@@ -38,29 +39,37 @@ TEST(LoaderTest, NonexistentInputFile) {
     EXPECT_EQ(0, rep_wld.current_cmd);
 }
 
-//FIXME test args for the loaded syscalls
-//FIXME test timestamp for the loaded syscalls.
-//test for a misformatted op
+/**
+ * It load a workflow data file. It should contains no more than one
+ * replay command. It's not generic but the most of out testing suite fits in
+ * this single case.
+ */
+Workflow_element* load_and_basic_test (const char *path) {
+
+	Replay_workload* rep_wld = (Replay_workload*) malloc (sizeof (Replay_workload));
+	FILE * input_f = fopen (path, "r");
+	int ret = load(rep_wld, input_f);
+
+	EXPECT_EQ(0, ret);
+	EXPECT_EQ(2, rep_wld->num_cmds);//fake + 1
+	EXPECT_EQ(0, rep_wld->current_cmd);
+
+	Workflow_element* w_element = element(rep_wld, 1);
+	EXPECT_EQ(0, w_element->consumed);
+	EXPECT_EQ(0, w_element->produced);
+
+	EXPECT_EQ(1, w_element->id);
+	EXPECT_EQ(1, w_element->n_parents);
+	EXPECT_EQ(0, w_element->n_children);
+
+	return w_element;
+}
 
 TEST(LoaderTest, LoadCloseCall) {
 //1 0 - 1 2 0 2097 2097 (udisks-daemon) close 1318539063006403-37 7 0
+    Workflow_element* w_element = load_and_basic_test("tests/input_data/close0.workflow");
+    struct replay_command* loaded_cmd = w_element->command;
 
-	Workflow_element* element = alloc_workflow_element();
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-	char line[] =
-			"1 0 - 1 2 0 2097 2097 (udisks-daemon) close 1318539063006403-37 7 0";
-	parse_element (element, line);
-
-	EXPECT_EQ(1, element->id);
-	EXPECT_EQ(0, element->n_parents);
-	EXPECT_EQ(1, element->n_children);
-	int child_id = element->children_ids[element->n_children - 1];
-	EXPECT_EQ(2, child_id);
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-
-    struct replay_command* loaded_cmd = element->command;
     EXPECT_EQ(CLOSE_OP, loaded_cmd->command);
     EXPECT_EQ(0, loaded_cmd->expected_retval);
 
@@ -71,59 +80,31 @@ TEST(LoaderTest, LoadCloseCall) {
     EXPECT_EQ(0, caller_id->uid);
     EXPECT_EQ(2097, caller_id->pid);
     EXPECT_EQ(2097, caller_id->tid);
-//args
     EXPECT_EQ(7, loaded_cmd->params[0].argm->i_val);
+    //TODO: args
 }
 
 TEST(LoaderTest, LoadFstatCall) {
-	//syscall.fstat
 	//uid pid tid exec_name fstat begin-elapsed fd return
 	//1159 2076 2194 (gnome-do) fstat 1318539073583678-143 /home/thiagoepdc/.config/google-chrome/com.google.chrome.gUMVsk 23 0
 	//FIXME What if in other arch the calls name is not fstat64 ?
-
-
-	Workflow_element* element = alloc_workflow_element();
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-	char line[] =
-			"1 0 - 1 2 1159 2076 2194 (gnome-do) fstat 1318539073583678-143 /home/thiagoepdc/.config/google-chrome/com.google.chrome.gUMVsk 23 0";
-	parse_element (element, line);
-
-	EXPECT_EQ(1, element->id);
-	EXPECT_EQ(0, element->n_parents);
-	EXPECT_EQ(1, element->n_children);
-	int child_id = element->children_ids[element->n_children - 1];
-	EXPECT_EQ(2, child_id);
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-
-    	struct replay_command* loaded_cmd = element->command;
+//1 0 - 1 2 1159 2076 2194 (gnome-do) fstat 1318539073583678-143 /home/thiagoepdc/.config/google-chrome/com.google.chrome.gUMVsk 23 0";
+	Workflow_element* w_element = load_and_basic_test("tests/input_data/fstat1.workflow");
+	struct replay_command* loaded_cmd = w_element->command;
 
 	EXPECT_EQ(FSTAT_OP, loaded_cmd->command);
-    	EXPECT_EQ(0, loaded_cmd->expected_retval);
-    	Caller* caller_id = loaded_cmd->caller;
-    	EXPECT_EQ(1159, caller_id->uid);
-    	EXPECT_EQ(2076, caller_id->pid);
-    	EXPECT_EQ(2194, caller_id->tid);
+   	EXPECT_EQ(0, loaded_cmd->expected_retval);
+   	Caller* caller_id = loaded_cmd->caller;
+   	EXPECT_EQ(1159, caller_id->uid);
+   	EXPECT_EQ(2076, caller_id->pid);
+   	EXPECT_EQ(2194, caller_id->tid);
 }
 
 TEST(LoaderTest, LoadRmdirCall) {
-	Workflow_element* element = alloc_workflow_element();
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-	char line[] =
-			"1 0 - 1 2 1159 2364 32311 (eclipse) rmdir 1318539134542480-46 /home/thiagoepdc/workspace_beefs/.metadata/.plugins/org.eclipse.jdt.ui/jdt-images -1";
-	parse_element (element, line);
+//1 0 - 1 2 1159 2364 32311 (eclipse) rmdir 1318539134542480-46 /home/thiagoepdc/workspace_beefs/.metadata/.plugins/org.eclipse.jdt.ui/jdt-images -1";
+	Workflow_element* w_element = load_and_basic_test("tests/input_data/rmdir2.workflow");
+	struct replay_command* loaded_cmd = w_element->command;
 
-	EXPECT_EQ(1, element->id);
-	EXPECT_EQ(0, element->n_parents);
-	EXPECT_EQ(1, element->n_children);
-	int child_id = element->children_ids[element->n_children - 1];
-	EXPECT_EQ(2, child_id);
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-
-	struct replay_command* loaded_cmd = element->command;
     EXPECT_EQ(RMDIR_OP, loaded_cmd->command);
     EXPECT_EQ(-1, loaded_cmd->expected_retval);
     Caller* caller_id = loaded_cmd->caller;
@@ -133,22 +114,10 @@ TEST(LoaderTest, LoadRmdirCall) {
 }
 
 TEST(LoaderTest, LoadLstatCall) {
-	Workflow_element* element = alloc_workflow_element();
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-	char line[] =
-			"1 0 - 1 2 1159 2076 2194 (gnome-do) lstat 1318539555812393-87 /usr/share/applications/gnome-sudoku.desktop 0";
-	parse_element (element, line);
+//1 0 - 1 2 1159 2076 2194 (gnome-do) lstat 1318539555812393-87 /usr/share/applications/gnome-sudoku.desktop 0";
+	Workflow_element* w_element = load_and_basic_test("tests/input_data/lstat3.workflow");
+	struct replay_command* loaded_cmd = w_element->command;
 
-	EXPECT_EQ(1, element->id);
-	EXPECT_EQ(0, element->n_parents);
-	EXPECT_EQ(1, element->n_children);
-	int child_id = element->children_ids[element->n_children - 1];
-	EXPECT_EQ(2, child_id);
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-
-	struct replay_command* loaded_cmd = element->command;
     EXPECT_EQ(LSTAT_OP, loaded_cmd->command);
     EXPECT_EQ(0, loaded_cmd->expected_retval);
     Caller* caller_id = loaded_cmd->caller;
@@ -158,23 +127,10 @@ TEST(LoaderTest, LoadLstatCall) {
 }
 
 TEST(LoaderTest, LoadStatCall) {
-    //syscall.stat
-	Workflow_element* element = alloc_workflow_element();
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-	char line[] =
-			"1 0 - 1 2 0 1163 1163 (cron) stat 1317750601526436-18178 /var/spool/cron/crontabs 0";
-	parse_element (element, line);
+//1 0 - 1 2 0 1163 1163 (cron) stat 1317750601526436-18178 /var/spool/cron/crontabs 0";
+	Workflow_element* w_element = load_and_basic_test("tests/input_data/stat4.workflow");
+	struct replay_command* loaded_cmd = w_element->command;
 
-	EXPECT_EQ(1, element->id);
-	EXPECT_EQ(0, element->n_parents);
-	EXPECT_EQ(1, element->n_children);
-	int child_id = element->children_ids[element->n_children - 1];
-	EXPECT_EQ(2, child_id);
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-
-	struct replay_command* loaded_cmd = element->command;
     EXPECT_EQ(STAT_OP, loaded_cmd->command);
     EXPECT_EQ(0, loaded_cmd->expected_retval);
     Caller* caller_id = loaded_cmd->caller;
@@ -184,23 +140,10 @@ TEST(LoaderTest, LoadStatCall) {
 }
 
 TEST(LoaderTest, LoadStatfsCall) {
-    //syscall.statfs
-	Workflow_element* element = alloc_workflow_element();
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-	char line[] =
-			"1 0 - 1 2 1159 2053 2053 (gnome-settings-) statfs 1318540136505344-287 /local/tracer/logs_nfs 0";
-	parse_element (element, line);
+//1 0 - 1 2 1159 2053 2053 (gnome-settings-) statfs 1318540136505344-287 /local/tracer/logs_nfs 0";
+	Workflow_element* w_element = load_and_basic_test("tests/input_data/statfs5.workflow");
+	struct replay_command* loaded_cmd = w_element->command;
 
-	EXPECT_EQ(1, element->id);
-	EXPECT_EQ(0, element->n_parents);
-	EXPECT_EQ(1, element->n_children);
-	int child_id = element->children_ids[element->n_children - 1];
-	EXPECT_EQ(2, child_id);
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-
-	struct replay_command* loaded_cmd = element->command;
     EXPECT_EQ(STATFS_OP, loaded_cmd->command);
     EXPECT_EQ(0, loaded_cmd->expected_retval);
     Caller* caller_id = loaded_cmd->caller;
@@ -210,23 +153,10 @@ TEST(LoaderTest, LoadStatfsCall) {
 }
 
 TEST(LoaderTest, LoadDupCall) {
-    //syscall.dup
-	Workflow_element* element = alloc_workflow_element();
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-	char line[] =
-			"1 0 - 1 2 0 32544 32544 (sshd) dup 1318539601707575-31 4 5";
-	parse_element (element, line);
+//1 0 - 1 2 0 32544 32544 (sshd) dup 1318539601707575-31 4 5";
+	Workflow_element* w_element = load_and_basic_test("tests/input_data/dup6.workflow");
+	struct replay_command* loaded_cmd = w_element->command;
 
-	EXPECT_EQ(1, element->id);
-	EXPECT_EQ(0, element->n_parents);
-	EXPECT_EQ(1, element->n_children);
-	int child_id = element->children_ids[element->n_children - 1];
-	EXPECT_EQ(2, child_id);
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-
-	struct replay_command* loaded_cmd = element->command;
     EXPECT_EQ(DUP_OP, loaded_cmd->command);
     EXPECT_EQ(5, loaded_cmd->expected_retval);
     Caller* caller_id = loaded_cmd->caller;
@@ -236,23 +166,10 @@ TEST(LoaderTest, LoadDupCall) {
 }
 
 TEST(LoaderTest, LoadFstatfsCall) {
-    //syscall.fstatfs
-	Workflow_element* element = alloc_workflow_element();
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-	char line[] =
-			"1 0 - 1 2 0 32544 32544 (sshd) fstatfs 1318539601707575-31 4 -1";
-	parse_element (element, line);
+//1 0 - 1 2 0 32544 32544 (sshd) fstatfs 1318539601707575-31 4 -1";
+	Workflow_element* w_element = load_and_basic_test("tests/input_data/fstatfs7.workflow");
+	struct replay_command* loaded_cmd = w_element->command;
 
-	EXPECT_EQ(1, element->id);
-	EXPECT_EQ(0, element->n_parents);
-	EXPECT_EQ(1, element->n_children);
-	int child_id = element->children_ids[element->n_children - 1];
-	EXPECT_EQ(2, child_id);
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-
-	struct replay_command* loaded_cmd = element->command;
     EXPECT_EQ(FSTATFS_OP, loaded_cmd->command);
     EXPECT_EQ(-1, loaded_cmd->expected_retval);
     Caller* caller_id = loaded_cmd->caller;
@@ -262,22 +179,10 @@ TEST(LoaderTest, LoadFstatfsCall) {
 }
 
 TEST(LoaderTest, LoadReaddirCall) {
-	Workflow_element* element = alloc_workflow_element();
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-	char line[] =
-			"1 0 - 1 2 1159 2076 2194 (gnome-do) readdir 1318539555798359-27 /usr/share/applications/ 0";
-	parse_element (element, line);
+//1 0 - 1 2 1159 2076 2194 (gnome-do) readdir 1318539555798359-27 /usr/share/applications/ 0";
+	Workflow_element* w_element = load_and_basic_test("tests/input_data/readdir8.workflow");
+	struct replay_command* loaded_cmd = w_element->command;
 
-	EXPECT_EQ(1, element->id);
-	EXPECT_EQ(0, element->n_parents);
-	EXPECT_EQ(1, element->n_children);
-	int child_id = element->children_ids[element->n_children - 1];
-	EXPECT_EQ(2, child_id);
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-
-	struct replay_command* loaded_cmd = element->command;
     EXPECT_EQ(READDIR_OP, loaded_cmd->command);
     EXPECT_EQ(0, loaded_cmd->expected_retval);
     Caller* caller_id = loaded_cmd->caller;
@@ -287,23 +192,10 @@ TEST(LoaderTest, LoadReaddirCall) {
 }
 
 TEST(LoaderTest, LoadUnlinkCall) {
-    //syscall.unlink
-	Workflow_element* element = alloc_workflow_element();
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-	char line[] =
-			"1 0 - 1 2 1159 2364 32311 (eclipse) unlink 1318539134533662-8118 /local/thiagoepdc/workspace_beefs/.metadata/.plugins/org.eclipse.jdt.ui/jdt-images/1.png 0";
-	parse_element (element, line);
+//1 0 - 1 2 1159 2364 32311 (eclipse) unlink 1318539134533662-8118 /local/thiagoepdc/workspace_beefs/.metadata/.plugins/org.eclipse.jdt.ui/jdt-images/1.png 0";
+	Workflow_element* w_element = load_and_basic_test("tests/input_data/unlink9.workflow");
+	struct replay_command* loaded_cmd = w_element->command;
 
-	EXPECT_EQ(1, element->id);
-	EXPECT_EQ(0, element->n_parents);
-	EXPECT_EQ(1, element->n_children);
-	int child_id = element->children_ids[element->n_children - 1];
-	EXPECT_EQ(2, child_id);
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-
-	struct replay_command* loaded_cmd = element->command;
     EXPECT_EQ(UNLINK_OP, loaded_cmd->command);
     EXPECT_EQ(0, loaded_cmd->expected_retval);
     Caller* caller_id = loaded_cmd->caller;
@@ -313,23 +205,10 @@ TEST(LoaderTest, LoadUnlinkCall) {
 }
 
 TEST(LoaderTest, LoadGetattrCall) {
-    //getattr
-	Workflow_element* element = alloc_workflow_element();
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-	char line[] =
-			"1 0 - 1 2 0 1547 1547 (puppet) getattr 1318539062631232-30 /etc/puppet/puppet.conf 0";
-	parse_element (element, line);
+//1 0 - 1 2 0 1547 1547 (puppet) getattr 1318539062631232-30 /etc/puppet/puppet.conf 0";
+	Workflow_element* w_element = load_and_basic_test("tests/input_data/getattr10.workflow");
+	struct replay_command* loaded_cmd = w_element->command;
 
-	EXPECT_EQ(1, element->id);
-	EXPECT_EQ(0, element->n_parents);
-	EXPECT_EQ(1, element->n_children);
-	int child_id = element->children_ids[element->n_children - 1];
-	EXPECT_EQ(2, child_id);
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-
-	struct replay_command* loaded_cmd = element->command;
     EXPECT_EQ(GETATTR_OP, loaded_cmd->command);
     EXPECT_EQ(0, loaded_cmd->expected_retval);
     Caller* caller_id = loaded_cmd->caller;
@@ -341,23 +220,10 @@ TEST(LoaderTest, LoadGetattrCall) {
 //FIXME test problems when reading file input
 TEST(LoaderTest, LoadOpenCall) {
 	//TODO: args
-    //syscall.open
-	Workflow_element* element = alloc_workflow_element();
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-	char line[] =
-			"1 0 - 1 2 0 2097 2097 (udisks-daemon) open 1318539063003892-2505 /dev/sdb 34816 0 7";
-	parse_element (element, line);
+//1 0 - 1 2 0 2097 2097 (udisks-daemon) open 1318539063003892-2505 /dev/sdb 34816 0 7";
+	Workflow_element* w_element = load_and_basic_test("tests/input_data/open11.workflow");
+	struct replay_command* loaded_cmd = w_element->command;
 
-	EXPECT_EQ(1, element->id);
-	EXPECT_EQ(0, element->n_parents);
-	EXPECT_EQ(1, element->n_children);
-	int child_id = element->children_ids[element->n_children - 1];
-	EXPECT_EQ(2, child_id);
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-
-	struct replay_command* loaded_cmd = element->command;
     EXPECT_EQ(OPEN_OP, loaded_cmd->command);
     EXPECT_EQ(7, loaded_cmd->expected_retval);
     Caller* caller_id = loaded_cmd->caller;
@@ -367,23 +233,10 @@ TEST(LoaderTest, LoadOpenCall) {
 }
 
 TEST(LoaderTest, LoadDup2Call) {
-	//syscall.dup2
-	Workflow_element* element = alloc_workflow_element();
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-	char line[] =
-			"1 0 - 1 2 0 32544 32544 (sshd) dup2 1318539601707761-41 4 0 0";
-	parse_element (element, line);
+//1 0 - 1 2 0 32544 32544 (sshd) dup2 1318539601707761-41 4 0 0";
+	Workflow_element* w_element = load_and_basic_test("tests/input_data/dup212.workflow");
+	struct replay_command* loaded_cmd = w_element->command;
 
-	EXPECT_EQ(1, element->id);
-	EXPECT_EQ(0, element->n_parents);
-	EXPECT_EQ(1, element->n_children);
-	int child_id = element->children_ids[element->n_children - 1];
-	EXPECT_EQ(2, child_id);
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-
-	struct replay_command* loaded_cmd = element->command;
     EXPECT_EQ(DUP2_OP, loaded_cmd->command);
     EXPECT_EQ(0, loaded_cmd->expected_retval);
     Caller* caller_id = loaded_cmd->caller;
@@ -392,23 +245,10 @@ TEST(LoaderTest, LoadDup2Call) {
     EXPECT_EQ(32544, caller_id->tid);
 }
 TEST(LoaderTest, LoadDup3Call) {
-	//syscall.dup3
-	Workflow_element* element = alloc_workflow_element();
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-	char line[] =
-			"1 0 - 1 2 0 32544 32544 (sshd) dup3 1318539601707761-41 4 0 0";
-	parse_element (element, line);
+//1 0 - 1 2 0 32544 32544 (sshd) dup3 1318539601707761-41 4 0 0";
+	Workflow_element* w_element = load_and_basic_test("tests/input_data/dup313.workflow");
+	struct replay_command* loaded_cmd = w_element->command;
 
-	EXPECT_EQ(1, element->id);
-	EXPECT_EQ(0, element->n_parents);
-	EXPECT_EQ(1, element->n_children);
-	int child_id = element->children_ids[element->n_children - 1];
-	EXPECT_EQ(2, child_id);
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-
-	struct replay_command* loaded_cmd = element->command;
     EXPECT_EQ(DUP3_OP, loaded_cmd->command);
     EXPECT_EQ(0, loaded_cmd->expected_retval);
     Caller* caller_id = loaded_cmd->caller;
@@ -418,23 +258,9 @@ TEST(LoaderTest, LoadDup3Call) {
 }
 
 TEST(LoaderTest, LoadWriteCall) {
-	//syscall.write
-	Workflow_element* element = alloc_workflow_element();
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-	char line[] =
-			"1 0 - 1 2 0 6194 6194 (xprintidle) write 1318539063058255-131 /local/userActivityTracker/logs/tracker.log 1 17 17";
-	parse_element (element, line);
-
-	EXPECT_EQ(1, element->id);
-	EXPECT_EQ(0, element->n_parents);
-	EXPECT_EQ(1, element->n_children);
-	int child_id = element->children_ids[element->n_children - 1];
-	EXPECT_EQ(2, child_id);
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-
-	struct replay_command* loaded_cmd = element->command;
+//1 0 - 1 2 0 6194 6194 (xprintidle) write 1318539063058255-131 /local/userActivityTracker/logs/tracker.log 1 17 17";
+	Workflow_element* w_element = load_and_basic_test("tests/input_data/write14.workflow");
+	struct replay_command* loaded_cmd = w_element->command;
 
     EXPECT_EQ(WRITE_OP, loaded_cmd->command);
     EXPECT_EQ(17, loaded_cmd->expected_retval);
@@ -445,23 +271,9 @@ TEST(LoaderTest, LoadWriteCall) {
 }
 
 TEST(LoaderTest, LoadReadCall) {
-	//syscall.read
-	Workflow_element* element = alloc_workflow_element();
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-	char line[] =
-			"1 0 - 1 2 114 1562 1562 (snmpd) read 1318539063447564-329 /proc/stat 8 3072 2971";
-	parse_element (element, line);
-
-	EXPECT_EQ(1, element->id);
-	EXPECT_EQ(0, element->n_parents);
-	EXPECT_EQ(1, element->n_children);
-	int child_id = element->children_ids[element->n_children - 1];
-	EXPECT_EQ(2, child_id);
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-
-	struct replay_command* loaded_cmd = element->command;
+//1 0 - 1 2 114 1562 1562 (snmpd) read 1318539063447564-329 /proc/stat 8 3072 2971";
+	Workflow_element* w_element = load_and_basic_test("tests/input_data/read15.workflow");
+	struct replay_command* loaded_cmd = w_element->command;
 
     EXPECT_EQ(READ_OP, loaded_cmd->command);
     EXPECT_EQ(2971, loaded_cmd->expected_retval);
@@ -472,23 +284,13 @@ TEST(LoaderTest, LoadReadCall) {
 }
 
 TEST(LoaderTest, LoadLLseekCall) {
-//syscall.llseek
-	Workflow_element* element = alloc_workflow_element();
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-	char line[] =
-			"1 0 - 1 2 1159 2364 2364 (eclipse) llseek 1318539072857083-113 /local/thiagoepdc/eclipse/configuration/org.eclipse.core.runtime/.mainData.4 30 0 931001 SEEK_SET 931001";
-	parse_element (element, line);
+//1 0 - 1 2 1159 2364 2364 (eclipse) llseek 1318539072857083-113
+//	/local/thiagoepdc/eclipse/configuration/org.eclipse.core.runtime/.mainData.4
+//	30 0 931001 SEEK_SET 931001";
 
-	EXPECT_EQ(1, element->id);
-	EXPECT_EQ(0, element->n_parents);
-	EXPECT_EQ(1, element->n_children);
-	int child_id = element->children_ids[element->n_children - 1];
-	EXPECT_EQ(2, child_id);
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
+	Workflow_element* w_element = load_and_basic_test("tests/input_data/llseek16.workflow");
+	struct replay_command* loaded_cmd = w_element->command;
 
-	struct replay_command* loaded_cmd = element->command;
     EXPECT_EQ(LLSEEK_OP, loaded_cmd->command);
     EXPECT_EQ(931001, loaded_cmd->expected_retval);
     Caller* caller_id = loaded_cmd->caller;
@@ -498,23 +300,10 @@ TEST(LoaderTest, LoadLLseekCall) {
 }
 
 TEST(LoaderTest, LoadMkdirCall) {
-//syscall.mkdir
-	Workflow_element* element = alloc_workflow_element();
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-	char line[] =
-			"1 0 - 1 2 1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /local/thiagoepdc/workspace_beefs/.metadata/.plugins/org.eclipse.jdt.ui/jdt-images 511 0";
-	parse_element (element, line);
+//1 0 - 1 2 1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /local/thiagoepdc/workspace_beefs/.metadata/.plugins/org.eclipse.jdt.ui/jdt-images 511 0";
+	Workflow_element* w_element = load_and_basic_test("tests/input_data/mkdir17.workflow");
+	struct replay_command* loaded_cmd = w_element->command;
 
-	EXPECT_EQ(1, element->id);
-	EXPECT_EQ(0, element->n_parents);
-	EXPECT_EQ(1, element->n_children);
-	int child_id = element->children_ids[element->n_children - 1];
-	EXPECT_EQ(2, child_id);
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-
-	struct replay_command* loaded_cmd = element->command;
     EXPECT_EQ(MKDIR_OP, loaded_cmd->command);
     EXPECT_EQ(0, loaded_cmd->expected_retval);
     Caller* caller_id = loaded_cmd->caller;
@@ -524,24 +313,11 @@ TEST(LoaderTest, LoadMkdirCall) {
 }
 
 TEST(LoaderTest, LoadMknodCall) {
-//mknod
 //TODO: we need to convert mode from string to a number type
-	Workflow_element* element = alloc_workflow_element();
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-	char line[] =
-			"1 0 - 1 2 1159 11407 11407 (gconftool-2) mknod 1319207649254700-14 /home/thiagoepdc/orbit-thiagoepdc/linc-2c8f-0-69f0eff3e2d5 S_IFSOCK|S_IXOTH|S_IROTH|S_IXGRP|S_IRGRP|S_IRWXU 0 0";
-	parse_element (element, line);
+//1 0 - 1 2 1159 11407 11407 (gconftool-2) mknod 1319207649254700-14 /home/thiagoepdc/orbit-thiagoepdc/linc-2c8f-0-69f0eff3e2d5 S_IFSOCK|S_IXOTH|S_IROTH|S_IXGRP|S_IRGRP|S_IRWXU 0 0";
+	Workflow_element* w_element = load_and_basic_test("tests/input_data/mknod18.workflow");
+	struct replay_command* loaded_cmd = w_element->command;
 
-	EXPECT_EQ(1, element->id);
-	EXPECT_EQ(0, element->n_parents);
-	EXPECT_EQ(1, element->n_children);
-	int child_id = element->children_ids[element->n_children - 1];
-	EXPECT_EQ(2, child_id);
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-
-	struct replay_command* loaded_cmd = element->command;
     EXPECT_EQ(MKNOD_OP, loaded_cmd->command);
     EXPECT_EQ(0, loaded_cmd->expected_retval);
     Caller* caller_id = loaded_cmd->caller;
@@ -551,23 +327,10 @@ TEST(LoaderTest, LoadMknodCall) {
 }
 
 TEST(LoaderTest, LoadSymlink) {
-	//syscall.symlink
-	Workflow_element* element = alloc_workflow_element();
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-	char line[] =
-			"1 0 - 1 2 0 603 603 (update-rc.d) symlink 1318540206298997-36 /etc/rcS.d/../init.d/puppet /etc/rc0.d/K20puppet 0";
-	parse_element (element, line);
+//1 0 - 1 2 0 603 603 (update-rc.d) symlink 1318540206298997-36 /etc/rcS.d/../init.d/puppet /etc/rc0.d/K20puppet 0";
+	Workflow_element* w_element = load_and_basic_test("tests/input_data/symlink19.workflow");
+	struct replay_command* loaded_cmd = w_element->command;
 
-	EXPECT_EQ(1, element->id);
-	EXPECT_EQ(0, element->n_parents);
-	EXPECT_EQ(1, element->n_children);
-	int child_id = element->children_ids[element->n_children - 1];
-	EXPECT_EQ(2, child_id);
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-
-	struct replay_command* loaded_cmd = element->command;
     EXPECT_EQ(SYMLINK_OP, loaded_cmd->command);
     EXPECT_EQ(0, loaded_cmd->expected_retval);
     Caller* caller_id = loaded_cmd->caller;
@@ -577,23 +340,10 @@ TEST(LoaderTest, LoadSymlink) {
 }
 
 TEST(LoaderTest, LoadReadlink) {
-//syscall.readlink
-	Workflow_element* element = alloc_workflow_element();
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-	char line[] =
-			"1 0 - 1 2 1159 2092 2092 (gvfs-gdu-volume) readlink 1318539355485686-40 /dev/scd0 3";
-	parse_element (element, line);
+//1 0 - 1 2 1159 2092 2092 (gvfs-gdu-volume) readlink 1318539355485686-40 /dev/scd0 3";
+	Workflow_element* w_element = load_and_basic_test("tests/input_data/readlink20.workflow");
+	struct replay_command* loaded_cmd = w_element->command;
 
-	EXPECT_EQ(1, element->id);
-	EXPECT_EQ(0, element->n_parents);
-	EXPECT_EQ(1, element->n_children);
-	int child_id = element->children_ids[element->n_children - 1];
-	EXPECT_EQ(2, child_id);
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-
-	struct replay_command* loaded_cmd = element->command;
     EXPECT_EQ(READLINK_OP, loaded_cmd->command);
     EXPECT_EQ(3, loaded_cmd->expected_retval);
     Caller* caller_id = loaded_cmd->caller;
@@ -604,23 +354,10 @@ TEST(LoaderTest, LoadReadlink) {
 
 //Note xattr calls will be called as fake
 TEST(LoaderTest, LoadGetxattr) {
-//getxattr
-	Workflow_element* element = alloc_workflow_element();
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-	char line[] =
-			"1 0 - 1 2 1159 32362 32362 (ls) getxattr 1318539209608557-21 /tmp/0014b4e97285d -95";
-	parse_element (element, line);
+//1 0 - 1 2 1159 32362 32362 (ls) getxattr 1318539209608557-21 /tmp/0014b4e97285d -95";
+	Workflow_element* w_element = load_and_basic_test("tests/input_data/getxattr21.workflow");
+	struct replay_command* loaded_cmd = w_element->command;
 
-	EXPECT_EQ(1, element->id);
-	EXPECT_EQ(0, element->n_parents);
-	EXPECT_EQ(1, element->n_children);
-	int child_id = element->children_ids[element->n_children - 1];
-	EXPECT_EQ(2, child_id);
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-
-	struct replay_command* loaded_cmd = element->command;
     EXPECT_EQ(GETXATTR_OP, loaded_cmd->command);
     EXPECT_EQ(-95, loaded_cmd->expected_retval);
     Caller* caller_id = loaded_cmd->caller;
@@ -630,23 +367,10 @@ TEST(LoaderTest, LoadGetxattr) {
 }
 
 TEST(LoaderTest, LoadRemovexattr) {
-//syscall.removexattr
-	Workflow_element* element = alloc_workflow_element();
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-	char line[] =
-			"1 0 - 1 2 1159 32362 32362 (ls) removexattr 1318539209608557-21 /tmp/0014b4e97285d 0";
-	parse_element (element, line);
+//1 0 - 1 2 1159 32362 32362 (ls) removexattr 1318539209608557-21 /tmp/0014b4e97285d 0";
+	Workflow_element* w_element = load_and_basic_test("tests/input_data/removexattr22.workflow");
+	struct replay_command* loaded_cmd = w_element->command;
 
-	EXPECT_EQ(1, element->id);
-	EXPECT_EQ(0, element->n_parents);
-	EXPECT_EQ(1, element->n_children);
-	int child_id = element->children_ids[element->n_children - 1];
-	EXPECT_EQ(2, child_id);
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-
-	struct replay_command* loaded_cmd = element->command;
     EXPECT_EQ(REMOVEXATTR_OP, loaded_cmd->command);
     EXPECT_EQ(0, loaded_cmd->expected_retval);
     Caller* caller_id = loaded_cmd->caller;
@@ -656,23 +380,10 @@ TEST(LoaderTest, LoadRemovexattr) {
 }
 
 TEST(LoaderTest, LoadSetxattr) {
-//syscall.setxattr
-	Workflow_element* element = alloc_workflow_element();
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-	char line[] =
-			"1 0 - 1 2 1159 32362 32362 (ls) setxattr 1318539209608557-21 /tmp/0014b4e97285d -3";
-	parse_element (element, line);
+//1 0 - 1 2 1159 32362 32362 (ls) setxattr 1318539209608557-21 /tmp/0014b4e97285d -3";
+	Workflow_element* w_element = load_and_basic_test("tests/input_data/setxattr23.workflow");
+	struct replay_command* loaded_cmd = w_element->command;
 
-	EXPECT_EQ(1, element->id);
-	EXPECT_EQ(0, element->n_parents);
-	EXPECT_EQ(1, element->n_children);
-	int child_id = element->children_ids[element->n_children - 1];
-	EXPECT_EQ(2, child_id);
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-
-	struct replay_command* loaded_cmd = element->command;
     EXPECT_EQ(SETXATTR_OP, loaded_cmd->command);
     EXPECT_EQ(-3, loaded_cmd->expected_retval);
     Caller* caller_id = loaded_cmd->caller;
@@ -682,23 +393,10 @@ TEST(LoaderTest, LoadSetxattr) {
 }
 
 TEST(LoaderTest, LoadListxattr) {
-//syscall.listxattr
-	Workflow_element* element = alloc_workflow_element();
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-	char line[] =
-			"1 0 - 1 2 1159 32362 32362 (ls) listxattr 1318539209608557-21 /tmp/0014b4e97285d 0";
-	parse_element (element, line);
+//1 0 - 1 2 1159 32362 32362 (ls) listxattr 1318539209608557-21 /tmp/0014b4e97285d 0";
+	Workflow_element* w_element = load_and_basic_test("tests/input_data/listxattr24.workflow");
+	struct replay_command* loaded_cmd = w_element->command;
 
-	EXPECT_EQ(1, element->id);
-	EXPECT_EQ(0, element->n_parents);
-	EXPECT_EQ(1, element->n_children);
-	int child_id = element->children_ids[element->n_children - 1];
-	EXPECT_EQ(2, child_id);
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-
-	struct replay_command* loaded_cmd = element->command;
     EXPECT_EQ(LISTXATTR_OP, loaded_cmd->command);
     EXPECT_EQ(0, loaded_cmd->expected_retval);
     Caller* caller_id = loaded_cmd->caller;
@@ -708,23 +406,10 @@ TEST(LoaderTest, LoadListxattr) {
 }
 
 TEST(LoaderTest, LoadLremovexattr) {
-//syscall.lremovexattr
-	Workflow_element* element = alloc_workflow_element();
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-	char line[] =
-			"1 0 - 1 2 1159 32362 32362 (ls) lremovexattr 1318539209608557-21 /tmp/0014b4e97285d -1";
-	parse_element (element, line);
+//1 0 - 1 2 1159 32362 32362 (ls) lremovexattr 1318539209608557-21 /tmp/0014b4e97285d -1";
+	Workflow_element* w_element = load_and_basic_test("tests/input_data/lremovexattr25.workflow");
+	struct replay_command* loaded_cmd = w_element->command;
 
-	EXPECT_EQ(1, element->id);
-	EXPECT_EQ(0, element->n_parents);
-	EXPECT_EQ(1, element->n_children);
-	int child_id = element->children_ids[element->n_children - 1];
-	EXPECT_EQ(2, child_id);
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-
-	struct replay_command* loaded_cmd = element->command;
     EXPECT_EQ(LREMOVEXATTR_OP, loaded_cmd->command);
     EXPECT_EQ(-1, loaded_cmd->expected_retval);
     Caller* caller_id = loaded_cmd->caller;
@@ -734,23 +419,10 @@ TEST(LoaderTest, LoadLremovexattr) {
 }
 
 TEST(LoaderTest, LoadLlistxattr) {
-//syscall.llistxattr
-	Workflow_element* element = alloc_workflow_element();
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-	char line[] =
-			"1 0 - 1 2 1159 32362 32362 (ls) llistxattr 1318539209608557-21 /tmp/0014b4e97285d -1";
-	parse_element (element, line);
+//1 0 - 1 2 1159 32362 32362 (ls) llistxattr 1318539209608557-21 /tmp/0014b4e97285d -1";
+	Workflow_element* w_element = load_and_basic_test("tests/input_data/llistxattr26.workflow");
+	struct replay_command* loaded_cmd = w_element->command;
 
-	EXPECT_EQ(1, element->id);
-	EXPECT_EQ(0, element->n_parents);
-	EXPECT_EQ(1, element->n_children);
-	int child_id = element->children_ids[element->n_children - 1];
-	EXPECT_EQ(2, child_id);
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-
-	struct replay_command* loaded_cmd = element->command;
     EXPECT_EQ(LLISTXATTR_OP, loaded_cmd->command);
     EXPECT_EQ(-1, loaded_cmd->expected_retval);
     Caller* caller_id = loaded_cmd->caller;
@@ -760,23 +432,10 @@ TEST(LoaderTest, LoadLlistxattr) {
 }
 
 TEST(LoaderTest, LoadFgetxattr) {
-//syscall.fgetxattr
-	Workflow_element* element = alloc_workflow_element();
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-	char line[] =
-			"1 0 - 1 2 1159 32362 32362 (ls) fgetxattr 1318539209608557-21 /tmp/0014b4e97285d -1";
-	parse_element (element, line);
+//1 0 - 1 2 1159 32362 32362 (ls) fgetxattr 1318539209608557-21 /tmp/0014b4e97285d -1";
+	Workflow_element* w_element = load_and_basic_test("tests/input_data/fgetxattr27.workflow");
+	struct replay_command* loaded_cmd = w_element->command;
 
-	EXPECT_EQ(1, element->id);
-	EXPECT_EQ(0, element->n_parents);
-	EXPECT_EQ(1, element->n_children);
-	int child_id = element->children_ids[element->n_children - 1];
-	EXPECT_EQ(2, child_id);
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-
-	struct replay_command* loaded_cmd = element->command;
     EXPECT_EQ(FGETXATTR_OP, loaded_cmd->command);
     EXPECT_EQ(-1, loaded_cmd->expected_retval);
     Caller* caller_id = loaded_cmd->caller;
@@ -786,23 +445,10 @@ TEST(LoaderTest, LoadFgetxattr) {
 }
 
 TEST(LoaderTest, LoadFremovexattr) {
-//syscall.fremovexattr
-	Workflow_element* element = alloc_workflow_element();
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-	char line[] =
-			"1 0 - 1 2 1159 32362 32362 (ls) fremovexattr 1318539209608557-21 /tmp/0014b4e97285d 0";
-	parse_element (element, line);
+//1 0 - 1 2 1159 32362 32362 (ls) fremovexattr 1318539209608557-21 /tmp/0014b4e97285d 0";
+	Workflow_element* w_element = load_and_basic_test("tests/input_data/fremovexattr28.workflow");
+	struct replay_command* loaded_cmd = w_element->command;
 
-	EXPECT_EQ(1, element->id);
-	EXPECT_EQ(0, element->n_parents);
-	EXPECT_EQ(1, element->n_children);
-	int child_id = element->children_ids[element->n_children - 1];
-	EXPECT_EQ(2, child_id);
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-
-	struct replay_command* loaded_cmd = element->command;
     EXPECT_EQ(FREMOVEXATTR_OP, loaded_cmd->command);
     EXPECT_EQ(0, loaded_cmd->expected_retval);
     Caller* caller_id = loaded_cmd->caller;
@@ -812,23 +458,10 @@ TEST(LoaderTest, LoadFremovexattr) {
 }
 
 TEST(LoaderTest, LoadFsetxattr) {
-//syscall.fsetxattr
-	Workflow_element* element = alloc_workflow_element();
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-	char line[] =
-			"1 0 - 1 2 1159 32362 32362 (ls) fsetxattr 1318539209608557-21 /tmp/0014b4e97285d -2";
-	parse_element (element, line);
+//1 0 - 1 2 1159 32362 32362 (ls) fsetxattr 1318539209608557-21 /tmp/0014b4e97285d -2";
+	Workflow_element* w_element = load_and_basic_test("tests/input_data/fsetxattr29.workflow");
+	struct replay_command* loaded_cmd = w_element->command;
 
-	EXPECT_EQ(1, element->id);
-	EXPECT_EQ(0, element->n_parents);
-	EXPECT_EQ(1, element->n_children);
-	int child_id = element->children_ids[element->n_children - 1];
-	EXPECT_EQ(2, child_id);
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-
-	struct replay_command* loaded_cmd = element->command;
     EXPECT_EQ(FSETXATTR_OP, loaded_cmd->command);
     EXPECT_EQ(-2, loaded_cmd->expected_retval);
     Caller* caller_id = loaded_cmd->caller;
@@ -838,23 +471,10 @@ TEST(LoaderTest, LoadFsetxattr) {
 }
 
 TEST(LoaderTest, LoadFlistxattr) {
-//syscall.flistxattr
-	Workflow_element* element = alloc_workflow_element();
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-	char line[] =
-			"1 0 - 1 2 1159 32362 32362 (ls) flistxattr 1318539209608557-21 /tmp/0014b4e97285d 0";
-	parse_element (element, line);
+//1 0 - 1 2 1159 32362 32362 (ls) flistxattr 1318539209608557-21 /tmp/0014b4e97285d 0";
+	Workflow_element* w_element = load_and_basic_test("tests/input_data/flistxattr30.workflow");
+	struct replay_command* loaded_cmd = w_element->command;
 
-	EXPECT_EQ(1, element->id);
-	EXPECT_EQ(0, element->n_parents);
-	EXPECT_EQ(1, element->n_children);
-	int child_id = element->children_ids[element->n_children - 1];
-	EXPECT_EQ(2, child_id);
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-
-	struct replay_command* loaded_cmd = element->command;
     EXPECT_EQ(FLISTXATTR_OP, loaded_cmd->command);
     EXPECT_EQ(0, loaded_cmd->expected_retval);
     Caller* caller_id = loaded_cmd->caller;
@@ -864,23 +484,9 @@ TEST(LoaderTest, LoadFlistxattr) {
 }
 
 TEST(LoaderTest, LoadLsetxattr) {
-//syscall.lsetxattr
-	Workflow_element* element = alloc_workflow_element();
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-	char line[] =
-			"1 0 - 1 2 1159 32362 32362 (chmod) lsetxattr 1318539209608557-21 /tmp/0014b4e97285d teste 34 33 0";
-	parse_element (element, line);
-
-	EXPECT_EQ(1, element->id);
-	EXPECT_EQ(0, element->n_parents);
-	EXPECT_EQ(1, element->n_children);
-	int child_id = element->children_ids[element->n_children - 1];
-	EXPECT_EQ(2, child_id);
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-
-	struct replay_command* loaded_cmd = element->command;
+//1 0 - 1 2 1159 32362 32362 (chmod) lsetxattr 1318539209608557-21 /tmp/0014b4e97285d teste 34 33 0";
+	Workflow_element* w_element = load_and_basic_test("tests/input_data/lsetxattr31.workflow");
+	struct replay_command* loaded_cmd = w_element->command;
 
     EXPECT_EQ(LSETXATTR_OP, loaded_cmd->command);
     EXPECT_EQ(0, loaded_cmd->expected_retval);
@@ -1116,6 +722,29 @@ TEST(ReplayTest, sequencial_open_read_close_same_file) {
 	fclose(input_f);
 }
 
+TEST(ReplayTest, open_seek_close) {
+//3
+//1 0 - 0 - 0 2097 2097 (udisks-daemon) open 1318539063003892-2505 workflow_samples/workflow_open_seek_close 34816 0 7
+//2 1 3 1 1 0 2097 2097 (udisks-daemon) read 1318539063004000-329 workflow_samples/workflow_open_seek_close 7 0 0 SEEK_CUR 0
+//3 1 2 0 - 0 2097 2097 (udisks-daemon) close 1318539063006403-37 7 0
+	Replay_workload* rep_wld
+		= (Replay_workload*) malloc (sizeof (Replay_workload));
+	FILE * input_f = fopen("tests/replay_input/workflow_samples/workflow_sequencial_open_seek_close_same_file", "r");
+	load(rep_wld, input_f);
+
+	Replay_result* actual_result = replay (rep_wld);
+
+	EXPECT_EQ (4, actual_result->replayed_commands);
+	EXPECT_EQ (4, actual_result->produced_commands);
+
+	command_replay_result llseek_result = actual_result->cmds_replay_result[1];
+	command_replay_result close_result = actual_result->cmds_replay_result[2];
+	EXPECT_EQ (0, llseek_result.actual_rvalue);
+	EXPECT_EQ (0, close_result.actual_rvalue);
+
+	fclose(input_f);
+}
+
 //Wrote because our testing tool was saying that we are blocking on
 //workflow_9_seq__mkdir_and_an_independent
 //This workflow pattern has two lines that have no parents (other than the fake
@@ -1159,47 +788,6 @@ TEST(ReplayTest, workflow_9_seq__mkdir_and_an_independent) {
 	EXPECT_EQ(5, child_two);
 
 	fclose(input_f);
-}
-
-TEST(LoaderTest, ParseWorkflowElement) {
-	//uid pid tid exec_name mkdir begin-elapsed fullpath mode return
-	//1 0 - 1 2 1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /tmp/jdt-images-1 511 0
-
-	char line[] = "1 0 - 1 2 1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /tmp/jdt-images-1 511 0";
-	Workflow_element* element = alloc_workflow_element();
-	EXPECT_EQ(0, element->consumed);
-	EXPECT_EQ(0, element->produced);
-
-	parse_element (element, line);
-	//parse_element (element,
-			//"1 0 - 1 2 1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /tmp/jdt-images-1 511 0");
-
-    EXPECT_EQ(1, element->id);
-
-    EXPECT_EQ(0, element->n_parents);
-
-    EXPECT_EQ(1, element->n_children);
-    int child_id = element->children_ids[element->n_children - 1];
-    EXPECT_EQ(2, child_id);
-
-    EXPECT_EQ(0, element->consumed);
-    EXPECT_EQ(0, element->produced);
-
-    struct replay_command* loaded_cmd = element->command;
-
-    EXPECT_EQ(MKDIR_OP, loaded_cmd->command);
-    Caller* caller_id = loaded_cmd->caller;
-
-    EXPECT_EQ(1159, caller_id->uid);
-    EXPECT_EQ(2364, caller_id->pid);
-    EXPECT_EQ(32311, caller_id->tid);
-
-	Parms* parm = element->command->params;
-	EXPECT_EQ(511, parm[1].argm->i_val);
-	EXPECT_TRUE(strcmp("/tmp/jdt-images-1", parm[0].argm->cprt_val) == 0);
-
-    EXPECT_EQ(0, loaded_cmd->expected_retval);
-//2 1 1 1 3 1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /tmp/jdt-images-2 511 0
 }
 
 TEST(LoaderTest, LoadWorkflow_2_sequencial_command_mkdir) {

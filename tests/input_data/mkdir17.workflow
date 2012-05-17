@@ -1,7 +1,7 @@
 [
     {
         "args": [
-            "/tmp/jdt-images", 
+            "/local/thiagoepdc/workspace_beefs/.metadata/.plugins/org.eclipse.jdt.ui/jdt-images", 
             "511"
         ], 
         "call": "mkdir", 

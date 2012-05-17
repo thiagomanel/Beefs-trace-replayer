@@ -27,9 +27,11 @@
         "args": [
             "workflow_samples/workflow_single_command_open", 
             "7", 
-            "5"
+            "0",
+            "0",
+            "SEEK_CUR"
         ], 
-        "call": "read", 
+        "call": "llseek", 
         "caller": {
             "exec": "(udisks-daemon)", 
             "pid": 2097, 
@@ -43,7 +45,7 @@
         "parents": [
             1
         ], 
-        "rvalue": 5, 
+        "rvalue": 0, 
         "stamp": {
             "begin": 1318539063004000.0, 
             "elapsed": 329

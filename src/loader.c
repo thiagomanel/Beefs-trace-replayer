@@ -20,6 +20,7 @@
 #include <string.h>
 #include <time.h>
 #include <assert.h>
+#include <jansson.h>
 
 static struct lookuptab {
 	char *string;
@@ -61,17 +62,30 @@ static struct lookuptab {
 
 };
 
-int marker2operation(char *string) {
+static struct lookupwhence {
+	char *string;
+	int whence;
+} whence_tab[] = {
+	{"SEEK_CUR",	SEEK_CUR},
+	{"SEEK_END",	SEEK_END},
+	{"SEEK_SET",	SEEK_SET},
+};
+
+int str2whence(const char *string) {
+	int i;
+	for (i = 0; i < sizeof(whence_tab) / sizeof(whence_tab[0]); i++)
+		if (strcmp(whence_tab[i].string, string) == 0)
+			return whence_tab[i].whence;
+	return -1;
+}
+
+int marker2operation(const char *string) {
 	int i;
 	for (i = 0; i < sizeof(tab) / sizeof(tab[0]); i++)
 		if (strcmp(tab[i].string, string) == 0)
 			return tab[i].code;
 	return NONE;
 }
-
-#define NULL_FILE_OP_ERROR -3
-
-#define UNKNOW_OP_ERROR -2
 
 void fill_replay_command (struct replay_command* cmd) {
 
@@ -81,124 +95,152 @@ void fill_replay_command (struct replay_command* cmd) {
 	cmd->params = NULL;
 }
 
-void parse_caller (Caller* caller, char* token) {
-
-	token = strtok(NULL, " ");
-	caller->uid = atoi(token);
-	token = strtok(NULL, " ");
-	caller->pid = atoi(token);
-	token = strtok(NULL, " ");
-	caller->tid = atoi(token);
-}
-
-Parms* alloc_and_parse_parms (op_t cmd_type,  char* token) {
+Parms* alloc_and_parse_parms (op_t cmd_type,  json_t *replay_object) {
 
 	Parms* parm = NULL;
-
-	switch (cmd_type) {
-	case OPEN_OP:
-		parm = (Parms*) malloc(3 * sizeof(Parms)); //it should be done at each switch case
-		token = strtok(NULL, " "); //fullpath
-		parm[0].argm = (arg*) malloc (sizeof (arg));
-		parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
-		strcpy(parm[0].argm->cprt_val, token);
-		token = strtok(NULL, " "); //flag
-		parm[1].argm = (arg*) malloc (sizeof (arg));
-		parm[1].argm->i_val = atoi(token);
-		token = strtok(NULL, " "); //mode
-		parm[2].argm = (arg*) malloc (sizeof (arg));
-		parm[2].argm->i_val = atoi(token);
-		break;
-	case DUP2_OP:
-	case DUP3_OP:
-		parm = (Parms*) malloc(2 * sizeof(Parms)); //it should be done at each switch case
-		token = strtok(NULL, " "); //oldfd
-		token = strtok(NULL, " "); //new_fd
-		break;
-	case WRITE_OP:
-	case READ_OP: //TODO: write and read have the same token sequence than open
-		parm = (Parms*) malloc(3 * sizeof(Parms)); //it should be done at each switch case
-		token = strtok(NULL, " "); //fullpath
-		parm[0].argm = (arg*) malloc (sizeof (arg));
-		parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
-		strcpy(parm[0].argm->cprt_val, token);
-		token = strtok(NULL, " "); //fd
-		parm[1].argm = (arg*) malloc (sizeof (arg));
-		parm[1].argm->i_val = atoi(token);
-		token = strtok(NULL, " "); //count
-		parm[2].argm = (arg*) malloc (sizeof (arg));
-		parm[2].argm->i_val = atoi(token);
-		break;
-	case LLSEEK_OP: //TODO: write and read have the same token sequence than open
-		parm = (Parms*) malloc(2 * sizeof(Parms)); //it should be done at each switch case
-		token = strtok(NULL, " "); //fullpath
-		token = strtok(NULL, " "); //fd
-		token = strtok(NULL, " "); //offset_high
-		token = strtok(NULL, " "); //offset_low
-		token = strtok(NULL, " "); //whence_str
-		break;
-	case MKDIR_OP:
-		parm = (Parms*) malloc(2 * sizeof(Parms)); //it should be done at each switch case
-		token = strtok(NULL, " "); //fullpath
-		parm[0].argm = (arg*) malloc (sizeof (arg));
-		parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
-		strcpy(parm[0].argm->cprt_val, token);
-		token = strtok(NULL, " "); //mode
-		parm[1].argm = (arg*) malloc (sizeof (arg));
-		parm[1].argm->i_val = atoi(token);
-		break;
-	case MKNOD_OP:
-		parm = (Parms*) malloc(2 * sizeof(Parms)); //it should be done at each switch case
-		token = strtok(NULL, " "); //fullpath
-		token = strtok(NULL, " "); //mode
-		token = strtok(NULL, " "); //dev
-		break;
-	case SYMLINK_OP:
-		parm = (Parms*) malloc(2 * sizeof(Parms)); //it should be done at each switch case
-		token = strtok(NULL, " "); //fullpath_old_name
-		token = strtok(NULL, " "); //fullpath_new_name
-		break;
-	case GETXATTR_OP:
-	case REMOVEXATTR_OP:
-	case SETXATTR_OP:
-	case LISTXATTR_OP:
-	case LREMOVEXATTR_OP:
-	case LLISTXATTR_OP:
-		parm = (Parms*) malloc(2 * sizeof(Parms)); //it should be done at each switch case
-		token = strtok(NULL, " "); //fullpath
-		break;
-	case LSETXATTR_OP:
-		parm = (Parms*) malloc(2 * sizeof(Parms)); //it should be done at each switch case
-		token = strtok(NULL, " "); //fullpath
-		token = strtok(NULL, " "); //name
-		token = strtok(NULL, " "); //value
-		token = strtok(NULL, " "); //flag
-		break;
-	case CLOSE_OP:
-		parm = (Parms*) malloc(sizeof(Parms)); //it should be done at each switch case
-		token = strtok(NULL, " ");
-		parm[0].argm = (arg*) malloc (sizeof (arg));
-		parm[0].argm->i_val = atoi(token); //fd
-		break;
-	case FSTAT_OP:
-		parm = (Parms*) malloc(3 * sizeof(Parms));
-		token = strtok(NULL, " "); //fullpath
-		parm[0].argm = (arg*) malloc (sizeof (arg));
-		parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
-		strcpy(parm[0].argm->cprt_val, token);
-		token = strtok(NULL, " "); //fd
-		parm[1].argm = (arg*) malloc (sizeof (arg));
-		parm[1].argm->i_val = atoi(token);
-		break;
-	default: //FIXME we need a case to NONE_OP, test it
-		parm = (Parms*) malloc(sizeof(Parms)); //it should be done at each switch case
-		token = strtok(NULL, " "); //arg
-		parm[0].argm = (arg*) malloc (sizeof (arg));
-		parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
-		strcpy(parm[0].argm->cprt_val, token);
-		break;
+	json_t 	*args = json_object_get (replay_object, "args");
+	if (!json_is_array (args)) {
+		fprintf (stderr, "error: args is not an array\n");
+		return parm;
 	}
 
+	switch (cmd_type) {
+		case OPEN_OP: {
+			parm = (Parms*) malloc(3 * sizeof(Parms));
+			const char *fullpath = json_string_value (json_array_get (args, 0));
+			parm[0].argm = (arg*) malloc (sizeof (arg));
+			parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
+			strcpy(parm[0].argm->cprt_val, fullpath);
+
+			const char *flag = json_string_value (json_array_get (args, 1));
+			parm[1].argm = (arg*) malloc (sizeof (arg));
+			parm[1].argm->i_val = atoi(flag);
+
+			const char *mode = json_string_value (json_array_get (args, 2));
+			parm[2].argm = (arg*) malloc (sizeof (arg));
+			parm[2].argm->i_val = atoi(mode);
+		}
+		break;
+		case DUP2_OP:
+		case DUP3_OP: {
+			parm = (Parms*) malloc(2 * sizeof(Parms));
+			const char *oldfd = json_string_value (json_array_get (args, 0));
+			const char *newfd = json_string_value (json_array_get (args, 1));
+		}
+		break;
+		case WRITE_OP:
+		case READ_OP: {//TODO: write and read have the same token sequence than open
+			parm = (Parms*) malloc(3 * sizeof(Parms));
+			const char *fullpath = json_string_value (json_array_get (args, 0));
+			parm[0].argm = (arg*) malloc (sizeof (arg));
+			parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
+			strcpy(parm[0].argm->cprt_val, fullpath);
+
+			const char *fd = json_string_value (json_array_get (args, 1));
+			parm[1].argm = (arg*) malloc (sizeof (arg));
+			parm[1].argm->i_val = atoi(fd);
+
+			const char *count = json_string_value (json_array_get (args, 2));
+			parm[2].argm = (arg*) malloc (sizeof (arg));
+			parm[2].argm->i_val = atoi(count);
+		}
+		break;
+		case LLSEEK_OP: {//TODO: write and read have the same token sequence than open
+			parm = (Parms*) malloc (5 * sizeof (Parms));
+			const char *fullpath = json_string_value (json_array_get (args, 0));
+			parm[0].argm = (arg*) malloc (sizeof (arg));
+			parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
+			strcpy(parm[0].argm->cprt_val, fullpath);
+
+			const char *fd = json_string_value (json_array_get (args, 0));
+			parm[1].argm = (arg*) malloc (sizeof (arg));
+			parm[1].argm->i_val = atoi(fd);
+
+			unsigned long offset_high = atol (json_string_value
+					(json_array_get (args, 0)));
+			unsigned long offset_low = atol (json_string_value
+					(json_array_get (args, 0)));
+
+			off_t off = (offset_high<<32) | offset_low;
+			parm[2].argm = (arg*) malloc (sizeof (arg));
+			parm[1].argm->l_val = (long) off;
+
+			const char *whence_str = json_string_value (json_array_get (args, 0));
+			parm[3].argm = (arg*) malloc (sizeof (arg));
+			parm[3].argm->i_val = str2whence(whence_str);
+		}
+		break;
+		case MKDIR_OP: {
+			parm = (Parms*) malloc(2 * sizeof(Parms));
+			const char *fullpath = json_string_value (json_array_get (args, 0));
+			parm[0].argm = (arg*) malloc (sizeof (arg));
+			parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
+			strcpy(parm[0].argm->cprt_val, fullpath);
+
+			const char *mode = json_string_value (json_array_get (args, 1));
+			parm[1].argm = (arg*) malloc (sizeof (arg));
+			parm[1].argm->i_val = atoi(mode);
+		}
+		break;
+		case MKNOD_OP: {
+			parm = (Parms*) malloc(2 * sizeof(Parms));
+			const char *fullpath = json_string_value (json_array_get (args, 0));
+			const char *mode = json_string_value (json_array_get (args, 1));
+			const char *dev = json_string_value (json_array_get (args, 2));
+		}
+		break;
+		case SYMLINK_OP: {
+			parm = (Parms*) malloc(2 * sizeof(Parms));
+			const char *fullpath_oldname = json_string_value (json_array_get (args, 0));
+			const char *fullpath_newname = json_string_value (json_array_get (args, 1));
+		}
+		break;
+		case GETXATTR_OP:
+		case REMOVEXATTR_OP:
+		case SETXATTR_OP:
+		case LISTXATTR_OP:
+		case LREMOVEXATTR_OP:
+		case LLISTXATTR_OP: {
+			parm = (Parms*) malloc(2 * sizeof(Parms));
+			const char *fullpath = json_string_value (json_array_get (args, 0));
+		}
+		break;
+		case LSETXATTR_OP: {
+			parm = (Parms*) malloc(2 * sizeof(Parms));
+			const char *fullpath = json_string_value (json_array_get (args, 0));
+			const char *name = json_string_value (json_array_get (args, 1));
+			const char *value = json_string_value (json_array_get (args, 2));
+			const char *flag = json_string_value (json_array_get (args, 3));
+		}
+		break;
+		case CLOSE_OP: {
+			parm = (Parms*) malloc(sizeof(Parms));
+			const char *fd = json_string_value (json_array_get (args, 0));
+			parm[0].argm = (arg*) malloc (sizeof (arg));
+			parm[0].argm->i_val = atoi(fd);
+		}
+		break;
+		case FSTAT_OP: {
+			parm = (Parms*) malloc(3 * sizeof(Parms));
+			const char *fullpath = json_string_value (json_array_get (args, 0));
+			parm[0].argm = (arg*) malloc (sizeof (arg));
+			parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
+			strcpy(parm[0].argm->cprt_val, fullpath);
+
+			const char *fd = json_string_value (json_array_get (args, 1));
+			parm[1].argm = (arg*) malloc (sizeof (arg));
+			parm[1].argm->i_val = atoi(fd);
+		}
+		break;
+		default: {//FIXME we need a case to NONE_OP, test it
+			parm = (Parms*) malloc(sizeof(Parms));
+			const char *_arg = json_string_value (json_array_get (args, 0));
+			parm[0].argm = (arg*) malloc (sizeof (arg));
+			parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
+			strcpy(parm[0].argm->cprt_val, _arg);
+		}
+		break;
+	}
 	return parm;
 }
 
@@ -209,65 +251,156 @@ void parse_timestamps (struct replay_command* cmd, char* token) {
 	cmd->traced_elapsed_time = atol (token);
 }
 
-int parse_element (Workflow_element* element, char* line) {
-//1 0 - 1 2 1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /tmp/jdt-images-1 511 0
-	//ugly, eh !
-	char* token = strtok (line, " ");
-	element->id = atoi (token);
+int fill_parents (Workflow_element *element, json_t *replay_object) {
 
-	token = strtok (NULL, " ");
-	element->n_parents = atoi (token);
+	int i;
+	json_t *parents = json_object_get (replay_object, "parents");
 
-	if (element->n_parents < 1) {
-		//consume special token "-". ugly. it seems better to have a double empty char
-		token = strtok (NULL, " ");
-	} else {
-		element->parents_ids = (int*) malloc (element->n_parents * sizeof (int));
-		int i;
-		for (i = 0; i < element->n_parents ; i++) {
-			token = strtok (NULL, " ");
-			element->parents_ids[i] = atoi(token);
-		}
+	if (!json_is_array (parents)) {
+		fprintf (stderr, "error: parents is not an array\n");
+		return PARSING_ERROR;
 	}
 
-	token = strtok (NULL, " ");
-	element->n_children = atoi (token);
+	element->n_parents = (int) json_array_size (parents);
+	element->parents_ids = (element->n_parents > 0) ?
+							(int*) malloc (element->n_parents * sizeof (int))
+								: NULL;
 
-	if (element->n_children < 1) {
-		token = strtok (NULL, " ");
-	} else {
-		element->children_ids = (int*) malloc (element->n_children * sizeof (int));
-		int i;
-		for (i = 0; i < element->n_children ; i++) {
-			token = strtok (NULL, " ");
-			element->children_ids[i] = atoi(token);
-		}
+	for (i = 0; i < element->n_parents; i++) {
+		element->parents_ids[i] =
+				(int) json_integer_value (json_array_get (parents, i));
+	}
+	return 0;
+}
+
+int fill_children (Workflow_element *element, json_t *replay_object) {
+
+	int i;
+	json_t *children = json_object_get (replay_object, "children");
+
+	if (!json_is_array (children)) {
+		fprintf (stderr, "error: children is not an array\n");
+		return PARSING_ERROR;
+	}
+	element->n_children = (int) json_array_size (children);
+	element->children_ids = (element->n_children > 0) ?
+								(int*) malloc (element->n_children * sizeof (int))
+									: NULL;
+
+	for (i = 0; i < element->n_children; i++) {
+		element->children_ids[i] =
+				(int) json_integer_value (json_array_get (children, i));
+	}
+	return 0;
+}
+
+int fill_caller (Caller *caller, json_t *replay_object) {
+
+	json_t *json_caller = json_object_get (replay_object, "caller");
+
+	if (!json_is_object (json_caller)) {
+		fprintf (stderr, "error: caller is not an object\n");
+		return PARSING_ERROR;
+	}
+	caller->pid = (int) json_integer_value (json_object_get (json_caller, "pid"));
+	caller->tid = (int) json_integer_value (json_object_get (json_caller, "tid"));
+	caller->uid = (int) json_integer_value (json_object_get (json_caller, "uid"));
+	return 0;
+}
+
+int fill_syscall (struct replay_command *cmd, json_t *replay_object) {
+
+	json_t *syscall = json_object_get (replay_object, "call");
+
+	if (!json_is_string (syscall)) {
+		   fprintf (stderr, "error: syscall is not a string\n");
+		   return PARSING_ERROR;
+	}
+	const char *syscall_name = json_string_value (syscall);
+	cmd->command = marker2operation (syscall_name);
+	return 0;
+}
+
+int fill_stamp (struct replay_command *cmd, json_t *replay_object) {
+//FIXME It failed silent when there is no "elapsed field"
+	json_t *stamp = json_object_get (replay_object, "stamp");
+
+	if (!json_is_object (stamp)) {
+		   fprintf (stderr, "error: stamp is not an object\n");
+		   return PARSING_ERROR;
+	}
+	cmd->traced_begin =
+			(double) json_real_value (json_object_get (stamp, "begin")),
+	cmd->traced_elapsed_time =
+			(long) json_integer_value (json_object_get (stamp, "elapsed"));
+	return 0;
+}
+
+int fill_rvalue (struct replay_command *cmd, json_t *replay_object) {
+
+	json_t *rvalue = json_object_get (replay_object, "rvalue");
+	if (!json_is_number (rvalue)) {
+		fprintf (stderr, "error: rvalue is not a number\n");
+		return PARSING_ERROR;
+	}
+	cmd->expected_retval = (int) json_integer_value(rvalue);
+	return 0;
+}
+
+int fill_id (Workflow_element *element, json_t *replay_object) {
+
+	json_t *id = json_object_get (replay_object, "id");
+	if (!json_is_number (id)) {
+		fprintf (stderr, "error: id is not a number\n");
+		return PARSING_ERROR;
+	}
+	element->id = json_integer_value (id);
+	return 0;
+}
+
+/**
+ * It parses a json replay object into a Workflow_element. Return 0 in case
+ * of sucess, non-zero otherwise.
+ */
+int parse_element (Workflow_element *element, json_t* replay_object) {
+
+	if (!json_is_object (replay_object)) {
+		fprintf (stderr, "error: replay_call is not an object\n");
+		return PARSING_ERROR;
 	}
 
-	struct replay_command*
-		current_command = (struct replay_command*)
-			malloc (sizeof (struct replay_command));
-	fill_replay_command (current_command);
+	if (fill_id (element, replay_object) == PARSING_ERROR) {
+		return PARSING_ERROR;
+	}
 
-	current_command->caller = (Caller*) malloc(sizeof(Caller));
-	parse_caller (current_command->caller, token);
+	if (fill_parents (element, replay_object) == PARSING_ERROR) {
+		return PARSING_ERROR;
+	}
 
-	token = strtok (NULL, " "); //exec_name
+	if (fill_children (element, replay_object) == PARSING_ERROR) {
+		return PARSING_ERROR;
+	}
 
-	token = strtok (NULL, " ");
-	op_t loaded_cmd = marker2operation (token);
-	current_command->command = loaded_cmd;
+	if (fill_caller (element->command->caller, replay_object) == PARSING_ERROR) {
+		return PARSING_ERROR;
+	}
 
-	parse_timestamps (current_command, token);
-	current_command->params = alloc_and_parse_parms (loaded_cmd, token);
+	if (fill_syscall (element->command, replay_object) == PARSING_ERROR) {
+		return PARSING_ERROR;
+	}
 
-	token = strtok (NULL, " ");
-	current_command->expected_retval = atoi (token);
+	if (fill_stamp (element->command, replay_object) == PARSING_ERROR) {
+		return PARSING_ERROR;
+	}
 
-	element->command = current_command;
+	if (fill_rvalue (element->command, replay_object) == PARSING_ERROR) {
+		return PARSING_ERROR;
+	}
 
-	return (loaded_cmd == NONE) ? UNKNOW_OP_ERROR : 0;
-//free something ?
+	element->command->params
+		= alloc_and_parse_parms(element->command->command, replay_object);
+
+	return (element->command->command == NONE) ? UNKNOW_OP_ERROR : 0;
 }
 
 /**
@@ -280,14 +413,11 @@ void append(int* array, int array_size, int value_to_append) {
 
 //this function is used once, so I would not like to have it in header. I also
 //think resizing arrays smells bad, it necessary to insert the bootstrap element.
-void add_child (Replay_workload* workload, Workflow_element* parent,
-		Workflow_element* child) {
+void add_child (Workflow_element* parent, Workflow_element* child) {
 
 	//assuming that is A is child of B, B is parent of A. So, everybody should
 	//modify child/parent arrays using the available functions, never directly
 	if (! is_child (parent, child)) {
-		printf("really adding child\n");
-
 		append (parent->children_ids, parent->n_children, child->id);
 		parent->n_children++;
 
@@ -343,11 +473,24 @@ void assign_root_timestamp (Replay_workload* wld) {
 	root->command->traced_elapsed_time = 0;
 }
 
+void fill_root_element (Workflow_element *root) {
+
+	fill_workflow_element(root);
+	root->id = ROOT_ID;
+	root->produced = 1;
+	root->consumed = 1;
+
+	root->command
+		= (struct replay_command*) malloc( sizeof (struct replay_command));
+	fill_replay_command(root->command);
+	root->command->command = NONE;
+}
+
 int load (Replay_workload* replay_wld, FILE* input_file) {
 
-	size_t read_bytes = 0;
-	size_t line_len = 0;
-	char* line = NULL;
+	json_t *json, *replay_call;
+	json_error_t error;
+	size_t num_cmds_on_file, i;
 	int loaded_commands = 0;
 
 	fill_replay_workload (replay_wld);
@@ -358,42 +501,43 @@ int load (Replay_workload* replay_wld, FILE* input_file) {
 		return NULL_FILE_OP_ERROR;
 	}
 
-	while ( (read_bytes = getline (&line, &line_len, input_file)) != -1 ) {
+	json = json_loadf (input_file, 0, &error);
+	if (!json) {
+		fprintf (stderr, "error: on line %d: %s\n", error.line, error.text);
+		return PARSING_ERROR;
+	}
+	num_cmds_on_file = json_array_size (json);
 
-		if (replay_wld->element_list == NULL){//first line is the number of commands
+	replay_wld->element_list
+						= (Workflow_element*) malloc ((num_cmds_on_file + 1)
+														* sizeof (Workflow_element));
+	//fake element is also element_list's head
+	Workflow_element* root_element = element(replay_wld, 0);
+	fill_root_element (root_element);
+	++loaded_commands;
 
-			int num_commands_to_load = atoi (line);
-			replay_wld->element_list
-					= (Workflow_element*) malloc ((num_commands_to_load + 1)
-													* sizeof (Workflow_element));
+	for (i = 0; i < num_cmds_on_file; i++) {
+		Workflow_element* tmp_element
+			= (replay_wld->element_list + loaded_commands);
 
-			//A fake element is the workflow root
-			struct replay_command* root_cmd
-				= (struct replay_command*) malloc( sizeof (struct replay_command));
-			fill_replay_command(root_cmd);
-			root_cmd->command = NONE;
+		fill_workflow_element (tmp_element);
 
-			//fake element is also element_list's head
-			Workflow_element* root_element = element(replay_wld, 0);
-			fill_workflow_element(root_element);
-			root_element->command = root_cmd;
-			root_element->id = ROOT_ID;
-			root_element->produced = 1;
-			root_element->consumed = 1;
+		struct replay_command *new_cmd =
+				(struct replay_command*) malloc (sizeof (struct replay_command));
+		fill_replay_command (new_cmd);
 
-			++loaded_commands;
+		Caller *new_caller = (Caller*) malloc (sizeof (Caller));
+		new_cmd->caller = new_caller;
 
-		} else {
-			if (read_bytes >= 0) {
+		tmp_element->command = new_cmd;
 
-				Workflow_element* tmp_element
-					= (replay_wld->element_list + loaded_commands);
-				fill_workflow_element (tmp_element);
-				parse_element (tmp_element, line);
+		replay_call = json_array_get (json, i);
 
-				++loaded_commands;
-			}
+		if (parse_element (tmp_element, replay_call) == PARSING_ERROR){
+			return PARSING_ERROR;
 		}
+
+		++loaded_commands;
 	}
 
 	replay_wld->current_cmd = 0;
@@ -434,8 +578,8 @@ int load (Replay_workload* replay_wld, FILE* input_file) {
 
 		assign_root_timestamp (replay_wld);
 	}
-
-	free (line);
-
+//FIXME: free json
+//FIXME: In case on any parsing problems, we need a label to jump to
+//	a default cleaning routine,
 	return 0;
 }

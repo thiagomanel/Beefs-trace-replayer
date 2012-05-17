@@ -19,6 +19,10 @@
 #include "replayer.h"
 #include <stdio.h>
 
+#define UNKNOW_OP_ERROR -2
+#define NULL_FILE_OP_ERROR -3
+#define PARSING_ERROR -4
+
 int parse_line (struct replay_command** cmd, char* line);
 
 int parse_element (Workflow_element* element, char* line);

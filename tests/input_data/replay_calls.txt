@@ -1,0 +1,32 @@
+0 2097 2097 (udisks-daemon) close 1318539063006403-37 7 0
+1159 2076 2194 (gnome-do) fstat 1318539073583678-143 /home/thiagoepdc/.config/google-chrome/com.google.chrome.gUMVsk 23 0
+1159 2364 32311 (eclipse) rmdir 1318539134542480-46 /home/thiagoepdc/workspace_beefs/.metadata/.plugins/org.eclipse.jdt.ui/jdt-images -1
+1159 2076 2194 (gnome-do) lstat 1318539555812393-87 /usr/share/applications/gnome-sudoku.desktop 0
+0 1163 1163 (cron) stat 1317750601526436-18178 /var/spool/cron/crontabs 0
+1159 2053 2053 (gnome-settings-) statfs 1318540136505344-287 /local/tracer/logs_nfs 0
+0 32544 32544 (sshd) dup 1318539601707575-31 4 5
+0 32544 32544 (sshd) fstatfs 1318539601707575-31 4 -1
+1159 2076 2194 (gnome-do) readdir 1318539555798359-27 /usr/share/applications/ 0
+1159 2364 32311 (eclipse) unlink 1318539134533662-8118 /local/thiagoepdc/workspace_beefs/.metadata/.plugins/org.eclipse.jdt.ui/jdt-images/1.png 0
+0 1547 1547 (puppet) getattr 1318539062631232-30 /etc/puppet/puppet.conf 0
+0 2097 2097 (udisks-daemon) open 1318539063003892-2505 /dev/sdb 34816 0 7
+0 32544 32544 (sshd) dup2 1318539601707761-41 4 0 0
+0 32544 32544 (sshd) dup3 1318539601707761-41 4 0 0
+0 6194 6194 (xprintidle) write 1318539063058255-131 /local/userActivityTracker/logs/tracker.log 1 17 17
+114 1562 1562 (snmpd) read 1318539063447564-329 /proc/stat 8 3072 2971
+1159 2364 2364 (eclipse) llseek 1318539072857083-113 /local/thiagoepdc/eclipse/configuration/org.eclipse.core.runtime/.mainData.4 30 0 931001 SEEK_SET 931001
+1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /local/thiagoepdc/workspace_beefs/.metadata/.plugins/org.eclipse.jdt.ui/jdt-images 511 0
+1159 11407 11407 (gconftool-2) mknod 1319207649254700-14 /home/thiagoepdc/orbit-thiagoepdc/linc-2c8f-0-69f0eff3e2d5 S_IFSOCK|S_IXOTH|S_IROTH|S_IXGRP|S_IRGRP|S_IRWXU 0 0
+0 603 603 (update-rc.d) symlink 1318540206298997-36 /etc/rcS.d/../init.d/puppet /etc/rc0.d/K20puppet 0
+1159 2092 2092 (gvfs-gdu-volume) readlink 1318539355485686-40 /dev/scd0 3
+1159 32362 32362 (ls) getxattr 1318539209608557-21 /tmp/0014b4e97285d -95
+1159 32362 32362 (ls) removexattr 1318539209608557-21 /tmp/0014b4e97285d 0
+1159 32362 32362 (ls) setxattr 1318539209608557-21 /tmp/0014b4e97285d -3
+1159 32362 32362 (ls) listxattr 1318539209608557-21 /tmp/0014b4e97285d 0
+1159 32362 32362 (ls) lremovexattr 1318539209608557-21 /tmp/0014b4e97285d -1
+1159 32362 32362 (ls) llistxattr 1318539209608557-21 /tmp/0014b4e97285d -1
+1159 32362 32362 (ls) fgetxattr 1318539209608557-21 /tmp/0014b4e97285d -1
+1159 32362 32362 (ls) fremovexattr 1318539209608557-21 /tmp/0014b4e97285d 0
+1159 32362 32362 (ls) fsetxattr 1318539209608557-21 /tmp/0014b4e97285d -2
+1159 32362 32362 (ls) flistxattr 1318539209608557-21 /tmp/0014b4e97285d 0
+1159 32362 32362 (chmod) lsetxattr 1318539209608557-21 /tmp/0014b4e97285d teste 34 33 0

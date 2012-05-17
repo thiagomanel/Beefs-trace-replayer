@@ -1,3 +1,48 @@
-2
-1 0 - 1 2 1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /tmp/jdt-images-1 511 0
-2 1 1 0 - 1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /tmp/jdt-images-2 511 0
+[
+    {
+        "args": [
+            "/tmp/jdt-images-1", 
+            "511"
+        ], 
+        "call": "mkdir", 
+        "caller": {
+            "exec": "(eclipse)", 
+            "pid": 2364, 
+            "tid": 32311, 
+            "uid": 1159
+        }, 
+        "children": [
+            2
+        ], 
+        "id": 1, 
+        "parents": [], 
+        "rvalue": 0, 
+        "stamp": {
+            "begin": 1318539134542649.0, 
+            "elapsed": 479
+        }
+    }, 
+    {
+        "args": [
+            "/tmp/jdt-images-2", 
+            "511"
+        ], 
+        "call": "mkdir", 
+        "caller": {
+            "exec": "(eclipse)", 
+            "pid": 2364, 
+            "tid": 32311, 
+            "uid": 1159
+        }, 
+        "children": [], 
+        "id": 2, 
+        "parents": [
+            1
+        ], 
+        "rvalue": 0, 
+        "stamp": {
+            "begin": 1318539134542649.0, 
+            "elapsed": 479
+        }
+    }
+]

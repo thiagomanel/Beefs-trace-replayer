@@ -1,7 +1,7 @@
 [
     {
         "args": [
-            "workflow_samples/workflow_single_command_open", 
+            "tests/replay_input/workflow_samples/workflow_single_command_open", 
             "34816", 
             "0"
         ], 
@@ -25,7 +25,7 @@
     }, 
     {
         "args": [
-            "workflow_samples/workflow_single_command_open", 
+            "tests/replay_input/workflow_samples/workflow_single_command_open", 
             "7", 
             "0",
             "0",

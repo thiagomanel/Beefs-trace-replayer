@@ -14,7 +14,7 @@
 
 # Points to the root of Google Test, relative to where this file is.
 # Remember to tweak this if you move this file.
-GTEST_DIR = /local/thiagoepdc/Softs/gtest-1.6.0/
+include gtest.config
 
 # Where to find user code.
 USER_DIR = .

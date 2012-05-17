@@ -152,20 +152,21 @@ Parms* alloc_and_parse_parms (op_t cmd_type,  json_t *replay_object) {
 			parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
 			strcpy(parm[0].argm->cprt_val, fullpath);
 
-			const char *fd = json_string_value (json_array_get (args, 0));
+			const char *fd = json_string_value (json_array_get (args, 1));
 			parm[1].argm = (arg*) malloc (sizeof (arg));
 			parm[1].argm->i_val = atoi(fd);
 
 			unsigned long offset_high = atol (json_string_value
-					(json_array_get (args, 0)));
+					(json_array_get (args, 2)));
 			unsigned long offset_low = atol (json_string_value
-					(json_array_get (args, 0)));
+					(json_array_get (args, 3)));
 
 			off_t off = (offset_high<<32) | offset_low;
-			parm[2].argm = (arg*) malloc (sizeof (arg));
-			parm[1].argm->l_val = (long) off;
 
-			const char *whence_str = json_string_value (json_array_get (args, 0));
+			parm[2].argm = (arg*) malloc (sizeof (arg));
+			parm[2].argm->l_val = (long) off;
+
+			const char *whence_str = json_string_value (json_array_get (args, 4));
 			parm[3].argm = (arg*) malloc (sizeof (arg));
 			parm[3].argm->i_val = str2whence(whence_str);
 		}

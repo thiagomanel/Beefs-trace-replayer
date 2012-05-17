@@ -297,6 +297,15 @@ TEST(LoaderTest, LoadLLseekCall) {
     EXPECT_EQ(1159, caller_id->uid);
     EXPECT_EQ(2364, caller_id->pid);
     EXPECT_EQ(2364, caller_id->tid);
+
+    Parms *args = loaded_cmd->params;
+    int expected_fd = args[1].argm->i_val;
+    long expected_offset = args[2].argm->l_val;
+    int expected_whence = args[3].argm->i_val;
+
+    EXPECT_EQ (30, expected_fd);
+    EXPECT_EQ (( (0<<32) | 931001), expected_offset);
+    EXPECT_EQ (SEEK_SET, expected_whence);
 }
 
 TEST(LoaderTest, LoadMkdirCall) {
@@ -737,8 +746,8 @@ TEST(ReplayTest, open_seek_close) {
 	EXPECT_EQ (4, actual_result->replayed_commands);
 	EXPECT_EQ (4, actual_result->produced_commands);
 
-	command_replay_result llseek_result = actual_result->cmds_replay_result[1];
-	command_replay_result close_result = actual_result->cmds_replay_result[2];
+	command_replay_result llseek_result = actual_result->cmds_replay_result[2];
+	command_replay_result close_result = actual_result->cmds_replay_result[3];
 	EXPECT_EQ (0, llseek_result.actual_rvalue);
 	EXPECT_EQ (0, close_result.actual_rvalue);
 

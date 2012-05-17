@@ -305,7 +305,6 @@ int do_replay (struct replay_command* cmd, int *call_rvalue) {
 					open (args[0].argm->cprt_val, args[1].argm->i_val, args[2].argm->i_val);
 
 			*call_rvalue = replayed_fd;
-
 			int traced_fd = cmd->expected_retval;
 			if (traced_fd > 0) {
 				map_fd (cmd->caller->pid, traced_fd, replayed_fd);
@@ -357,7 +356,7 @@ int do_replay (struct replay_command* cmd, int *call_rvalue) {
 
 			off_t offset = (off_t) args[2].argm->l_val;
 			int whence = args[3].argm->i_val;
-			lseek (repl_fd, offset, whence);
+			*call_rvalue = lseek (repl_fd, offset, whence);
 		}
 		break;
 		default:

@@ -27,7 +27,7 @@ then
 fi
 
 # running instances
-EMI=emi-43B9122D
+EMI=emi-03A214E8
 euca-run-instances -k $KEY -t c1.medium -n $num_instances $EMI
 
 # authorizing ssh access

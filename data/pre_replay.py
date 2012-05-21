@@ -52,9 +52,15 @@ if __name__ == "__main__":
         It find the namespace to be created, it means file and directories
         that are used in workflow data but are not present in replay_dir_path. It outputs file or
         directories names and its type, "f" or "d", separated by \t
+
+        replay_dir is a path to mount point where remote file system was mounted.
+        For example a remote directory, e.g /local/nfs_to_export is exported in
+        the server machine and mounted at client side at /tmp/home, so replay_dir
+        is /tmp. A directory within the exported directory, e.g 
+        /local/nfs_to_export/thiagoepdc, will be seen as /tmp/home/manel
     """
     #FIXME use opt
-    usage_msg = "Usage: python pre_replay.py replay_dir replay_input_path\n"
+    usage_msg = "Usage: python pre_replay.py replay_dir workflow_path\n"
 
     if not len(sys.argv) == 3:
         sys.stderr.write(usage_msg)
@@ -62,8 +68,11 @@ if __name__ == "__main__":
 
     replay_dir = sys.argv[1]
     with open(sys.argv[2], 'r') as workflow_file:
-        workflow_file.readline()#excluding header
-        created_dirs, created_files = build_namespace(replay_dir, workflow_file.readlines())
+        workflow_json = json.load(workflow_file)
+        w_lines = [WorkflowLine.from_json(wline_json) 
+                      for wline_json in workflow_json]
+
+        created_dirs, created_files = build_namespace(replay_dir, w_lines)
         for _dir in created_dirs:
             sys.stdout.write("\t".join([_dir, "d", "\n"]))
         for _file in created_files:

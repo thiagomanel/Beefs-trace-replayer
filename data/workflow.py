@@ -3,6 +3,7 @@ from itertools import izip
 from itertools import chain
 from clean_trace import *
 import sys
+import json
 
 # if things start to get complicated we should try using ReplayInput class from match_syscall.py
 #TODO: open with creation semantics is different
@@ -10,32 +11,59 @@ import sys
 #code this fs_obj methods. Timestamp methods also. In summary, any method manipulating input and output
 
 class WorkflowLine:
-    """
-       it parses a workflow line into a tuple (id, n_parents, parents, n_children, children, syscall)
-       workflow lines examples:
-       1 0 - 3 2 3 2 1159 16303 16318 (chrome) open 1319203757986598-1310 /home/thiagoepdc/.config/google-chrome/com.google.chrome.gUMVsk 32962 384 43
-       2 2 1 1 1 3 1159 16303 16318 (chrome) fstat 1319203757987999-87 /home/thiagoepdc/.config/google-chrome/com.google.chrome.gUMVsk 43 0
-    """
     def __init__(self, _id, parents, children, clean_call):
         self._id = _id
         self.parents = parents
         self.children = children
         self.clean_call = clean_call
 
-    def __str__(self):
-        def list2str(_list):
-            if _list:
-                return str(_list).replace("[", "").replace("]", "").replace(",", "")
-            else:
-                return "-"
+    def json(self):
+        stamp = self.clean_call.stamp.split("-")
+        begin = float(stamp[0])
+        end = long(stamp[1])
+        return {
+                "id": self._id,
+                "parents": self.parents,
+                "children": self.children,
+                "stamp": {
+                          "begin": begin,
+                          "elapsed": end
+                         },
+                "call": self.clean_call.call,
+                "caller": {
+                           "exec": self.clean_call.pname,
+                           "uid": self.clean_call.uid,
+                           "pid": self.clean_call.pid,
+                           "tid": self.clean_call.tid
+                          },
+                "args": self.clean_call.args,
+                "rvalue": int(self.clean_call.rvalue) 
+              }
 
-        return " ".join([str(self._id)] +
-                        [str(len(self.parents))] + 
-                        [list2str(self.parents)] + 
-                        [str(len(self.children))] + 
-                        [list2str(self.children)] + 
-                        [str(self.clean_call)]
-                       )
+    @classmethod
+    def from_json(cls, _json):
+        #creates itself based on json dict defined on self.json()
+        uid = _json["caller"]["uid"]
+        pid = _json["caller"]["pid"]
+        tid = _json["caller"]["tid"]
+        pname = _json["caller"]["exec"]
+        stamp_str = str(int(_json["stamp"]["begin"])) + "-" \
+                    + str(_json["stamp"]["elapsed"])
+
+        return WorkflowLine( _json["id"],
+                             _json["parents"],
+                             _json["children"],
+                             CleanCall(uid, pid, tid,
+                                       pname,
+                                       _json["call"],
+                                       stamp_str,
+                                       [ str(arg) for arg in _json["args"]],
+                                       str(_json["rvalue"]))
+                            )  
+                                       
+
+    def __str__(self):
+        return json.dumps(self.json(), sort_keys=True, indent=4)
 
 def graph(workflow_lines, bottom_up=False):
     """ 

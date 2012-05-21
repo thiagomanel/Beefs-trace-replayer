@@ -29,19 +29,22 @@ def accessed_and_created(clean_call):
     #we do not handle close and fstat because its information was already processed on the
     #associated open call
     if success(clean_call):
-        _fullpath = clean_call.fullpath()
         _call = clean_call.call
         if _call == "unlink" or _call == "stat" or _call == "read" or \
             _call == "write" or _call == "llseek":
             #FIXME we can make basename and dirs to manage this
+            _fullpath = clean_call.fullpath()
             parent = parent_path(_fullpath)
             return (dirs(parent), [_fullpath], [], [])
         elif (_call == "rmdir"):
+            _fullpath = clean_call.fullpath()
             return (dirs(_fullpath), [], [], [])
         elif _call == "mkdir":
+            _fullpath = clean_call.fullpath()
             parent = parent_path(_fullpath)
             return (dirs(parent), [], [_fullpath], [])
         elif _call == "open":
+            _fullpath = clean_call.fullpath()
             parent = parent_path(_fullpath)
             if open_to_create(clean_call):
                 return (dirs(parent), [], [], [_fullpath])

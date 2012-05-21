@@ -256,7 +256,7 @@ class TestOrderTrace(unittest.TestCase):
                  CleanCall("65534", "1856", "1867", "(gmetad)", "stat",
                            "1319227151896626-115",
                            ["/home/user/bla3.rrd"],
-                           0),
+                           "0"),
                  CleanCall("65534", "1856", "1868", "(gmetad)", "stat",
                            "1319227151896626-116",
                            ["/home/user/bla4.rrd"], 
@@ -272,6 +272,41 @@ class TestOrderTrace(unittest.TestCase):
         self.assertWLine(w_lines[1], 2, [], [4], lines[1])
         self.assertWLine(w_lines[2], 3, [1], [], lines[2])
         self.assertWLine(w_lines[3], 4, [2], [], lines[3])
+
+    def test_creation_from_json(self):
+        exp_id = 1
+        exp_parents = []
+        exp_children = [2, 50, 44]
+        _json = {
+                       "args": [
+                                "/home/nathaniel/.config/google-chrome/Default", 
+                                "32768", 
+                                "0"
+                               ], 
+                       "call": "open", 
+                       "caller": {
+                                  "exec": "(chrome)", 
+                                  "pid": "9822", 
+                                  "tid": "9887", 
+                                  "uid": "1057"
+                                 }, 
+                       "children": exp_children,
+                       "id": exp_id, 
+                       "parents": exp_parents, 
+                       "rvalue": 146, 
+                       "stamp": {
+                                 "begin": 1319217009707385.0, 
+                                 "elapsed": 277
+                                 }
+                }
+
+        workflow = WorkflowLine.from_json(_json)
+        self.assertWLine(workflow, exp_id, exp_parents, exp_children, 
+                                  CleanCall("1057", "9822", "9887", "(chrome)",
+                                            "open", "1319217009707385-277",
+                                            ["/home/nathaniel/.config/google-chrome/Default", 
+                                             "32768", "0"],
+                                            "146"))
 
     def assertWLine(self, actual_wline, exp_id, exp_parents, exp_children, exp_clean_call):
         self.assertEquals(actual_wline.clean_call, exp_clean_call)

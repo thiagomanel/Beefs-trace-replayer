@@ -13,13 +13,19 @@ if __name__ == "__main__":
     lines = sys.stdin.readlines()
     cleaned_calls = [CleanCall.from_str(line) for line in lines]
 
-    pidfid_lines = sorted(order_by_pidfid(cleaned_calls), key=lambda line: line._id)#sort by _id
-    sys.stderr.write("pid fid order done\n")
+    pidfid_lines = sorted(order_by_pidfid(cleaned_calls),
+                             key=lambda line: line._id)#sort by _id
 
-    fs_dep_lines = sorted(fs_dependency_order(pidfid_lines), key=lambda line: line._id)#sort by _id
-    sys.stderr.write("fs dep order done\n")
+    fs_dep_lines = sorted(fs_dependency_order(pidfid_lines), 
+                             key=lambda line: line._id)#sort by _id
 
-    n_commands = len(fs_dep_lines)
-    sys.stdout.write(str(n_commands) + "\n")
-    for o_line in fs_dep_lines:
-        sys.stdout.write(str(o_line) + "\n")
+    #json dumps cannot handle our data
+    sys.stdout.write("[\n")
+    sys.stdout.write(str(fs_dep_lines[0]))
+    for w_line in fs_dep_lines[1:]:
+        try:
+            sys.stdout.write(",\n" + str(w_line))
+        except ValueError:
+            sys.stderr.write(str(w_line.clean_call))
+            raise 
+    sys.stdout.write("\n]")

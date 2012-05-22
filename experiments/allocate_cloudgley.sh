@@ -2,13 +2,14 @@
 
 # It allocated a number of instances on cloudgley
 
-if [ $# -ne 1 ]
+if [ $# -ne 2 ]
 then
-	echo "Usage:" $0 "number_instances_to_allocate"
+	echo "Usage:" $0 "number_instances_to_allocate image_id"
 	exit 1
 fi
 
 num_instances=$1
+EMI=$2
 
 # defining the credentials directory
 EUCA_CONF_DIR="/home/thiagoepdc/.euca"
@@ -27,7 +28,6 @@ then
 fi
 
 # running instances
-EMI=emi-03A214E8
 euca-run-instances -k $KEY -t c1.medium -n $num_instances $EMI
 
 # authorizing ssh access

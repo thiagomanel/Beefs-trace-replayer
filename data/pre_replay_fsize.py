@@ -4,12 +4,15 @@ from clean_trace import *
 
 if __name__ == "__main__":
 
-    calls_with_size = ["write", "read"]
+    calls_with_size = ["write", "read", "llseek"]
 
     def parse_pre_replay(line):
-        tokens = line.split()
-        path, ftype = tokens[0], tokens[1]
-        return path, ftype
+        def parse_path(line):
+            return line.split("<path=")[1].split("/>")[0]
+        def parse_ftype(line):
+            return line.split("<ftype=")[1].split("/>")[0]
+
+        return parse_path(line), parse_ftype(line)
 
     def update_file_pos(fileinfo, bytes_to_advance):
         fileinfo[0] = fileinfo[0] + bytes_to_advance
@@ -65,12 +68,12 @@ if __name__ == "__main__":
                     open_files[pid_fd] = [0, to_replay_fullpath]
 
             elif syscall in calls_with_size:
-                #read 1319217168628597-20878 /home/thiagoepdc/.config/google-chrome/Safe 43 100 100
                 to_replay_fullpath = clean_call.fullpath()
                 if to_replay_fullpath in file2safe_size:
                     pid_fd = clean_call.pid, clean_call.fd()
                     fileinfo = open_files[pid_fd]
-                    r_value = int(clean_call.rvalue)#amount of read or written bytes
+                    #amount of read or written bytes or llseek pos
+                    r_value = int(clean_call.rvalue)
                     update_file_pos(fileinfo, r_value)
                     if file2safe_size[to_replay_fullpath] < file_pos(fileinfo):
                         file2safe_size[to_replay_fullpath] = file_pos(fileinfo)
@@ -85,4 +88,4 @@ if __name__ == "__main__":
             #adding the leading path back
             #from /home/patrickjem/.cache/google-chrome/Default/Cache/f_0038dd
             #to   /local/thiagoepdc/espadarte_nfs//home/patrickjem/.cache/google-chrome/Default/Cache/f_0038dd
-            sys.stdout.write("\t".join([_lead_path + filename, "f", str(size)]) + "\n") 
+            sys.stdout.write("\t".join(["<path="+ _lead_path + filename + "/>", "<ftype=f/>", "<fsize="+str(size)+"/>"]) + "\n") 

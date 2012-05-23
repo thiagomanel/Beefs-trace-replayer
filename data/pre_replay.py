@@ -48,6 +48,9 @@ def build_namespace(replay_dir, workflow_lines):#FIXME TEST-IT
 
 if __name__ == "__main__":
 
+    def format_path(pathname):
+        return "<path=" + pathname + "/>"
+
     """
         It find the namespace to be created, it means file and directories
         that are used in workflow data but are not present in replay_dir_path. It outputs file or
@@ -74,6 +77,6 @@ if __name__ == "__main__":
 
         created_dirs, created_files = build_namespace(replay_dir, w_lines)
         for _dir in created_dirs:
-            sys.stdout.write("\t".join([_dir, "d", "\n"]))
+            sys.stdout.write("\t".join([format_path(_dir), "<ftype=d/>", "\n"]))
         for _file in created_files:
-            sys.stdout.write("\t".join([_file, "f", "\n"]))
+            sys.stdout.write("\t".join([format_path(_file), "<ftype=f/>", "\n"]))

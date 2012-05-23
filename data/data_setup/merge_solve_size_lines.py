@@ -8,10 +8,17 @@ if __name__ == "__main__":
        to original input
     """ 
     def read_data(source):
+        def parse_pre_replay(line):#FIXME duplicated code
+            def parse_path(line):
+                return line.split("<path=")[1].split("/>")[0]
+            def parse_ftype(line):
+                return line.split("<ftype=")[1].split("/>")[0]
+            return parse_path(line), parse_ftype(line)
+
         line_by_path = {}
         for line in source:
-            tokens = line.split()
-            line_by_path[tokens[0]] = line
+            path = parse_pre_replay(line)[0]
+            line_by_path[path] = line.strip()
         return line_by_path
    
     #the partial output from solve_pre_replay_fsize_all.sh
@@ -27,8 +34,8 @@ if __name__ == "__main__":
     with open(pre_replay_data) as pre_replay_lines:
         original_data = read_data(pre_replay_lines)
 
-    for line, data in original_data.iteritems():
-        if not line in solved_by_path:
-            sys.stdout.write("\t".join(data.split()) + "\n")
+    for path, data in original_data.iteritems():
+        if not path in solved_by_path:
+            sys.stdout.write(data + "\n")
         else:
-            sys.stdout.write("\t".join(solved_by_path[line].split()) + "\n")
+            sys.stdout.write(solved_by_path[path] + "\n")

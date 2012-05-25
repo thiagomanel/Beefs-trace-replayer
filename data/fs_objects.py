@@ -132,7 +132,7 @@ def fs_tree(workflow_lines):
                 #so, a file opened using O_CREAT flag receives a write
                 #we cannot decide if it is a false positive
                 opentocreat_candidates.remove(fullpath)
-                undefined_ocreat.append(fullapath)
+                undefined_ocreat.add(fullpath)
         elif node_clean_call.call == "open":
             fullpath = node_clean_call.fullpath()
             if open_to_create(node_clean_call) and \

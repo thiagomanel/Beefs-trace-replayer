@@ -31,6 +31,35 @@ class TestFSObjects(unittest.TestCase):
 
         self.assertDictEquals(tree, expected_tree)
 
+    def test_fs_tree_with_non_creational_creat_flag_undefined(self):
+        lines = [
+             WorkflowLine(1, [], [2], CleanCall("1159", "16303", "16325", "(chrome)", "open", "319217168627818-587", 
+                                            ["/dir/Safe Browsing Bloom", "32834", "420"], "43")),
+             WorkflowLine(2, [1], [3], CleanCall("1159", "16303", "16325", "(chrome)", "fstat", "1319217168628495-78", 
+                                            ["/dir/Safe Browsing Bloom", "43"], "0")),
+             WorkflowLine(3, [2], [0], CleanCall("1159", "16303", "16325", "(chrome)", "llseek", "1319217168628495-78", 
+                                            ["/dir/Safe Browsing Bloom", "43", "0", "0", "SEEK_SET"], "0"))]#it does not imply this file existed before
+
+        tree = fs_tree(lines)
+        expected_tree = { ("/dir", "d") : set()}
+        self.assertDictEquals(tree, expected_tree)
+
+    def test_fs_tree_with_non_creational_creat_flag_falsepositive(self):
+        lines = [
+             WorkflowLine(1, [], [2], CleanCall("1159", "16303", "16325", "(chrome)", "open", "319217168627818-587", 
+                                            ["/dir/Safe Browsing Bloom", "32834", "420"], "43")),
+             WorkflowLine(2, [1], [3], CleanCall("1159", "16303", "16325", "(chrome)", "fstat", "1319217168628495-78", 
+                                            ["/dir/Safe Browsing Bloom", "43"], "0")),
+             WorkflowLine(3, [2], [0], CleanCall("1159", "16303", "16325", "(chrome)", "llseek", "1319217168628495-78", 
+                                            ["/dir/Safe Browsing Bloom", "43", "10", "0", "SEEK_SET"], "10"))]#If we are able to seek, this file already exists
+
+        tree = fs_tree(lines)
+        expected_tree = {
+                          ("/dir", "d") : set([("/dir/Safe Browsing Bloom", "f")])
+                        }
+        self.assertDictEquals(tree, expected_tree)
+
+
     def test_fs_tree(self):
         lines = [
                  WorkflowLine(1, [], [2], CleanCall("0", "916", "916", "(rm)", "rmdir", "1319227056527181-26", ["/ok_rmdir/lib/gp_hash_table_map_"], "0")),

@@ -97,12 +97,61 @@ def fs_tree(workflow_lines):
     for orphan in orphan_nodes:
         the_graph[fake_root_id].append(orphan)
 
+    #NOTE: there is a corner case when handling open calls wiht O_CREAT flags, it's
+    #possible to know if the a proper creation or a ordinary open because posix
+    #allows one to call open with O_CREAT to a already created file. So, instead of
+    #complicate things other methods (accessed_and_created), we are going to evaluate
+    #open calls separately.
+
+    #files we are sure were open using O_CREAT but were created before
+    false_positive_ocreat = set()
+    #files we cannot answer if they were created before open(O_CREAT)
+    undefined_ocreat = set()
+    #files we are trying to check if they were created before or not
+    opentocreat_candidates = set()
+
     for node_and_child in bfs(the_graph, 0):
         child_id = int(node_and_child[1])
         if (child_id == 0):
             continue#argg
         node_clean_call = clean_call(child_id)
+
+        if node_clean_call.call == "read" or \
+            node_clean_call.call == "llseek":
+            fullpath = node_clean_call.fullpath()
+            if fullpath in opentocreat_candidates:
+                #a path that receives a read or llseek beyond
+                #its position 0 before any write call should
+                #have been created before.
+                if long(node_clean_call.rvalue) > 0:
+                    false_positive_ocreat.add(fullpath)
+                    opentocreat_candidates.remove(fullpath)
+        elif node_clean_call.call == "write":
+            fullpath = node_clean_call.fullpath()
+            if fullpath in opentocreat_candidates:
+                #so, a file opened using O_CREAT flag receives a write
+                #we cannot decide if it is a false positive
+                opentocreat_candidates.remove(fullpath)
+                undefined_ocreat.append(fullapath)
+        elif node_clean_call.call == "open":
+            fullpath = node_clean_call.fullpath()
+            if open_to_create(node_clean_call) and \
+                not (fullpath in false_positive_ocreat) and \
+                not (fullpath in undefined_ocreat):
+                    opentocreat_candidates.add(fullpath)
+             
+    for node_and_child in bfs(the_graph, 0):
+        child_id = int(node_and_child[1])
+        if (child_id == 0):
+            continue#argg
+
+        node_clean_call = clean_call(child_id)
         ac_dirs, ac_files, c_dirs, c_files = accessed_and_created(node_clean_call)
+
+        if (node_clean_call.call == "open") and open_to_create(node_clean_call):
+            if node_clean_call.fullpath() in false_positive_ocreat:
+                c_files.remove(node_clean_call.fullpath())
+                ac_files.append(node_clean_call.fullpath())
 
         for c_dir in c_dirs:
             created_paths.add(c_dir)

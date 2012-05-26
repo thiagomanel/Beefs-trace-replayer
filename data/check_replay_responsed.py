@@ -8,9 +8,9 @@ def actual_rvalue(out_line):
 def expected_rvalue(workflow_line):
     return workflow_line.clean_call.rvalue
     
-def is_rw(workflow_line):
+def is_rwl(workflow_line):
     call = workflow_line.clean_call.call
-    return (call == "write") or (call == "read")
+    return call in ["write", "read", "llseek"]
 
 if __name__ == "__main__":
     """
@@ -29,7 +29,7 @@ if __name__ == "__main__":
             r_output.readline()#it skips fake root line
             for w_line in w_lines:
                 out_line = r_output.readline()
-                if is_rw(w_line):
+                if is_rwl(w_line):
                     r_expected = expected_rvalue(w_line)
                     r_actual = actual_rvalue(out_line)
                     sys.stdout.write(" ".join([str(r_expected == r_actual),

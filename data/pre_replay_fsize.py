@@ -14,8 +14,13 @@ if __name__ == "__main__":
 
         return parse_path(line), parse_ftype(line)
 
-    def update_file_pos(fileinfo, bytes_to_advance):
-        fileinfo[0] = fileinfo[0] + bytes_to_advance
+    def update_file_pos(fileinfo, syscall, rvalue):
+        if syscall in ["read", "write"]:
+            fileinfo[0] = fileinfo[0] + rvalue
+        elif syscall == "llseek":
+            fileinfo[0] = rvalue
+        else:
+            raise Exception("Unsupported call ", syscall)
 
     def file_pos(fileinfo):
         return fileinfo[0]
@@ -74,7 +79,7 @@ if __name__ == "__main__":
                     fileinfo = open_files[pid_fd]
                     #amount of read or written bytes or llseek pos
                     r_value = int(clean_call.rvalue)
-                    update_file_pos(fileinfo, r_value)
+                    update_file_pos(fileinfo, syscall, r_value)
                     if file2safe_size[to_replay_fullpath] < file_pos(fileinfo):
                         file2safe_size[to_replay_fullpath] = file_pos(fileinfo)
 

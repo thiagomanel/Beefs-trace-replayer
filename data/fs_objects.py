@@ -139,7 +139,12 @@ def fs_tree(workflow_lines):
                 not (fullpath in false_positive_ocreat) and \
                 not (fullpath in undefined_ocreat):
                     opentocreat_candidates.add(fullpath)
-             
+
+    #It's possible to think directories are files, because they can be opened
+    #or llseeked for example. So, we collected things we know are directories
+    #during bfs walk, and do a check against the things we think are files but are not
+    known_dirs = set()
+
     for node_and_child in bfs(the_graph, 0):
         child_id = int(node_and_child[1])
         if (child_id == 0):
@@ -152,6 +157,11 @@ def fs_tree(workflow_lines):
             if node_clean_call.fullpath() in false_positive_ocreat:
                 c_files.remove(node_clean_call.fullpath())
                 ac_files.append(node_clean_call.fullpath())
+
+        for _dir in ac_dirs:
+            known_dirs.add(_dir)
+        for _dir in c_dirs:
+            known_dirs.add(_dir)
 
         for c_dir in c_dirs:
             created_paths.add(c_dir)
@@ -183,7 +193,7 @@ def fs_tree(workflow_lines):
     for parent, children in parents_to_children.iteritems():
         for path, _type in children:
             if _type is "f":
-                if (path, "d") in parents_to_children:#it was described as dir before
+                if path in known_dirs:
                     to_change_type.append((parent, (path, _type)))
 
     for parent, child in to_change_type:

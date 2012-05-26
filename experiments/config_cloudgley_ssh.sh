@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# It copies root rsa pubkey to remove instance authorized keys. In doing so, root can make no-pass ssh to cloudgley instances
+# It copies root rsa pubkey to remote instance authorized keys. In doing so, root can make no-pass ssh to cloudgley instances
 
 if [ $# -ne 1 ]
 then

@@ -4,12 +4,12 @@ Experiment uses input data and code stored and LSD nfs. To do so, we need to mou
 We also need to sync worker node clocks, worker nodes must to their job as a group.
 
 So, before proper execution we need the following config steps
-	- allocate a number of instances. see "./allocate_cloudgley.sh $the_number"
+	- allocate a number of instances. see "./allocate_cloudgley.sh $the_number $emi"
       	- config no-pass. see "./config_cloudgley_ssh.sh"
         - config fstabs. see "./config_input_nfs.sh and ./config_replay_nfs.sh"
 	- sync clocks. see "./sync_clock.sh
 	- gives some permissive permissions to output directory
-	- install 32 bits packages. see "install_libs32.sh"
+	- install packages  see "install_libs.sh"
 
 Each sample runs according to this sketch:
 

@@ -4,16 +4,12 @@ import subprocess
 import random
 from time import sleep
 
-EXPERIMENT_INPUT_DIR="/home/thiagoepdc/experiments/"
+#we have stuff running in cloudlgy
+EXPERIMENT_INPUT_DIR="/tmp/home/thiagoepdc/experiments/"
+#and stuff running at lsd LAN
+LAN_INPUT_DIR="/home/thiagoepdc/experiments/"
 
 def execute(remote_command, machine_addr, delay=None):
-    #if machine_addr.startswith("150"):#cloudgley machine, for lan we use names
-    #    process = subprocess.Popen(" ".join(["ssh -i /home/patrickjem/cloudigley/.euca/patrick_key.private",
-    #                                     "root@"+machine_addr,
-    #                                      remote_command]), shell=True,
-    #                            stdout=subprocess.PIPE,
-    #                            stderr=subprocess.STDOUT)
-    #else:
     process = subprocess.Popen(" ".join(["ssh",
 	                                     machine_addr,
                                              remote_command]),
@@ -98,13 +94,13 @@ if __name__ == "__main__":
             continue
 
         #executing pre-replay
-	pre_replay_path = EXPERIMENT_INPUT_DIR + "/nfs/do_pre_replay.py"
-	pre_replay_input = EXPERIMENT_INPUT_DIR + "/nfs/pre_replay_on_server_side.all"
+	pre_replay_path = LAN_INPUT_DIR + "/nfs/do_pre_replay.py"
+	pre_replay_input = LAN_INPUT_DIR + "/nfs/pre_replay_on_server_side.all"
         sys.stdout.write("executing pre_replay\n")
         out, err, rcode = execute("python " + pre_replay_path + " < " + pre_replay_input, "espadarte.lsd.ufcg.edu.br")
 
         sys.stdout.write("checking pre_replay\n")
-	check_pre_replay_path = EXPERIMENT_INPUT_DIR + "/nfs/do_pre_replay_check.sh"
+	check_pre_replay_path = LAN_INPUT_DIR + "/nfs/do_pre_replay_check.sh"
         out, err, rcode = execute("bash " + check_pre_replay_path + " " + pre_replay_input, "espadarte.lsd.ufcg.edu.br")
         if not rcode == 0:
             sys.stderr.write("pre_replay didn't work\n")
@@ -147,4 +143,4 @@ if __name__ == "__main__":
 
         #rolling back file system modifications
         sys.stdout.write("rolling back\n")
-        execute(EXPERIMENT_INPUT_DIR + "/nfs/rollbackfs.sh", "espadarte.lsd.ufcg.edu.br")
+        execute(LAN_INPUT_DIR + "/nfs/rollbackfs.sh", "espadarte.lsd.ufcg.edu.br")

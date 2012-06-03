@@ -487,6 +487,39 @@ void fill_root_element (Workflow_element *root) {
 	root->command->command = NONE;
 }
 
+char* getline(FILE* file) {
+
+	char * line = malloc(100), * linep = line;
+	size_t lenmax = 100, len = lenmax;
+	int c;
+
+	if(line == NULL)
+		return NULL;
+
+	for(;;) {
+		c = fgetc(file);
+		if(c == EOF)
+			break;
+
+		if(--len == 0) {
+			char * linen = realloc(linep, lenmax *= 2);
+			len = lenmax;
+
+			if(linen == NULL) {
+				free(linep);
+				return NULL;
+			}
+			line = linen + (line - linep);
+			linep = linen;
+		}
+
+		if((*line++ = c) == '\n')
+			break;
+	}
+	*line = '\0';
+	return linep;
+}
+
 int load (Replay_workload* replay_wld, FILE* input_file) {
 
 	json_t *json, *replay_call;

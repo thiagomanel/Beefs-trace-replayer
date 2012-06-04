@@ -21,6 +21,7 @@
 #include <time.h>
 #include <assert.h>
 #include <jansson.h>
+#include <unistd.h>
 
 static struct lookuptab {
 	char *string;
@@ -452,7 +453,7 @@ int orphans (int *orphans_ids_result, Replay_workload* repl_wld)  {
 
 void assign_root_timestamp (Replay_workload* wld) {
 
- 	Workflow_element* root = element (wld, 0);
+	Workflow_element* root = element (wld, 0);
 
 	double first_stamp = -1;
 	int chl_index;
@@ -487,45 +488,14 @@ void fill_root_element (Workflow_element *root) {
 	root->command->command = NONE;
 }
 
-char* getline(FILE* file) {
-
-	char * line = malloc(100), * linep = line;
-	size_t lenmax = 100, len = lenmax;
-	int c;
-
-	if(line == NULL)
-		return NULL;
-
-	for(;;) {
-		c = fgetc(file);
-		if(c == EOF)
-			break;
-
-		if(--len == 0) {
-			char * linen = realloc(linep, lenmax *= 2);
-			len = lenmax;
-
-			if(linen == NULL) {
-				free(linep);
-				return NULL;
-			}
-			line = linen + (line - linep);
-			linep = linen;
-		}
-
-		if((*line++ = c) == '\n')
-			break;
-	}
-	*line = '\0';
-	return linep;
-}
-
 int load (Replay_workload* replay_wld, FILE* input_file) {
 
-	json_t *json, *replay_call;
+	json_t *replay_call;
 	json_error_t error;
-	size_t num_cmds_on_file, i;
+        size_t max_line_len = 1000;
+
 	int loaded_commands = 0;
+	size_t num_cmds_on_file, i, len;
 
 	fill_replay_workload (replay_wld);
 
@@ -534,23 +504,25 @@ int load (Replay_workload* replay_wld, FILE* input_file) {
 		replay_wld->num_cmds = 0;
 		return NULL_FILE_OP_ERROR;
 	}
-
-	json = json_loadf (input_file, 0, &error);
-	if (!json) {
-		fprintf (stderr, "error: on line %d: %s\n", error.line, error.text);
+	
+	char *line = (char*) malloc(max_line_len * sizeof(char));
+	len = getline(&line, &max_line_len, input_file);
+        if (len == -1) {
+		fprintf (stderr, "error: Unable to load data header.\n");
 		return PARSING_ERROR;
-	}
-	num_cmds_on_file = json_array_size (json);
+        }
+	num_cmds_on_file = atoi(line);
 
-	replay_wld->element_list
-						= (Workflow_element*) malloc ((num_cmds_on_file + 1)
-														* sizeof (Workflow_element));
+	replay_wld->element_list = 
+		(Workflow_element*) malloc ((num_cmds_on_file + 1) * sizeof (Workflow_element));
+
 	//fake element is also element_list's head
 	Workflow_element* root_element = element(replay_wld, 0);
 	fill_root_element (root_element);
 	++loaded_commands;
 
 	for (i = 0; i < num_cmds_on_file; i++) {
+
 		Workflow_element* tmp_element
 			= (replay_wld->element_list + loaded_commands);
 
@@ -565,12 +537,17 @@ int load (Replay_workload* replay_wld, FILE* input_file) {
 
 		tmp_element->command = new_cmd;
 
-		replay_call = json_array_get (json, i);
-
-		if (parse_element (tmp_element, replay_call) == PARSING_ERROR){
+		len = getline(&line, &max_line_len, input_file);
+	        if (len == -1) {
+			fprintf (stderr, "error: Unable to load data header.\n");
+			return PARSING_ERROR;
+	        }
+                
+		replay_call = json_loads (line, 0, &error);
+		if (parse_element (tmp_element, replay_call) == PARSING_ERROR) {
 			return PARSING_ERROR;
 		}
-
+		json_decref (replay_call);
 		++loaded_commands;
 	}
 
@@ -596,8 +573,8 @@ int load (Replay_workload* replay_wld, FILE* input_file) {
 			root_element->children_ids[i] = orphans_ids[i];
 
 			//poor orphan baby gets a new papa
-			Workflow_element *child = element (replay_wld,
-												root_element->children_ids[i]);
+			Workflow_element *child 
+				= element (replay_wld, root_element->children_ids[i]);
 
 			assert (! is_parent (root_element, child));
 			assert (child->n_parents == 0);
@@ -609,7 +586,6 @@ int load (Replay_workload* replay_wld, FILE* input_file) {
 		}
 
 		free (orphans_ids);
-
 		assign_root_timestamp (replay_wld);
 	}
 //FIXME: free json

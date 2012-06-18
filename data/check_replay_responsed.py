@@ -21,9 +21,8 @@ if __name__ == "__main__":
     r_output_path = sys.argv[2]
 
     with open(r_input_path) as workflow_file:
-        workflow_json = json.load(workflow_file)
-        w_lines = [WorkflowLine.from_json(wline_json)\
-                      for wline_json in workflow_json]
+        workflow_file.readline()#excluding header (num_on_lines)
+        w_lines = [WorkflowLine.from_json(json.loads(w_line)) for w_line in workflow_file] 
 
         with open(r_output_path) as r_output:
             r_output.readline()#it skips fake root line

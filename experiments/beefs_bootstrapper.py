@@ -1,3 +1,5 @@
+import os
+
 class Entry():
     class Replica():
         def __init__(self, version, osd_id, sto_id):
@@ -18,11 +20,10 @@ def distribution(namespace_path, rlevel):
         given a path.
         We assume the following layout under namespace_path arg:
             namespace_path
-            |--- home
-                 |--- user1
-                 |--- user2
-                 |--- ...
-                 |--- userN
+            |--- user1
+            |--- user2
+            |--- ...
+            |--- userN
         Under user directories we assume arbitrary layout.
 
         Args:
@@ -34,3 +35,7 @@ def distribution(namespace_path, rlevel):
                   each file under namespace_path we an Entry object. If a file
                   is a dir, replicas is a empty collection on Entry object
     """
+    graph = {}
+    for root, dirs, files in os.walk(namespace_path):
+        graph[root] = [_dir for _dir in dirs if _dir]
+    return graph

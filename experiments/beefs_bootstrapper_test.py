@@ -107,19 +107,40 @@ class TestDistribution(unittest.TestCase):
             open(_file, 'w').close()
 
         replication_level = 2
-        dist_tree = distribution(temp_dir, replication_level)
+        entry_tree = distribution(temp_dir, replication_level)
 
-        #all primary replicas should be stored in the same osd
+        actual_osds = set()
         entries_by_path = self.entries_by_path(entry_tree.keys())
+
         for _dir in dirs:
             dir_entry = entries_by_path[_dir]
-            dir_children_entries = dist_tree[dir_entry]
-            self.assertEquals(file_per_dir, len(dir_children_entries))
+            dir_children_entries = entry_tree[dir_entry]
+            self.assertEquals(files_per_dir, len(dir_children_entries))
+
+            #we cannot repeat stos in a group. osd neither
+            for entry in dir_children_entries:
+                id_stos = [replica.sto_id for replica in entry.replicas]
+                self.assertEquals(len(id_stos), len(set(id_stos)))
+
+                id_osds = [replica.osd_id for replica in entry.replicas]
+                self.assertEquals(len(id_osds), len(set(id_osds)))
+
             dir_children_primreplicas = [entry.replicas[0].osd_id
                                             for entry in dir_children_entries]
-            #all primary replicas should be stored in the same osd
-            self.assertEquals(1, set(osd_id))
 
+            for p_replica in dir_children_primreplicas:
+                self.assertNotEquals(None, p_replica)
+
+            #all primary replicas under the same user dir 
+            #should be stored in the same osd
+            self.assertEquals(files_per_dir, len(dir_children_primreplicas))
+            self.assertEquals(1, len(set(dir_children_primreplicas)))
+
+            #they are all equals, putting one of them
+            actual_osds.add(dir_children_primreplicas[0])
+
+        #we cannot repeat osds to diferent root subdirs
+        self.assertEquals(num_dirs, len(actual_osds)) 
 
 if __name__ == '__main__':
     unittest.main()

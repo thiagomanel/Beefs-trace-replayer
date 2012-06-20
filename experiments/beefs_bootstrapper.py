@@ -1,4 +1,6 @@
 import os
+import sys
+import json
 import uuid
 import random
 
@@ -9,6 +11,20 @@ class Entry():
            self.osd_id = osd_id
            self.sto_id = sto_id
 
+        def __str__(self):
+            return json.dumps(self.json())
+
+        def json(self):
+            return {
+                    "version": self.version,
+                    "osd_id": self.osd_id,
+                    "sto_id": self.sto_id
+                   }
+
+        @classmethod
+        def from_json(cls, _json):
+            return Entry.Replica(_json["version"], _json["osd_id"], _json["sto_id"])
+
     def __init__(self, fullpath, ftype, replicas):
         if not ftype in ("f", "d"):
             raise ValueError("We allow f or d arg: %s", ftype)
@@ -17,10 +33,24 @@ class Entry():
         self.replicas = replicas
 
     def __str__(self):
-        return "fullpath=<%s> ftype=<%s>" % (self.fullpath, self.ftype)
+        return json.dumps(self.json())
 
     def is_dir(self):
         return self.ftype is "d"
+
+    def json(self):
+        replicas_json = [rep.json() for rep in self.replicas]
+        return {
+                "fullpath": self.fullpath,
+                "ftype": self.ftype,
+                "replicas": replicas_json
+               }
+
+    @classmethod
+    def from_json(cls, _json):
+        replicas = [Entry.Replica.from_json(replica_json) 
+                       for replica_json in _json["replicas"]]
+        return Entry(_json["fullpath"], _json["ftype"], replicas)
 
 def distribution(namespace_path, rlevel):
     """ It creates a beefs data distribution, sto location and replication info,
@@ -124,3 +154,37 @@ def distribution(namespace_path, rlevel):
                 graph[root_entry].append(entry_by_path[fullpath])
 		
     return graph
+
+if __name__ == "__main__":
+
+    """ It creates a distribution based on a local path.
+        
+        Args:
+            local_path (str): path to a directory to generate the distribution
+            replication_level (str): rlevel used on distribution
+
+        Returns:
+            a json-like string representation of beefs distribution.
+            {"fullpath": value, "ftype":value, 
+                replicas: [{"version": value, "osd_id": value, "sto_id":value}]}
+            Each distribution entry as above is a single-line string. 
+            Entries are separated by \n
+
+        Raises:
+            ValueError, If there is not an acessible directory on local_path arg
+                or replication_level is not a integer value.
+    """
+
+    local_path = sys.argv[1]
+    rlevel = int(sys.argv[2])
+    iso = "ISO-8859-1"
+
+    for parent, children in distribution(local_path, rlevel).iteritems():
+        #we take files from values and dirs from keys, to avoid duplicates
+        if not parent.is_dir():
+            raise Exception("Hey, keys should store directories")
+        sys.stdout.write(json.dumps(parent.json(), encoding=iso) + "\n")
+
+        for child in children:
+            if not child.is_dir():
+                sys.stdout.write(json.dumps(child.json(), encoding=iso) + "\n")

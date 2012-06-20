@@ -54,6 +54,8 @@ class TestDistribution(unittest.TestCase):
         replication_level = 2
         entry_tree = distribution(temp_dir, replication_level)
         self.assertEquals(5, len(entry_tree.keys()))
+        for entry in entry_tree.keys():
+            print entry
 
         entries_by_path = self.entries_by_path(entry_tree.keys())
         for _dir in dirs:

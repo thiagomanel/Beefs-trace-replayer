@@ -2,12 +2,45 @@ import unittest
 import tempfile
 import shutil
 import os
+import json
 from beefs_bootstrapper import *
 
 class TestDistribution(unittest.TestCase):
 
     def setUp(self):
         self._on_teardown = []
+
+    def test_load_from_json(self):
+        _json = {"fullpath": "/local/backup_nfs_manel/tmp/thiagoepdc/testacp", 
+                 "ftype": "d", 
+                 "replicas": []
+                }
+        entry = Entry.from_json(_json)
+
+        self.assertEquals("/local/backup_nfs_manel/tmp/thiagoepdc/testacp",
+                          entry.fullpath)
+        self.assertTrue(entry.is_dir())
+        self.assertEquals(0, len(entry.replicas))
+
+        _json = {"fullpath": "/local/backup_nfs_manel/tmp/thiagoepdc/file.data",
+                 "ftype": "f", 
+                 "replicas": []
+                }
+        entry = Entry.from_json(_json)
+
+        self.assertEquals("/local/backup_nfs_manel/tmp/thiagoepdc/file.data",
+                          entry.fullpath)
+        self.assertFalse(entry.is_dir())
+        self.assertEquals(0, len(entry.replicas))
+
+    def test_load_from_json_with_weird_chars(self):
+        json_str = open("beefs_bootstrapper_test.data").readline()
+        _json = json.loads(json_str )
+        entry = Entry.from_json(_json)
+        #self.assertEquals(file_weird_chars, entry.fullpath)
+        self.assertFalse(entry.is_dir())
+        self.assertEquals(0, len(entry.replicas))
+        print "fullpath", entry.fullpath
 
     def make_temp_dir(self):
         temp_dir = tempfile.mkdtemp(prefix="tmp-%s-" % self.__class__.__name__)

@@ -15,19 +15,19 @@ if __name__ == "__main__":
             ValuerError: if local_path or bootstrapper_output are not valid,
                          accesible paths
     """
-    def erro_msg(path):
+    def error_msg(path):
         return "we missed %s generation" % path
 
     def generated_namespace(output_path):
-        dirs = []
-        files = []
+        dirs = set()
+        files = set()
         with open(output_path) as boot_data:
             entries = [Entry.from_json(json.loads(line)) for line in boot_data]
             for entry in entries:
                 if entry.is_dir():
-                    dirs.append(entry.fullpath)
+                    dirs.add(entry.fullpath)
                 else:
-                    files.append(entry.fullpath)
+                    files.add(entry.fullpath)
         return dirs, files
 
     local_path = sys.argv[1]
@@ -37,10 +37,12 @@ if __name__ == "__main__":
 
     for root, dirs, files in os.walk(local_path):
         if not root in gen_dirs:
-            sys.std.out(error_msg(root) + "\n")
+            sys.stdout.write(error_msg(root) + " directory\n")
         for _dir in dirs:
-            if not _dir in gen_dirs:
-                sys.std.out(error_msg(_dir) + "\n")
+            fullpath_dir = os.path.join(root, _dir)
+            if not fullpath_dir in gen_dirs:
+                sys.stdout.write(error_msg(fullpath_dir) + " directory\n")
         for _file in files:
-            if not _dir in gen_dirs:
-                sys.std.out(error_msg(_file) + "\n")
+            fullpath_file = os.path.join(root, _file)
+            if not fullpath_file in gen_files:
+                sys.stdout.write(error_msg(fullpath_file) + " file\n")

@@ -36,7 +36,7 @@ class Entry():
         return json.dumps(self.json())
 
     def is_dir(self):
-        return self.ftype is "d"
+        return self.ftype == "d"
 
     def json(self):
         replicas_json = [rep.json() for rep in self.replicas]

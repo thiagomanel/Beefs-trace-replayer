@@ -184,7 +184,9 @@ if __name__ == "__main__":
         if not parent.is_dir():
             raise Exception("Hey, keys should store directories")
         sys.stdout.write(json.dumps(parent.json(), encoding=iso) + "\n")
+        #sys.stdout.write(json.dumps(parent.json()) + "\n")
 
         for child in children:
             if not child.is_dir():
                 sys.stdout.write(json.dumps(child.json(), encoding=iso) + "\n")
+                #sys.stdout.write(json.dumps(child.json()) + "\n")

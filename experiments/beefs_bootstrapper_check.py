@@ -18,12 +18,14 @@ if __name__ == "__main__":
     def error_msg(path):
         return "we missed %s generation" % path
 
+    iso = "ISO-8859-1"
     def generated_namespace(output_path):
         dirs = set()
         files = set()
         with open(output_path) as boot_data:
-            entries = [Entry.from_json(json.loads(line)) for line in boot_data]
-            for entry in entries:
+            for line in boot_data:
+                decoded = line.decode(iso)
+                entry = Entry.from_json(json.loads(line, encoding=iso))
                 if entry.is_dir():
                     dirs.add(entry.fullpath)
                 else:
@@ -36,13 +38,14 @@ if __name__ == "__main__":
     gen_dirs, gen_files = generated_namespace(output_to_check)
 
     for root, dirs, files in os.walk(local_path):
-        if not root in gen_dirs:
-            sys.stdout.write(error_msg(root) + " directory\n")
+        decoded_root = root.decode(iso)
+        if not decoded_root in gen_dirs:
+            sys.stdout.write(error_msg(decoded_root) + " directory\n")
         for _dir in dirs:
-            fullpath_dir = os.path.join(root, _dir)
+            fullpath_dir = os.path.join(root, _dir).decode(iso)
             if not fullpath_dir in gen_dirs:
                 sys.stdout.write(error_msg(fullpath_dir) + " directory\n")
         for _file in files:
-            fullpath_file = os.path.join(root, _file)
+            fullpath_file = os.path.join(root, _file).decode(iso)
             if not fullpath_file in gen_files:
                 sys.stdout.write(error_msg(fullpath_file) + " file\n")

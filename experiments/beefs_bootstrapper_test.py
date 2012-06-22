@@ -85,7 +85,7 @@ class TestDistribution(unittest.TestCase):
         open(afile, 'w').close()
 
         replication_level = 2
-        entry_tree = distribution(temp_dir, replication_level)
+        entry_tree = distribution(temp_dir, replication_level, [])
         self.assertEquals(5, len(entry_tree.keys()))
         for entry in entry_tree.keys():
             print entry
@@ -142,7 +142,7 @@ class TestDistribution(unittest.TestCase):
             open(_file, 'w').close()
 
         replication_level = 2
-        entry_tree = distribution(temp_dir, replication_level)
+        entry_tree = distribution(temp_dir, replication_level, [])
 
         actual_osds = set()
         entries_by_path = self.entries_by_path(entry_tree.keys())

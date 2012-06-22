@@ -10,6 +10,8 @@ if __name__ == "__main__":
         Args:
              local_path (str): path used to generate the distribution
              bootstrapper_output (str): path to boostrapper output
+             *ignore_dirs (str): an arbitrary lenght, empty space sep, str args.
+                                These directories will be ignored.
 
         Raises:
             ValuerError: if local_path or bootstrapper_output are not valid,
@@ -34,10 +36,11 @@ if __name__ == "__main__":
 
     local_path = sys.argv[1]
     output_to_check = sys.argv[2]
+    ignored = sys.argv[3:]#NOTE: a ignored path cannot have am empty space.
 
     gen_dirs, gen_files = generated_namespace(output_to_check)
 
-    for root, dirs, files in os.walk(local_path):
+    for root, dirs, files in walk(local_path, ignored):
         decoded_root = root.decode(iso)
         if not decoded_root in gen_dirs:
             sys.stdout.write(error_msg(decoded_root) + " directory\n")

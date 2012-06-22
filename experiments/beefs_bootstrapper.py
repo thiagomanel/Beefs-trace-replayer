@@ -4,6 +4,12 @@ import json
 import uuid
 import random
 
+def walk(top_dir, ignore):
+    for dirpath, dirnames, filenames in os.walk(top_dir):
+        dirnames[:] = [
+            dn for dn in dirnames if os.path.join(dirpath, dn) not in ignore]
+        yield dirpath, dirnames, filenames
+
 class Entry():
     class Replica():
         def __init__(self, version, osd_id, sto_id):
@@ -52,7 +58,7 @@ class Entry():
                        for replica_json in _json["replicas"]]
         return Entry(_json["fullpath"], _json["ftype"], replicas)
 
-def distribution(namespace_path, rlevel):
+def distribution(namespace_path, rlevel, ignore):
     """ It creates a beefs data distribution, sto location and replication info,
         given a path.
         We assume the following layout under namespace_path arg:
@@ -66,6 +72,7 @@ def distribution(namespace_path, rlevel):
         Args:
            namespace_path (str): path used to generate the distribution
            rlevel (int): number of replica of each data
+           ignore (list): a list of subdirs to ignore
 
         Returns:
             dict. A graph representation coded as a dict of Entry objects. For
@@ -87,10 +94,10 @@ def distribution(namespace_path, rlevel):
         return Entry(fullpath, "f", replicas)
 
     class OsdGen():
-        def __init__(self, base_dir):
+        def __init__(self, base_dir, ignore):
             self.base_dir = base_dir
             self.ids = {}
-            root, dirs, files = os.walk(base_dir).next()
+            root, dirs, files = walk(base_dir, ignore).next()
             for _dir in dirs:
                 self.ids[os.path.join(base_dir,_dir)] = str(uuid.uuid4())
 
@@ -125,11 +132,11 @@ def distribution(namespace_path, rlevel):
             gen_ids.extend(random.sample(possible_secs, rlevel - 1))
             return gen_ids
 
-    prim_osd_gen = OsdGen(namespace_path)
+    prim_osd_gen = OsdGen(namespace_path, ignore)
 
     graph = {}
     entry_by_path = {}
-    for root, dirs, files in os.walk(namespace_path):
+    for root, dirs, files in walk(namespace_path, ignore):
         if not root in entry_by_path:
             entry_by_path[root] = dentry(root)
 
@@ -162,6 +169,8 @@ if __name__ == "__main__":
         Args:
             local_path (str): path to a directory to generate the distribution
             replication_level (str): rlevel used on distribution
+            *ignore_dirs (str): an arbitrary lenght, empty space sep, str args. 
+                                These directories will be ignored. 
 
         Returns:
             a json-like string representation of beefs distribution.
@@ -177,16 +186,15 @@ if __name__ == "__main__":
 
     local_path = sys.argv[1]
     rlevel = int(sys.argv[2])
+    ignored = sys.argv[3:]#NOTE: a ignored path cannot have am empty space.
     iso = "ISO-8859-1"
 
-    for parent, children in distribution(local_path, rlevel).iteritems():
+    for parent, children in distribution(local_path, rlevel, ignored).iteritems():
         #we take files from values and dirs from keys, to avoid duplicates
         if not parent.is_dir():
             raise Exception("Hey, keys should store directories")
         sys.stdout.write(json.dumps(parent.json(), encoding=iso) + "\n")
-        #sys.stdout.write(json.dumps(parent.json()) + "\n")
 
         for child in children:
             if not child.is_dir():
                 sys.stdout.write(json.dumps(child.json(), encoding=iso) + "\n")
-                #sys.stdout.write(json.dumps(child.json()) + "\n")

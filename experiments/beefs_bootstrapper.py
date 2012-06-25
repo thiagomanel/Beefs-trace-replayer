@@ -3,6 +3,7 @@ import sys
 import json
 import uuid
 import random
+import subprocess
 from itertools import groupby
 
 def walk(top_dir, ignore):
@@ -68,12 +69,39 @@ def generate_beefs_metadata(entries, outdir_path):
            entries (list) - A list of Entry objects.
            outdir_path (str) - path to a directory to store output data
 
+        FIXME: explain how raw_dir is defined
         Returns: TODO
         Raises:  TODO
     """
 
-    def generate_data_servers_metadata(raw_dir, osd_id, sto_id):
-       pass
+    def generate_data_servers_metadata(raw_dir, osd_id, stos_id, meta_outdir):
+        """
+           Args:
+              raw_dir (str) - 
+              osd_id (str) -
+              stos_id (str) -
+              meta_outdir (str) - 
+        """
+
+        def create_osd_boot_data(raw_dir, osd_id, stos_id, filepath_to_write):
+            #osd boot_data format
+            #stoId	osdId	stoDataPath
+            with open(filepath_to_write, 'w') as boot_data:
+                for sto in stos_id:
+                    boot_data.write("\t".join([sto, osd_id, raw_dir]) + "\n")
+
+        def call_osd_bootstrapper(input_path, output_dir_path):
+            print "to_call", input_path, output_dir_path
+            boot_script = "/local/thiagoepdc/workspace_beefs/beefs-middleware-project/target/beefs/bin/bootstrap.sh"
+
+            subprocess.call(["bash", boot_script,
+                             "honeycomb",
+                             input_path,
+                             output_dir_path])
+
+        in_path = ".".join([osd_id,"osd.boot"])
+        create_osd_boot_data(raw_dir, osd_id, stos_id, in_path)
+        call_osd_bootstrapper(in_path, meta_outdir)
 
     def groupby_osd(entries):
         group = {}
@@ -88,11 +116,16 @@ def generate_beefs_metadata(entries, outdir_path):
 
     files = [entry for entry in entries if not entry.is_dir()]
 
+    ds_metadata_root = "dataserver_metadata"
+    if not os.path.exists(ds_metadata_root):
+        os.mkdir(ds_metadata_root)
+
     for osd_id, stos_id in groupby_osd(files).iteritems():
-        osd_outpath = os.path.join(outdir_path, osd_id)
-        if not os.path.exists(osd_outpath):
-            os.mkdir(osd_outpath)
-        generate_data_servers_metadata(osd_outpath, osd_id, stos_id)
+        osd_rawdir = os.path.join(outdir_path, osd_id)
+        meta_outdir = os.path.join(ds_metadata_root, osd_id)
+        if not os.path.exists(meta_outdir):
+            os.mkdir(meta_outdir)
+        generate_data_servers_metadata(osd_rawdir, osd_id, stos_id, meta_outdir)
 
 def distribution(namespace_path, rlevel, ignore):
     """ It creates a beefs data distribution, sto location and replication info,

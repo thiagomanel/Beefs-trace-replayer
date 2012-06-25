@@ -3,6 +3,7 @@ import sys
 import json
 import uuid
 import random
+from itertools import groupby
 
 def walk(top_dir, ignore):
     for dirpath, dirnames, filenames in os.walk(top_dir):
@@ -57,6 +58,41 @@ class Entry():
         replicas = [Entry.Replica.from_json(replica_json) 
                        for replica_json in _json["replicas"]]
         return Entry(_json["fullpath"], _json["ftype"], replicas)
+
+def generate_beefs_metadata(entries, outdir_path):
+    """
+        It generates beefs metadata based on distribution function of this
+        module.
+
+        Args:
+           entries (list) - A list of Entry objects.
+           outdir_path (str) - path to a directory to store output data
+
+        Returns: TODO
+        Raises:  TODO
+    """
+
+    def generate_data_servers_metadata(raw_dir, osd_id, sto_id):
+       pass
+
+    def groupby_osd(entries):
+        group = {}
+        for entry in entries:
+            for replica in entry.replicas:
+                osd_id = replica.osd_id
+                sto_id = replica.sto_id
+                if not osd_id in group:
+                    group[osd_id] = []
+                group[osd_id].append(sto_id)
+        return group
+
+    files = [entry for entry in entries if not entry.is_dir()]
+
+    for osd_id, stos_id in groupby_osd(files).iteritems():
+        osd_outpath = os.path.join(outdir_path, osd_id)
+        if not os.path.exists(osd_outpath):
+            os.mkdir(osd_outpath)
+        generate_data_servers_metadata(osd_outpath, osd_id, stos_id)
 
 def distribution(namespace_path, rlevel, ignore):
     """ It creates a beefs data distribution, sto location and replication info,
@@ -161,40 +197,3 @@ def distribution(namespace_path, rlevel, ignore):
                 graph[root_entry].append(entry_by_path[fullpath])
 		
     return graph
-
-if __name__ == "__main__":
-
-    """ It creates a distribution based on a local path.
-        
-        Args:
-            local_path (str): path to a directory to generate the distribution
-            replication_level (str): rlevel used on distribution
-            *ignore_dirs (str): an arbitrary lenght, empty space sep, str args. 
-                                These directories will be ignored. 
-
-        Returns:
-            a json-like string representation of beefs distribution.
-            {"fullpath": value, "ftype":value, 
-                replicas: [{"version": value, "osd_id": value, "sto_id":value}]}
-            Each distribution entry as above is a single-line string. 
-            Entries are separated by \n
-
-        Raises:
-            ValueError, If there is not an acessible directory on local_path arg
-                or replication_level is not a integer value.
-    """
-
-    local_path = sys.argv[1]
-    rlevel = int(sys.argv[2])
-    ignored = sys.argv[3:]#NOTE: a ignored path cannot have am empty space.
-    iso = "ISO-8859-1"
-
-    for parent, children in distribution(local_path, rlevel, ignored).iteritems():
-        #we take files from values and dirs from keys, to avoid duplicates
-        if not parent.is_dir():
-            raise Exception("Hey, keys should store directories")
-        sys.stdout.write(json.dumps(parent.json(), encoding=iso) + "\n")
-
-        for child in children:
-            if not child.is_dir():
-                sys.stdout.write(json.dumps(child.json(), encoding=iso) + "\n")

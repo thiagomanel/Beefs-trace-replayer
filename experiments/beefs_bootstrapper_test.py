@@ -11,27 +11,31 @@ class TestDistribution(unittest.TestCase):
         self._on_teardown = []
 
     def test_load_from_json(self):
-        _json = {"fullpath": "/local/backup_nfs_manel/tmp/thiagoepdc/testacp", 
-                 "ftype": "d", 
-                 "replicas": []
+        _json = { "inodeId": "inodeId_value", 
+                  "parentId": "parentId_value", 
+                  "path": "/local/backup_nfs_manel/tmp/thiagoepdc/testacp", 
+                  "type": "d",
+                  "group": None
                 }
         entry = Entry.from_json(_json)
 
         self.assertEquals("/local/backup_nfs_manel/tmp/thiagoepdc/testacp",
                           entry.fullpath)
         self.assertTrue(entry.is_dir())
-        self.assertEquals(0, len(entry.replicas))
+        self.assertEquals(None, entry.group)
 
-        _json = {"fullpath": "/local/backup_nfs_manel/tmp/thiagoepdc/file.data",
-                 "ftype": "f", 
-                 "replicas": []
+        _json = {"inodeId": "inodeId_value", 
+                 "parentId": "parentId_value",
+                 "path": "/local/backup_nfs_manel/tmp/thiagoepdc/file.data",
+                 "type": "f", 
+                 "group": None
                 }
         entry = Entry.from_json(_json)
 
         self.assertEquals("/local/backup_nfs_manel/tmp/thiagoepdc/file.data",
                           entry.fullpath)
         self.assertFalse(entry.is_dir())
-        self.assertEquals(0, len(entry.replicas))
+        self.assertEquals(None, entry.group)
 
     def test_load_from_json_with_weird_chars(self):
         json_str = open("beefs_bootstrapper_test.data").readline()
@@ -39,7 +43,7 @@ class TestDistribution(unittest.TestCase):
         entry = Entry.from_json(_json)
         #self.assertEquals(file_weird_chars, entry.fullpath)
         self.assertFalse(entry.is_dir())
-        self.assertEquals(0, len(entry.replicas))
+        self.assertEquals(None, entry.group)
         print "fullpath", entry.fullpath
 
     def make_temp_dir(self):
@@ -95,7 +99,7 @@ class TestDistribution(unittest.TestCase):
             self.assertTrue(_dir in entries_by_path)
             entry = entries_by_path[_dir]
             self.assertTrue(entry.is_dir())
-            self.assertFalse(entry.replicas)#empty evaluates to false
+            self.assertEquals(None, entry.group)#empty evaluates to false
 
         #base_dir/manel subtree
         manel_entry = entries_by_path[manel_dir]
@@ -117,7 +121,7 @@ class TestDistribution(unittest.TestCase):
         self.assertTrue(afile in non_empty_dir_entry_children)
         afile_entry = non_empty_dir_entry_children[afile]
         self.assertFalse(afile_entry.is_dir())
-        self.assertEquals(replication_level, len(afile_entry.replicas))
+        self.assertEquals(replication_level, afile_entry.group.rlevel)
 
         # base_dir/empty_user subtree
         empty_user_entry = entries_by_path[empty_user_dir]
@@ -154,13 +158,15 @@ class TestDistribution(unittest.TestCase):
 
             #we cannot repeat stos in a group. osd neither
             for entry in dir_children_entries:
-                id_stos = [replica.sto_id for replica in entry.replicas]
+                allreplicas = list(entry.group.replicas)
+                allreplicas.append(entry.group.primary)
+                id_stos = [replica.sto_id for replica in allreplicas]
                 self.assertEquals(len(id_stos), len(set(id_stos)))
 
-                id_osds = [replica.osd_id for replica in entry.replicas]
+                id_osds = [replica.osd_id for replica in allreplicas]
                 self.assertEquals(len(id_osds), len(set(id_osds)))
 
-            dir_children_primreplicas = [entry.replicas[0].osd_id
+            dir_children_primreplicas = [entry.group.primary.osd_id
                                             for entry in dir_children_entries]
 
             for p_replica in dir_children_primreplicas:

@@ -13,6 +13,38 @@ def walk(top_dir, ignore):
         yield dirpath, dirnames, filenames
 
 class Entry():
+    # This classes create json-like string to be consumed by java code.
+    # It its turn, java side has also code to reflect these data structures.
+    # It'd be nice to keep them close
+    class Group():
+        def __init__(self, _id, rlevel, primary, replicas):
+            self._id = _id
+            self.rlevel = rlevel
+            self.primary = primary
+            self.replicas = replicas
+
+        def __str__(self):
+            return json.dumps(self.json())
+
+        def json(self):
+            return {
+                    "id": self._id,
+                    "replicationLevel": self.rlevel,
+                    "primary": self.primary.json(),
+                    "replicas": [rep.json() for rep in self.replicas]
+                   }
+
+        @classmethod
+        def from_json(cls, _json):
+            if _json:
+                _primary = Entry.Replica.from_json(_json["primary"])
+                _replicas = [Entry.Replica.from_json(rep)
+                             for rep in _json["replicas"]]
+                return Entry.Group(_json["id"], _json["replicationLevel"], _primary,
+                                   _replicas)
+            else:
+                return None
+
     class Replica():
         def __init__(self, version, osd_id, sto_id):
            self.version = version
@@ -25,20 +57,24 @@ class Entry():
         def json(self):
             return {
                     "version": self.version,
-                    "osd_id": self.osd_id,
-                    "sto_id": self.sto_id
+                    "osdId": self.osd_id,
+                    "id": self.sto_id
                    }
 
         @classmethod
         def from_json(cls, _json):
-            return Entry.Replica(_json["version"], _json["osd_id"], _json["sto_id"])
+            return Entry.Replica(_json["version"], _json["osdId"], _json["id"])
 
-    def __init__(self, fullpath, ftype, replicas):
+    def __init__(self, inode_id, parent_id, fullpath, ftype, group):
+
         if not ftype in ("f", "d"):
             raise ValueError("We allow f or d arg: %s", ftype)
+
         self.fullpath = fullpath
         self.ftype = ftype
-        self.replicas = replicas
+        self.group = group
+        self.inode_id = inode_id
+        self.parent_id = parent_id
 
     def __str__(self):
         return json.dumps(self.json())
@@ -47,23 +83,45 @@ class Entry():
         return self.ftype == "d"
 
     def json(self):
-        replicas_json = [rep.json() for rep in self.replicas]
+        group_json = {}
+        if self.group:
+            group_json = self.group.json()
         return {
-                "fullpath": self.fullpath,
-                "ftype": self.ftype,
-                "replicas": replicas_json
+                "inodeId": self.inode_id,
+                "parentId": self.parent_id,
+                "path": self.fullpath,
+                "type": self.ftype,
+                "group": group_json
                }
 
     @classmethod
     def from_json(cls, _json):
-        replicas = [Entry.Replica.from_json(replica_json) 
-                       for replica_json in _json["replicas"]]
-        return Entry(_json["fullpath"], _json["ftype"], replicas)
+        return Entry(_json["inodeId"], _json["parentId"], _json["path"],
+                     _json["type"], Entry.Group.from_json(_json["group"]))
 
-def generate_beefs_metadata(entries, outdir_path):
+def generate_queenbee_metadata(boot_data_path, output_dir_path):
     """
-        It generates beefs metadata based on distribution function of this
-        module.
+       It generates queenbee metadata based on file representation of
+       distribution function of this module. It creates queenbee database
+       files under output_dir_path directory
+
+       Args:
+            boot_data_path (str) - Path to a text file. Each line of this file
+                is a json-like representation to an Entry object
+            output_dir_path (str) - path to a directory to store output data
+
+       Raises: TODO
+    """
+    boot_script = "/local/thiagoepdc/workspace_beefs/beefs-middleware-project/target/beefs/bin/bootstrap.sh"
+    subprocess.call(["bash", boot_script,
+                     "queenbee",
+                     boot_data_path,
+                     output_dir_path])
+
+def generate_data_servers_metadata(entries, outdir_path):
+    """
+        It generates data_servers metadata based on distribution function of 
+        this module.
 
         Args:
            entries (list) - A list of Entry objects.
@@ -73,22 +131,13 @@ def generate_beefs_metadata(entries, outdir_path):
         Returns: TODO
         Raises:  TODO
     """
-
-    def generate_data_servers_metadata(raw_dir, osd_id, stos_id, meta_outdir):
-        """
-           Args:
-              raw_dir (str) - 
-              osd_id (str) -
-              stos_id (str) -
-              meta_outdir (str) - 
-        """
-
+    def data_server_metadata(raw_dir, osd_id, stos_id, meta_outdir):
         def create_osd_boot_data(raw_dir, osd_id, stos_id, filepath_to_write):
             #osd boot_data format
             #stoId	osdId	stoDataPath
             with open(filepath_to_write, 'w') as boot_data:
                 for sto in stos_id:
-                    boot_data.write("\t".join([sto, osd_id, raw_dir]) + "\n")
+		    boot_data.write("\t".join([sto, osd_id, raw_dir]) + "\n")
 
         def call_osd_bootstrapper(input_path, output_dir_path):
             print "to_call", input_path, output_dir_path
@@ -104,15 +153,20 @@ def generate_beefs_metadata(entries, outdir_path):
         call_osd_bootstrapper(in_path, meta_outdir)
 
     def groupby_osd(entries):
-        group = {}
+        group_by = {}
         for entry in entries:
-            for replica in entry.replicas:
+            group = entry.group
+            allreplicas = []
+            allreplicas.append(group.primary)
+            allreplicas.extend(group.replicas)
+
+            for replica in allreplicas:
                 osd_id = replica.osd_id
                 sto_id = replica.sto_id
-                if not osd_id in group:
-                    group[osd_id] = []
-                group[osd_id].append(sto_id)
-        return group
+                if not osd_id in group_by:
+                    group_by[osd_id] = []
+                group_by[osd_id].append(sto_id)
+        return group_by
 
     files = [entry for entry in entries if not entry.is_dir()]
 
@@ -125,7 +179,7 @@ def generate_beefs_metadata(entries, outdir_path):
         meta_outdir = os.path.join(ds_metadata_root, osd_id)
         if not os.path.exists(meta_outdir):
             os.mkdir(meta_outdir)
-        generate_data_servers_metadata(osd_rawdir, osd_id, stos_id, meta_outdir)
+        data_server_metadata(osd_rawdir, osd_id, stos_id, meta_outdir)
 
 def distribution(namespace_path, rlevel, ignore):
     """ It creates a beefs data distribution, sto location and replication info,
@@ -149,18 +203,27 @@ def distribution(namespace_path, rlevel, ignore):
                   is a dir, replicas is a empty collection on Entry object
     """
 
-    def dentry(fullpath):
-        return Entry(fullpath, "d", [])
+    def dentry(fullpath, parent_id):
+        inode_id = str(uuid.uuid4())
+        return Entry(inode_id, parent_id, fullpath, "d", None)
 
-    def fentry(fullpath, gen, rlevel):
+    def fentry(fullpath, gen, rlevel, parent_id):
+
+        def new_replicas(rlevel, osd_id_gen):
+            version = 1
+            return [Entry.Replica(version, osd_id, str(uuid.uuid4())) \
+                        for osd_id in gen.generate(fullpath, rlevel)]
+         
+        def new_group(rlevel, osd_id_gen):
+            replicas = new_replicas(rlevel, osd_id_gen)
+            group_id = str(uuid.uuid4())
+            return Entry.Group(group_id, rlevel, replicas[0], replicas[1:])
+
         if rlevel < 0:
             raise ValueError("rlevel should not be negative %d", rlevel)
 
-        replicas = [Entry.Replica(1, osd_id, str(uuid.uuid4())) \
-                        for osd_id in
-                         gen.generate(fullpath, rlevel)]
-
-        return Entry(fullpath, "f", replicas)
+        inode_id = str(uuid.uuid4())
+        return Entry(inode_id, parent_id, fullpath, "f", new_group(rlevel, gen))
 
     class OsdGen():
         def __init__(self, base_dir, ignore):
@@ -207,9 +270,10 @@ def distribution(namespace_path, rlevel, ignore):
     entry_by_path = {}
     for root, dirs, files in walk(namespace_path, ignore):
         if not root in entry_by_path:
-            entry_by_path[root] = dentry(root)
+            entry_by_path[root] = dentry(root, None)
 
         root_entry = entry_by_path[root]
+        parent_id = root_entry.inode_id
         graph[root_entry] = []
 
         #FIXME remove this duplication
@@ -217,7 +281,7 @@ def distribution(namespace_path, rlevel, ignore):
             if _dir:
                 fullpath = os.path.join(root, _dir)
                 if not _dir in entry_by_path:
-                    entry = dentry(fullpath)
+                    entry = dentry(fullpath, parent_id)
                     entry_by_path[fullpath] = entry
                 graph[root_entry].append(entry_by_path[fullpath])
 
@@ -225,7 +289,7 @@ def distribution(namespace_path, rlevel, ignore):
             if _file:
                 fullpath = os.path.join(root, _file)
                 if not _file in entry_by_path:
-                    entry = fentry(fullpath, prim_osd_gen, rlevel)
+                    entry = fentry(fullpath, prim_osd_gen, rlevel, parent_id)
                     entry_by_path[fullpath] = entry
                 graph[root_entry].append(entry_by_path[fullpath])
 		

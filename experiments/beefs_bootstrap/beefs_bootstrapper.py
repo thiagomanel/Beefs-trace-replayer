@@ -181,7 +181,49 @@ def generate_data_servers_metadata(entries, outdir_path):
             os.mkdir(meta_outdir)
         data_server_metadata(osd_rawdir, osd_id, stos_id, meta_outdir)
 
-def distribution(namespace_path, rlevel, ignore):
+class OsdGen():
+    def __init__(self, base_dir, ignore):
+        self.base_dir = base_dir
+        self.ids = {}
+        root, dirs, files = walk(base_dir, ignore).next()
+        for _dir in dirs:
+            self.ids[os.path.join(base_dir,_dir)] = str(uuid.uuid4())
+
+    def osdId_by_user_path(self):
+        return dict(self.ids)
+
+    def generate(self, fullpath, rlevel):
+        """ It creates rlevel osd_ids. First id stands for the primary
+            replica, followed by secondary ids. Primary replicas under
+            the same user directory share the same osd id. For example,
+            any file with prefix /base_dir/user_dir will have primary 
+            replicas on the same osd_id. Also, files under different 
+            user directories must have primary replicas with different
+            osd_ids.
+            Generated osd_ids cannot contais duplicates.
+        """
+        def match_primary_osd(fullpath):
+            for user_dir in self.ids.keys():
+                if fullpath.startswith(user_dir):
+                    return self.ids[user_dir]
+            return None
+
+        if rlevel > len(self.ids.keys()):
+            raise ValueError("rlevel is greater than amount \
+                                      of available osds")
+        gen_ids = []
+        prim_id = match_primary_osd(fullpath)
+        if prim_id:
+            gen_ids.append(prim_id)
+        else:
+            raise ValueError("match not found for %s" % fullpath)
+
+        possible_secs = list(self.ids.values())
+        possible_secs.remove(prim_id)
+        gen_ids.extend(random.sample(possible_secs, rlevel - 1))
+        return gen_ids
+
+def distribution(namespace_path, rlevel, osd_generator, ignore):
     """ It creates a beefs data distribution, sto location and replication info,
         given a path.
         We assume the following layout under namespace_path arg:
@@ -195,6 +237,7 @@ def distribution(namespace_path, rlevel, ignore):
         Args:
            namespace_path (str): path used to generate the distribution
            rlevel (int): number of replica of each data
+           osd_generator: It gives osdIds to replicas
            ignore (list): a list of subdirs to ignore
 
         Returns:
@@ -225,46 +268,6 @@ def distribution(namespace_path, rlevel, ignore):
         inode_id = str(uuid.uuid4())
         return Entry(inode_id, parent_id, fullpath, "f", new_group(rlevel, gen))
 
-    class OsdGen():
-        def __init__(self, base_dir, ignore):
-            self.base_dir = base_dir
-            self.ids = {}
-            root, dirs, files = walk(base_dir, ignore).next()
-            for _dir in dirs:
-                self.ids[os.path.join(base_dir,_dir)] = str(uuid.uuid4())
-
-        def generate(self, fullpath, rlevel):
-            """ It creates rlevel osd_ids. First id stands for the primary
-                replica, followed by secondary ids. Primary replicas under
-                the same user directory share the same osd id. For example,
-                any file with prefix /base_dir/user_dir will have primary 
-                replicas on the same osd_id. Also, files under different 
-                user directories must have primary replicas with different
-                osd_ids.
-                Generated osd_ids cannot contais duplicates.
-            """
-            def match_primary_osd(fullpath):
-                for user_dir in self.ids.keys():
-                    if fullpath.startswith(user_dir):
-                        return self.ids[user_dir]
-                return None
-
-            if rlevel > len(self.ids.keys()):
-                raise ValueError("rlevel is greater than amount \
-                                      of available osds")
-            gen_ids = []
-            prim_id = match_primary_osd(fullpath)
-            if prim_id:
-                gen_ids.append(prim_id)
-            else:
-                raise ValueError("match not found for %s" % fullpath)
-
-            possible_secs = list(self.ids.values())
-            possible_secs.remove(prim_id)
-            gen_ids.extend(random.sample(possible_secs, rlevel - 1))
-            return gen_ids
-
-    prim_osd_gen = OsdGen(namespace_path, ignore)
 
     graph = {}
     entry_by_path = {}
@@ -289,7 +292,7 @@ def distribution(namespace_path, rlevel, ignore):
             if _file:
                 fullpath = os.path.join(root, _file)
                 if not _file in entry_by_path:
-                    entry = fentry(fullpath, prim_osd_gen, rlevel, parent_id)
+                    entry = fentry(fullpath, osd_generator, rlevel, parent_id)
                     entry_by_path[fullpath] = entry
                 graph[root_entry].append(entry_by_path[fullpath])
 		

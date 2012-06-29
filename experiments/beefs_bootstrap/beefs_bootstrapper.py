@@ -34,6 +34,19 @@ class Entry():
                     "replicas": [rep.json() for rep in self.replicas]
                    }
 
+        def __allreplicas__(self):
+            _all = list(self.replicas)
+            _all.append(self.primary)
+            return _all
+
+        def replicas_by_osdid(self):
+            by_osdid = {}
+            for rep in self.__allreplicas__():
+                if not rep.osd_id in by_osdid:
+                    by_osdid[rep.osd_id] = []
+                by_osdid[rep.osd_id].append(rep)
+            return by_osdid
+
         @classmethod
         def from_json(cls, _json):
             if _json:
@@ -57,13 +70,45 @@ class Entry():
         def json(self):
             return {
                     "version": self.version,
-                    "osdId": self.osd_id,
+                    "osdId": self.osd_id.json(),
                     "id": self.sto_id
                    }
 
         @classmethod
         def from_json(cls, _json):
-            return Entry.Replica(_json["version"], _json["osdId"], _json["id"])
+            _osdId = Entry.OsdId.from_json(_json["osdId"])
+            return Entry.Replica(_json["version"], _osdId, _json["id"])
+
+    class OsdId():
+        def __init__(self, hostname, port, data_port):
+            self.hostname = hostname
+            self.port = port
+            self.data_port = data_port
+
+        def __str__(self):
+            return json.dumps(self.json())
+
+        def json(self):
+            return {
+                    "hostname": self.hostname,
+                    "port": self.port,
+                    "dataPort": self.data_port
+                   }
+
+        def __eq__(self, other):
+            return (isinstance(other, self.__class__) 
+                        and self.__dict__ == other.__dict__)
+
+        def __ne__(self, other):
+            return not self.__eq__(other)
+
+        def __hash__(self):
+            return hash(self.hostname) ^ hash(self.port) ^ hash(self.data_port)
+
+        #FIXME i guess if we use self.dict it will be much more simple, this from_json and json methods
+        @classmethod
+        def from_json(cls, _json):
+            return Entry.OsdId(_json["hostname"], _json["port"], _json["dataPort"])
 
     def __init__(self, inode_id, parent_id, fullpath, ftype, group):
 
@@ -156,16 +201,10 @@ def generate_data_servers_metadata(entries, outdir_path):
         group_by = {}
         for entry in entries:
             group = entry.group
-            allreplicas = []
-            allreplicas.append(group.primary)
-            allreplicas.extend(group.replicas)
-
-            for replica in allreplicas:
-                osd_id = replica.osd_id
-                sto_id = replica.sto_id
+            for osd_id, replica in group.replicas_by_osdid():
                 if not osd_id in group_by:
                     group_by[osd_id] = []
-                group_by[osd_id].append(sto_id)
+                group_by[osd_id].append(replica.sto_id)
         return group_by
 
     files = [entry for entry in entries if not entry.is_dir()]
@@ -254,8 +293,12 @@ def distribution(namespace_path, rlevel, osd_generator, ignore):
 
         def new_replicas(rlevel, osd_id_gen):
             version = 1
+            fake_port = 1111
+            fake_data_port = 2222
+            osdIds = [Entry.OsdId(hostname_uuid, fake_port, fake_data_port)
+                      for hostname_uuid in gen.generate(fullpath, rlevel)]
             return [Entry.Replica(version, osd_id, str(uuid.uuid4())) \
-                        for osd_id in gen.generate(fullpath, rlevel)]
+                        for osd_id in osdIds]
          
         def new_group(rlevel, osd_id_gen):
             replicas = new_replicas(rlevel, osd_id_gen)

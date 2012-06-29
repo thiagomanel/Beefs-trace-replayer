@@ -44,7 +44,6 @@ class TestDistribution(unittest.TestCase):
         #self.assertEquals(file_weird_chars, entry.fullpath)
         self.assertFalse(entry.is_dir())
         self.assertEquals(None, entry.group)
-        print "fullpath", entry.fullpath
 
     def make_temp_dir(self):
         temp_dir = tempfile.mkdtemp(prefix="tmp-%s-" % self.__class__.__name__)
@@ -92,8 +91,6 @@ class TestDistribution(unittest.TestCase):
         osd_gen = OsdGen(temp_dir, [])
         entry_tree = distribution(temp_dir, replication_level, osd_gen, [])
         self.assertEquals(5, len(entry_tree.keys()))
-        for entry in entry_tree.keys():
-            print entry
 
         entries_by_path = self.entries_by_path(entry_tree.keys())
         for _dir in dirs:

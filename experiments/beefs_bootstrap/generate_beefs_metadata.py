@@ -49,9 +49,10 @@ def main(server_export_dir, boot_data_path, output_dir, network_id_path):
 
         def replace_osdid(entry, id_to_replacement):
             group = entry.group
-            for osd_id, replica in group.replicas_by_osdid():
+            for osd_id, replicas in group.replicas_by_osdid().iteritems():
                 if osd_id in id_to_replacement:
-                    replica.osd_id = id_to_replacement[osd_id]
+                    for replica in replicas:
+                        replica.osd_id = id_to_replacement[osd_id]
 
         def remove_local_path(local_path_head, old_path):
             """ It removes the local path head. For example, with 
@@ -66,12 +67,13 @@ def main(server_export_dir, boot_data_path, output_dir, network_id_path):
             formatted_entries = []
 
             for old_line in base_boot_data:
-                entry = Entry.from_json(json.loads(line, encoding=iso))
-                replace_osdid(entry, replacement)
+                entry = Entry.from_json(json.loads(old_line, encoding=iso))
+                if not entry.is_dir():
+                    replace_osdid(entry, replacement)
                 entry.fullpath = remove_local_path(server_export_dir, 
                                                    entry.fullpath)
-                formatted_lines.append(entry)
-                if entry.full == "/":#replace root inode id
+                formatted_entries.append(entry)
+                if entry.fullpath == "/":#replace root inode id
                     old_root_inode_id, entry.inode_id = \
                         entry.inode_id, new_root_inode_id
 
@@ -80,7 +82,7 @@ def main(server_export_dir, boot_data_path, output_dir, network_id_path):
                     #update root's children
                     if entry.parent_id == old_root_inode_id:
                         entry.parent_id = new_root_inode_id
-                    form_data.write(json.dumps(entry.json(), encoding=iso))
+                    form_data.write(json.dumps(entry.json(), encoding=iso) + "\n")
                 
     with open(boot_data_path) as boot_data:
         entries = [Entry.from_json(json.loads(entry, encoding=iso)) 

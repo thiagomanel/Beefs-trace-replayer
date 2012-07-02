@@ -157,11 +157,13 @@ def generate_queenbee_metadata(boot_data_path, output_dir_path):
 
        Raises: TODO
     """
-    boot_script = "/local/thiagoepdc/workspace_beefs/beefs-middleware-project/target/beefs/bin/bootstrap.sh"
-    subprocess.call(["bash", boot_script,
+    #boot_script = "/local/thiagoepdc/workspace_beefs/beefs-middleware-project/target/beefs/bin/bootstrap.sh"
+    boot_script = "/media/sda4/manel/workspace_boot/beefs-middleware-project/target/beefs/bin/bootstrap.sh"
+    print "queen to call", boot_data_path, output_dir_path
+    print subprocess.check_call(["bash", boot_script,
                      "queenbee",
-                     boot_data_path,
-                     output_dir_path])
+                     os.path.abspath(boot_data_path),
+                     os.path.abspath(output_dir_path)])
 
 def generate_data_servers_metadata(entries, outdir_path):
     """
@@ -176,35 +178,36 @@ def generate_data_servers_metadata(entries, outdir_path):
         Returns: TODO
         Raises:  TODO
     """
-    def data_server_metadata(raw_dir, osd_id, stos_id, meta_outdir):
-        def create_osd_boot_data(raw_dir, osd_id, stos_id, filepath_to_write):
-            #osd boot_data format
-            #stoId	osdId	stoDataPath
+    def data_server_metadata(osd_id, stos_id, meta_outdir):
+
+        def create_osd_boot_data(stos_id, filepath_to_write):
             with open(filepath_to_write, 'w') as boot_data:
                 for sto in stos_id:
-		    boot_data.write("\t".join([sto, osd_id, raw_dir]) + "\n")
+		    boot_data.write(sto + "\n")
 
         def call_osd_bootstrapper(input_path, output_dir_path):
             print "to_call", input_path, output_dir_path
-            boot_script = "/local/thiagoepdc/workspace_beefs/beefs-middleware-project/target/beefs/bin/bootstrap.sh"
+            #boot_script = "/local/thiagoepdc/workspace_beefs/beefs-middleware-project/target/beefs/bin/bootstrap.sh"
+            boot_script = "/media/sda4/manel/workspace_boot/beefs-middleware-project/target/beefs/bin/bootstrap.sh"
 
-            subprocess.call(["bash", boot_script,
+            print subprocess.check_call(["bash", boot_script,
                              "honeycomb",
-                             input_path,
-                             output_dir_path])
+                             os.path.abspath(input_path),
+                             os.path.abspath(output_dir_path)])
 
-        in_path = ".".join([osd_id,"osd.boot"])
-        create_osd_boot_data(raw_dir, osd_id, stos_id, in_path)
+        in_path = ".".join([osd_id.hostname, "osd.boot"])
+        create_osd_boot_data(stos_id, in_path)
         call_osd_bootstrapper(in_path, meta_outdir)
 
     def groupby_osd(entries):
         group_by = {}
         for entry in entries:
             group = entry.group
-            for osd_id, replica in group.replicas_by_osdid():
+            for osd_id, replicas in group.replicas_by_osdid().iteritems():
                 if not osd_id in group_by:
                     group_by[osd_id] = []
-                group_by[osd_id].append(replica.sto_id)
+                for replica in replicas:
+                    group_by[osd_id].append(replica.sto_id)
         return group_by
 
     files = [entry for entry in entries if not entry.is_dir()]
@@ -214,11 +217,10 @@ def generate_data_servers_metadata(entries, outdir_path):
         os.mkdir(ds_metadata_root)
 
     for osd_id, stos_id in groupby_osd(files).iteritems():
-        osd_rawdir = os.path.join(outdir_path, osd_id)
-        meta_outdir = os.path.join(ds_metadata_root, osd_id)
+        meta_outdir = os.path.join(ds_metadata_root, osd_id.hostname)
         if not os.path.exists(meta_outdir):
             os.mkdir(meta_outdir)
-        data_server_metadata(osd_rawdir, osd_id, stos_id, meta_outdir)
+        data_server_metadata(osd_id, stos_id, meta_outdir)
 
 class OsdGen():
     def __init__(self, base_dir, ignore):

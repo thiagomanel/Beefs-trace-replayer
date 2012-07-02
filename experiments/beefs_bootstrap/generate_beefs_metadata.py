@@ -6,7 +6,9 @@ from beefs_bootstrapper import *
 iso = "ISO-8859-1"
 
 def main(server_export_dir, boot_data_path, output_dir, network_id_path):
-    """ It creates beefs metadata based on generate_boot_data.py output
+    """ It creates beefs metadata based on generate_boot_data.py output. Note
+        network_id_path should have the osd hostname that are going to be used
+        on the experiment.
         
         Args:
             server_export_dir (str): Namespace is stored under this dir at 
@@ -16,13 +18,16 @@ def main(server_export_dir, boot_data_path, output_dir, network_id_path):
                               metadata.
             network_id_path (str): path to a file describing the mapping between
                                    uuid based osdIds used on boot_data_path and 
-                                   real network ids used  on queenbee metadata.
+                                   real network ids to be used on queenbee 
+                                   metadata.
     """
     def create_replacement(network_id_path):
         def parse(line):
             #when /path 3ad4fafb-0be0-49b3-ad0a-cda1c85fb6fd hostname
             #then ("3ad4fafb-0be0-49b3-ad0a-cda1c85fb6fd", "hostname")
             tokens = line.split()
+            if not len(tokens) == 3:
+                raise ValueError("wrong format" + line)
             uuid = tokens[-2]
             hostname = tokens[-1]
             return {uuid:hostname}

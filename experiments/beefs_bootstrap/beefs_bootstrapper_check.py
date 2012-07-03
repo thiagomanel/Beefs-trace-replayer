@@ -39,13 +39,24 @@ if __name__ == "__main__":
     gen_dirs, gen_files = generated_namespace(output_to_check)
 
     for root, dirs, files in walk(local_path, ignored):
-        if not root in gen_dirs:
-            sys.stdout.write(error_msg(root) + " directory\n")
+        try:
+            if not unicode(root, "utf8") in gen_dirs:
+                sys.stdout.write(error_msg(root) + " directory\n")
+        except UnicodeDecodeError:
+            sys.stdout.write("non-unicode chars path=%s\n" % root)
+
         for _dir in dirs:
             fullpath_dir = os.path.join(root, _dir)
-            if not fullpath_dir in gen_dirs:
-                sys.stdout.write(error_msg(fullpath_dir) + " directory\n")
+            try:
+                if not unicode(fullpath_dir, "utf8") in gen_dirs:
+                    sys.stdout.write(error_msg(fullpath_dir) + " directory\n")
+            except UnicodeDecodeError:
+                sys.stdout.write("non-unicode chars path=%s\n" % fullpath_dir)
+
         for _file in files:
             fullpath_file = os.path.join(root, _file)
-            if not fullpath_file in gen_files:
-                sys.stdout.write(error_msg(fullpath_file) + " file\n")
+            try:
+                if not unicode(fullpath_file, "utf8") in gen_files:
+                    sys.stdout.write(error_msg(fullpath_file) + " file\n")
+            except UnicodeDecodeError:
+                sys.stdout.write("non-unicode chars path=%s\n" % fullpath_file)

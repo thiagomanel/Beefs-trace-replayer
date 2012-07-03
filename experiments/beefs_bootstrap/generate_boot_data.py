@@ -26,6 +26,12 @@ if __name__ == "__main__":
                 or replication_level is not a integer value or there is an 
                 osd.mapping file
     """
+    def dump(entry, out, err):
+        try:
+            out.write(json.dumps(entry.json()) + "\n")
+        except UnicodeDecodeError:
+            err.write("code error fullpath: " + entry.fullpath + "\n")
+
     local_path = sys.argv[1]
     rlevel = int(sys.argv[2])
     osd_mapping_output = sys.argv[3]
@@ -38,11 +44,11 @@ if __name__ == "__main__":
         #we take files from values and dirs from keys, to avoid duplicates
         if not parent.is_dir():
             raise Exception("Hey, keys should store directories")
-        sys.stdout.write(json.dumps(parent.json()) + "\n")
+        dump(parent, sys.stdout, sys.stderr)
 
         for child in children:
             if not child.is_dir():
-                sys.stdout.write(json.dumps(child.json()) + "\n")
+               dump(child, sys.stdout, sys.stderr)
 
     with open(osd_mapping_output, 'w') as map_file:
         for path, osd_id in osd_gen.osdId_by_user_path().iteritems():

@@ -2,6 +2,7 @@ import os
 import sys
 import json
 import subprocess
+from beefs_bootstrapper import *
 
 def main(boot_data_path, osd_hostname, dst_dir, src_hostname):
     """ It stages stos held to a specified osd into a local directory.
@@ -14,29 +15,47 @@ def main(boot_data_path, osd_hostname, dst_dir, src_hostname):
     """
     def stage_in(src, dst):
         #both src and dst are hostname:/path strings
-        subprocess.Popen(" ".join(["scp", src, dst]),
-                         shell=True,
+        process = subprocess.Popen(["scp", src, dst],
                          stdout=subprocess.PIPE,
                          stderr=subprocess.STDOUT)
         out, err = process.communicate()
         return out, err, process.returncode
 
-    def filter_by_hostname(boot_data, hostname):
-        filtered_stos = []
+    def sto_and_remote_path_by_hostname(boot_data, hostname):
+        """
+            It gives a collection of (sto_id, remove_path) held by an osd with a
+            given hostname.
+            Args:
+                 boot_data
+                 hostname
+        """
+        def replica_by_hostname(group, hostname):
+            replicas_by_osdid = group.replicas_by_osdid()
+            for osd_id in replicas_by_osdid.keys():
+                if osd_id.hostname == hostname:
+                   return replicas_by_osdid[osd_id]
+            return []
+
+        sto_and_path = []
         for line in boot_data:
             entry = Entry.from_json(json.loads(line, encoding="ISO-8859-1"))
-            allreplicas = [entry.group.replicas]
-            allreplicas.append(entry.group.primary)
-            filtered_stos.extend([replica.sto_id for replica in allreplicas
-                                                 if replica.osd_id == hostname])
-        #we cannot have duplicates, but it's safer to remove them
-        return set(filtered_stos)
+            if not entry.is_dir():
+                replicas = replica_by_hostname(entry.group, hostname)
+                for replica in replicas:
+                    sto_and_path.append((replica.sto_id, entry.fullpath))
 
-    with open(boot_data_path) as boot_data
-        for sto_id, remote_path in filter_by_hostname(boot_data, osd_hostname):
-            src = "@".join([src_hostname, remote_path])
-            dst = "@".join(["localhost", os.path.join(dst_dir, sto_id)]) 
-            stage_in(sto_id, remote_path, dst_dir)
+        return sto_and_path
+
+    with open(boot_data_path) as boot_data:
+        for sto_id, remote_path in \
+                sto_and_remote_path_by_hostname(boot_data, osd_hostname):
+
+            safe_remote_path = "\"" + remote_path + "\""
+            src = ":".join([src_hostname, safe_remote_path])
+            dst = os.path.join(dst_dir, sto_id)
+            out, err, ret = stage_in(src, dst)
+            if out: sys.stdout.write(out)
+            if err: sys.stderr.write(err)
 
 if __name__ == "__main__":
     boot_data_path = sys.argv[1]

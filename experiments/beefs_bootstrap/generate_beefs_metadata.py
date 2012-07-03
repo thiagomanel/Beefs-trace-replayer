@@ -3,8 +3,6 @@ import json
 from itertools import groupby
 from beefs_bootstrapper import *
 
-iso = "ISO-8859-1"
-
 def main(server_export_dir, boot_data_path, output_dir, network_id_path):
     """ It creates beefs metadata based on generate_boot_data.py output. Note
         network_id_path should have the osd hostname that are going to be used
@@ -72,7 +70,7 @@ def main(server_export_dir, boot_data_path, output_dir, network_id_path):
             formatted_entries = []
 
             for old_line in base_boot_data:
-                entry = Entry.from_json(json.loads(old_line, encoding=iso))
+                entry = Entry.from_json(json.loads(old_line))
                 if not entry.is_dir():
                     replace_osdid(entry, replacement)
                 entry.fullpath = remove_local_path(server_export_dir, 
@@ -87,11 +85,10 @@ def main(server_export_dir, boot_data_path, output_dir, network_id_path):
                     #update root's children
                     if entry.parent_id == old_root_inode_id:
                         entry.parent_id = new_root_inode_id
-                    form_data.write(json.dumps(entry.json(), encoding=iso) + "\n")
+                    form_data.write(json.dumps(entry.json()) + "\n")
                 
     with open(boot_data_path) as boot_data:
-        entries = [Entry.from_json(json.loads(entry, encoding=iso)) 
-                       for entry in boot_data]
+        entries = [Entry.from_json(json.loads(entry)) for entry in boot_data]
         generate_data_servers_metadata(entries, output_dir)
 
     queenbee_out_dir = os.path.join(output_dir, "queenbee_metadata")

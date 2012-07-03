@@ -30,7 +30,6 @@ if __name__ == "__main__":
     rlevel = int(sys.argv[2])
     osd_mapping_output = sys.argv[3]
     ignored = sys.argv[4:]#NOTE: a ignored path cannot have am empty space.
-    iso = "ISO-8859-1"
 
     osd_gen = OsdGen(local_path, ignored)
 
@@ -39,11 +38,11 @@ if __name__ == "__main__":
         #we take files from values and dirs from keys, to avoid duplicates
         if not parent.is_dir():
             raise Exception("Hey, keys should store directories")
-        sys.stdout.write(json.dumps(parent.json(), encoding=iso) + "\n")
+        sys.stdout.write(json.dumps(parent.json()) + "\n")
 
         for child in children:
             if not child.is_dir():
-                sys.stdout.write(json.dumps(child.json(), encoding=iso) + "\n")
+                sys.stdout.write(json.dumps(child.json()) + "\n")
 
     with open(osd_mapping_output, 'w') as map_file:
         for path, osd_id in osd_gen.osdId_by_user_path().iteritems():

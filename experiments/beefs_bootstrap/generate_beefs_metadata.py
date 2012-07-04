@@ -87,9 +87,9 @@ def main(server_export_dir, boot_data_path, output_dir, network_id_path):
                         entry.parent_id = new_root_inode_id
                     form_data.write(json.dumps(entry.json()) + "\n")
                 
-    with open(boot_data_path) as boot_data:
-        entries = [Entry.from_json(json.loads(entry)) for entry in boot_data]
-        generate_data_servers_metadata(entries, output_dir)
+#    with open(boot_data_path) as boot_data:
+#        entries = [Entry.from_json(json.loads(entry)) for entry in boot_data]
+#        generate_data_servers_metadata(entries, output_dir)
 
     queenbee_out_dir = os.path.join(output_dir, "queenbee_metadata")
     if not os.path.exists(queenbee_out_dir):

@@ -28,7 +28,7 @@ then
 fi
 
 # running instances
-euca-run-instances -k $KEY -t c1.medium -n $num_instances $EMI
+euca-run-instances -k $KEY -t c1.medium -n $num_instances $EMI --addressing private
 
 # authorizing ssh access
 euca-authorize -P tcp -p 22 -s 0.0.0.0/0 default

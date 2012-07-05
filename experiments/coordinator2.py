@@ -11,12 +11,13 @@ LAN_INPUT_DIR="/home/thiagoepdc/experiments/"
 
 def execute(remote_command, machine_addr, delay=None):
     process = subprocess.Popen(" ".join(["ssh",
-	                                     machine_addr,
+	                                     "root@"+machine_addr,
                                              remote_command]),
 					shell=True,
                                         stdout=subprocess.PIPE,
                                         stderr=subprocess.STDOUT)
     out, err = process.communicate()
+    print "out", out, "err", err
     return out, err, process.returncode
 
 def time(machine_addr):

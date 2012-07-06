@@ -4,8 +4,10 @@ mount this file system at worker nodes.
 We also need to sync worker node clocks, jobs should start at the same time.
 
 So, before proper execution we need the following config steps
+    - generate beefs config. see "gen_beefs_config.sh"
     - alloc. instances. see "./allocate_cloudgley.sh $the_number $emi"
     - config no-pass. see "./config_cloudgley_ssh.sh"
+    - config vm image. see "./config_apt.sh"
     - config input (replay code and input) see "./config_input_nfs.sh"
     - sync clocks. see "./sync_clock.sh"
     - gives some permissive permissions to output directory

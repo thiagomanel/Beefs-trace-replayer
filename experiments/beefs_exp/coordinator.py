@@ -15,21 +15,25 @@ class Component:
     DATA_SERVER, CLIENT, META_SERVER = range(3)
 
 class Deploy():
-    def __init__(self, ms_node, node2replay_input, install_dir, mount_point):
+    def __init__(self, ms_node, node2replay_input, node2backup_raw_dir, 
+                 install_dir, mount_point):
         """
            Args:
                ms_node (str) - addr of metadata server node.
                node2replay_input (dict) - a dict from to node addr to the replay
                                           input to be replayed on this node.
+               node2backup_raw_dir (dict) - a dict from node addr to the honeycomb
+                                            raw dir backup.
                install_dir (str) - path to a dir where beefs was installed.
                mount_point (str) - path to the directory where honeybee mounts
                                    beefs.
         """
         self.ms_node = ms_node
         self.node2replay_input = node2replay_input
+        self.node2backup_raw_dir = node2backup_raw_dir
         self.mount_point = mount_point
         self.install_dir = install_dir
-        self.beefs_script = "/".join([install_dir, "beefs", "bin", "beefs"])
+        self.beefs_script = "/".join([install_dir, "bin", "beefs"])
         self.wait_and_replay_script_path = "/".join([EXPERIMENT_INPUT_DIR, 
                                                      "wait_and_replay.sh"])
 
@@ -42,6 +46,20 @@ class Deploy():
     def ms_node(self):
         return self.ms_node
 
+    def component_is_running(self, node, component_type):
+        def process_name(component_type):
+            if component_type == Component.DATA_SERVER:
+                return "Honeycomb"
+            elif component_type == Component.META_SERVER:
+                return "Queenbee"
+            elif component_type == Component.CLIENT:
+                return "Honeybee"
+
+        out, err, rcod = execute("ps xau | grep " + process_name(component_type) 
+                                  + " | grep -v grep", node)
+
+        return out#if it is running, out it not emptu, so it's is true
+
     def umount(self, node):
         #I do not like much this check within the call (and raising an exception
         #but main code is a way more cleaner because of this.
@@ -49,26 +67,37 @@ class Deploy():
             return execute(" ".join(["umount", mount_point]), node)
 
         def check(node):
-            #out, err, rcode = execute("mount | grep 150.165.85.239:/local/nfs_manel", )
-            #fixme check by mount point (mount cmd provides some check ?)
+           out, err, rcode = execute("mount | grep beefs", node)
            return out#if it is mounted, out is not empty, so it is true
 
-        sys.stdout.write("umount node=%s mount_point=%s\n"
-                          % (node, self.mount_point))
-        out, err, rvalue = do_umount(node, self.mount_point)
-        if not check(node):
-            raise Exception("Unable to umount node=%s out=%s err=%s"
-                            % (node, out, err))
-        return out, err, rvalue
+        if check(node):
+            sys.stdout.write("umount node=%s mount_point=%s\n"
+                             % (node, self.mount_point))
+            out, err, rvalue = do_umount(node, self.mount_point)
+            if not check(node):
+                raise Exception("unable to umount node=%s out=%s err=%s"
+                                % (node, out, err))
+        else:
+            sys.stdout.write("not mounted. skipping umount node=%s mount_point=%s\n"
+                             % (node, self.mount_point))
 
     def start(self, component_type, node):
-        if component_type == Component.DATA_SERVER:
-            remote_command = " ".join([self.beefs_script, "start", "honeycomb"])
-            execute(remote_command, node, delay=None)
-        elif component_type == Component.META_SERVER:
-            remote_command = " ".join([self.beefs_script, "start", "queenbee"])
-            execute(remote_command, node, delay=None)
-	
+        if self.component_is_running(node, component_type):
+            sys.stdout.write("component is running. skipping start node=%s\n" 
+                             % (node))
+        else:
+            if component_type == Component.DATA_SERVER:
+                remote_command = " ".join([self.beefs_script, "start", "honeycomb"])
+            elif component_type == Component.META_SERVER:
+                remote_command = " ".join([self.beefs_script, "start", "queenbee"])
+
+            out, err, rvalue = execute(remote_command, node, delay=None)
+
+            if not self.component_is_running(node, component_type):
+                raise Exception("unable to start component=%d node=%s cmd=%s out=%s err=%s\n"
+                                % (component_type, node, remote_command, out, err))
+            return out, err, rvalue
+            
     def stop(self, component_type, node):
 
         def do_stop(component_type, node):
@@ -82,30 +111,54 @@ class Deploy():
                 remote_command = " ".join([self.beefs_script, "stop", "honeybee"])
                 return execute(remote_command, node, delay=None)
 
-        def check(node):#FIXME
-            return True
-
-        sys.stdout.write("stop component=%d node=%s\n" % (component_type, node))
-        out, err, rvalue = do_stop(component_type, node)
-        if not check(node):
-            raise Exception("Unable to stop component=%d node=%s out=%s err=%s"
-                            % (component_type, node, out, err))
-        return out, err, rvalue
+        if not self.component_is_running(node, component_type):
+            sys.stdout.write("component was not running. skipping stop component=%d node=%s\n" 
+                             % (component_type, node))
+        else:
+            out, err, rvalue = do_stop(component_type, node)
+            if self.component_is_running(node, component_type):
+                raise Exception("unable to stop component=%d node=%s out=%s err=%s"
+                                % (component_type, node, out, err))
+            return out, err, rvalue
 
     def rollback(self, component_type, node):
-        #CHECK rollback ?
+
         def rollback_ds_raw_data(node):
-            pass
-        def rollback_metadata(node):
-            #we should specify a directory to store meta on beefs conf
-            #and execute a rsync on this directory. we also need to store
-            #all metadata, a directory per node at coordination local fs
-            pass
+            backup_path = self.node2backup_raw_dir[node]
+            dst_path = "root@" + ":".join([node, "/tmp/storage"])#receive this as param
+
+            rollback_cmd = " ".join(["rsync", "-progtl", "--delete",
+                                     backup_path + "/*",
+                                     dst_path])
+            process = subprocess.Popen(rollback_cmd,
+                                       shell=True,
+                                       stdout=subprocess.PIPE,
+                                       stderr=subprocess.STDOUT)
+            out, err = process.communicate()
+            return out, err, process.returncode
+
+        def rollback_deploy(node):
+            sys.stdout.write("rolling back deploy node=%s\n" % (node))
+            backup_path = "beefs/*"
+            dst_path = "root@" + ":".join([node, "/beefs"])
+            rollback_cmd = " ".join(["rsync", "-progtl", "--delete",
+                                     backup_path,
+                                     dst_path])
+            process = subprocess.Popen(rollback_cmd,
+                                       shell=True,
+                                       stdout=subprocess.PIPE,
+                                       stderr=subprocess.STDOUT)
+            out, err = process.communicate()
+            return out, err, process.returncode
+
         if component_type == Component.DATA_SERVER:
-            rollback_ds_raw_data(node)
-            rollback_metadata(node)
+            sys.stdout.write("rolling back raw data node=%s\n" % (node))
+            out, err, rvalue = rollback_ds_raw_data(node)
+            sys.stdout.write("rolling back done node=%s out=%s err=%s\n" 
+                             % (node, out, err))
+            rollback_deploy(node)
         elif component_type == Component.META_SERVER:
-            rollback_metadata(node)
+            rollback_deploy(node)
 
     def wait_and_start_replay(self, node, deadline, out_path, err_path):
         sys.stdout.write("wait and start node=%s\n" % (node))
@@ -149,7 +202,8 @@ def execute(remote_command, machine_addr, delay=None):
 def mount_client(addr, mount_point):
     return execute(" ".join(["mount", mount_point]), addr)
 
-def main(num_samples, ms_node, node2replay_input, mount_point, install_dir):
+def main(num_samples, ms_node, node2replay_input, node2backup_raw_dir,
+         mount_point, install_dir):
 
     def base_out_path(node, sample):
         #/tmp/node.sample.random
@@ -158,7 +212,8 @@ def main(num_samples, ms_node, node2replay_input, mount_point, install_dir):
                                       str(int(random.random() * 10000000))])
                            )
 
-    deploy = Deploy(ms_node, node2replay_input, install_dir, mount_point)
+    deploy = Deploy(ms_node, node2replay_input, node2backup_raw_dir, install_dir,
+                    mount_point)
 
     nodes = node2replay_input.keys()#sugar
     for sample in range(num_samples):
@@ -201,8 +256,8 @@ if __name__ == "__main__":
     #logging.basicConfig(filename='example.log',level=logging.DEBUG)
     #logging.info('So should this')
 
-    if len(sys.argv) < 7:
-        sys.stderr.write("Usage: python coordinator.py num_samples queenbee_hostname machines_file trace_file mount_point beefs_dir_on_vm\n")
+    if len(sys.argv) < 8:
+        sys.stderr.write("Usage: python coordinator.py num_samples queenbee_hostname machines_file trace_file mount_point beefs_dir_on_vm backup_raw_dir_file\n")
         sys.exit(-1)
 
     num_samples = int(sys.argv[1])
@@ -211,14 +266,20 @@ if __name__ == "__main__":
     trace_file = sys.argv[4]
     mount_point = sys.argv[5]
     beefs_dir_vm = sys.argv[6]
+    backup_raw_dirs_file = sys.argv[7]
 
     with open(machine_file) as machines:
         with open(trace_file) as traces:
-            machines_addr2replay_input = {}
-            for addr in machines:
-                trace_line = traces.readline()
-                machines_addr2replay_input[addr.strip()] = trace_line.strip()
-            machines_addr = machines_addr2replay_input.keys()
+            with open(backup_raw_dirs_file) as backup_raw_dirs: 
+                machines_addr2replay_input = {}
+                machines_addr2backup_raw_dir = {}
+                for addr in machines:
+                    trace_line = traces.readline()
+                    backup_raw_dir = backup_raw_dirs.readline()
+                    machines_addr2replay_input[addr.strip()] = trace_line.strip()
+                    machines_addr2backup_raw_dir[addr.strip()] = backup_raw_dir.strip()
+                machines_addr = machines_addr2replay_input.keys()
 
     sys.stdout.write(" ".join(["loaded machines", str(machines_addr), "\n"]))
-    main(num_samples, queenbee_node, machines_addr2replay_input, mount_point, beefs_dir_vm)
+    main(num_samples, queenbee_node, machines_addr2replay_input, 
+         machines_addr2backup_raw_dir, mount_point, beefs_dir_vm)

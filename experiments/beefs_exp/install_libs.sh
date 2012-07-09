@@ -1,16 +1,11 @@
 #!/bin/bash
 
-if [ $# -ne 1 ]
-then
-	echo "Usage:" $0 "machine_addr"
-	exit 1
-fi
+# This is command is to be run on vm machine
+# It'd be better to make it as a ssh command and execute on
+# head node but I do not want to block and it's boring to code
+# a remote ssh comand to run on background (it needs nohup and dev/null
+# redirections if you want to try)
 
-machine_addr=$1
-
-ssh root@$machine_addr "sed 's/squeeze/unstable/g' /etc/apt/sources.list > /etc/apt/sources.list.new && mv /etc/apt/sources.list.new /etc/apt/sources.list"
-ssh root@$machine_addr "apt-get update ; apt-get upgrade"
-ssh root@$machine_addr "apt-get install libjansson4 libjansson-dev"
-ssh root@$machine_addr "apt-get install -y openjdk-7-jdk openjdk-7-jre
-ssh root@$machine_addr "apt-get install -y openjdk-7-jdk openjdk-7-jre""
-#ssh root@$machine_addr "apt-get update; apt-get install libstdc++5 lib32gcc1 lib32stdc++6 lib32ncurses5 libsdl1.2-dev ia32-libs"
+apt-get -y update
+apt-get -y upgrade
+apt-get install -y rsync libjansson4 libjansson-dev  openjdk-7-jdk openjdk-7-jre

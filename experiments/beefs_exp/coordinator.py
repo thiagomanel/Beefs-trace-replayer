@@ -5,7 +5,7 @@ import random
 import subprocess
 from time import sleep
 
-EXPERIMENT_INPUT_DIR="/tmp/home/thiagoepdc/experiments/beefs"
+EXPERIMENT_INPUT_DIR="/tmp/home/thiagoepdc/replay_scripts/"
 EXP_OUT_DIR = EXPERIMENT_INPUT_DIR + "/results/"
 
 #and stuff running at lsd LAN

@@ -30,8 +30,9 @@ class Config():
     def __init__(self, config_data):
         """
            Args:
-               config_data: (dict) - a {ip:[type, name, replay_input, backup_raw_dir,
-                                       backup_metadir]} dict
+               config_data: (dict) - a {ip:[type, name, replay_input, 
+                                            backup_raw_dir, backup_metadir]} 
+                                     dict
         """
         self.config_data = config_data
         self.__ds_nodes__ = [ip for ip in self.config_data.keys() 
@@ -112,7 +113,7 @@ class Deploy():
                 raise Exception("unable to umount node=%s out=%s err=%s"
                                 % (node, out, err))
         else:
-            sys.stdout.write("not mounted. skipping umount node=%s mount_point=%s\n"
+            sys.stdout.write("not mounted. skipping node=%s mount_point=%s\n"
                              % (node, self.mount_point))
 
     def start(self, component, node):
@@ -123,11 +124,12 @@ class Deploy():
             sys.stdout.write("component is running. skipping start node=%s\n" 
                              % (node))
         else:
-            out, err, rvalue = execute(command(component), node, delay=None)
+            remote_cmd = command(component)
+            out, err, rvalue = execute(remote_cmd, node, delay=None)
             sleep(5)
             if not self.component_is_running(node, component):
                 raise Exception("unable to start component=%s node=%s cmd=%s out=%s err=%s\n"
-                                % (component.name(), node, remote_command, out, err))
+                                % (component.name(), node, remote_cmd, out, err))
             return out, err, rvalue
             
     def stop(self, component, node):
@@ -151,11 +153,13 @@ class Deploy():
 
         def rollback_ds_raw_data(node):
             backup_path = self.config.backup_raw_dir(node)
-            dst_path = "root@" + ":".join([node, "/tmp/storage"])#receive this as param
+            #FIXME point to /dev/sda2 mount point
+            dst_path = "root@" + ":".join([node, "/tmp/storage/rawdir"])#receive this as param
 
             rollback_cmd = " ".join(["rsync", "-progtl", "--delete",
-                                     backup_path + "/*",
+                                     backup_path + "/",
                                      dst_path])
+            print "rollback raw dir cmd", rollback_cmd
             process = subprocess.Popen(rollback_cmd,
                                        shell=True,
                                        stdout=subprocess.PIPE,
@@ -164,7 +168,25 @@ class Deploy():
             return out, err, process.returncode
 
         def rollback_metadata(node):
-            pass
+            backup_path = self.config.backup_metadir(node)
+            #note that base beefs deployment conf file should use this path
+            #as metadata dir
+            #we cannot user /* on src rsync path, because the number of files
+            #is greater than max num args. instead we rsync the whole directory
+
+            vm_metadir = "/".join([self.install_dir, "metadata/"])
+            dst_path = "root@" + ":".join([node, vm_metadir])
+
+            rollback_cmd = " ".join(["rsync", "-progtl", "--delete",
+                                     backup_path + "/*",
+                                     dst_path])
+            print "rollback metadata cmd", rollback_cmd
+            process = subprocess.Popen(rollback_cmd,
+                                       shell=True,
+                                       stdout=subprocess.PIPE,
+                                       stderr=subprocess.STDOUT)
+            out, err = process.communicate()
+            return out, err, process.returncode
 
         def rollback_deploy(node):
             sys.stdout.write("rolling back deploy node=%s\n" % (node))
@@ -181,13 +203,31 @@ class Deploy():
             return out, err, process.returncode
 
         if component is DATA_SERVER:
-            sys.stdout.write("rolling back raw data node=%s\n" % (node))
+            sys.stdout.write("rollback raw data node=%s\n" % (node))
             out, err, rvalue = rollback_ds_raw_data(node)
-            sys.stdout.write("rolling back done node=%s out=%s err=%s\n" 
+            sys.stdout.write("rollback done node=%s out=%s err=%s\n" 
                              % (node, out, err))
-            rollback_deploy(node)
+
+            sys.stdout.write("rollback beefs deploy node=%s\n" % (node))
+            out, err, rvalue = rollback_deploy(node)
+            sys.stdout.write("rollback done node=%s out=%s err=%s\n" 
+                             % (node, out, err))
+
+            sys.stdout.write("rollback metadata node=%s\n" % (node))
+            out, err, rvalue = rollback_metadata(node)
+            sys.stdout.write("rollback done node=%s out=%s err=%s\n" 
+                             % (node, out, err))
+            
         elif component is META_SERVER:
-            rollback_deploy(node)
+            sys.stdout.write("rollback beefs deploy node=%s\n" % (node))
+            out, err, rvalue = rollback_deploy(node)
+            sys.stdout.write("rollback done node=%s out=%s err=%s\n" 
+                             % (node, out, err))
+
+            sys.stdout.write("rollback metadata node=%s\n" % (node))
+            out, err, rvalue = rollback_metadata(node)
+            sys.stdout.write("rollback done node=%s out=%s err=%s\n" 
+                             % (node, out, err))
 
     def wait_and_start_replay(self, node, deadline, out_path, err_path):
         sys.stdout.write("wait and start node=%s\n" % (node))
@@ -274,7 +314,9 @@ def main(num_samples, config_data, mount_point, install_dir):
             deploy.copy_result(node)
 
 def load_config(data):
-    """ It creates a dict {ip:[type, name, replay_input, backup_raw_dir, backup_metadir]
+    """ It creates a dict {ip:
+                           [type, name, replay_input, backup_raw_dir,
+                             backup_metadir]
         based on a file with the following format:
             ip type name replay_input backup_raw_dir backup_metadir
     """
@@ -303,7 +345,8 @@ if __name__ == "__main__":
     """
         We assume:
              worker node have had their clocks syncronized
-             worker nodes share a remote distributed file system to get replay input data
+             worker nodes share a remote distributed file system to get replay 
+                 input data
              communication to worker nodes is made by no-pass ssh
     """
     #logging.basicConfig(filename='example.log',level=logging.DEBUG)

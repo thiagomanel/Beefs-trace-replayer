@@ -30,11 +30,12 @@ def generate_hosts(ip_to_name, filter_ip):
     return "\n".join([localhost_info, others_info, BASE_HOST_INFO])
 
 if __name__ == "__main__":
-    vm_names_path = sys.argv[1]
+    replay_config_path = sys.argv[1]
     selected_ip = sys.argv[2]
-    with open(vm_names_path) as vm_names:
+    with open(replay_config_path) as replay_config:
         ip_to_name = {}
-        for vm_info in vm_names:
-            vm_ip, vm_name = vm_info.split()
+        for line in replay_config:
+            tokens = line.split()
+            vm_ip, vm_name = tokens[0], tokens[2]
             ip_to_name[vm_ip] = vm_name
         sys.stdout.write(generate_hosts(ip_to_name, selected_ip))

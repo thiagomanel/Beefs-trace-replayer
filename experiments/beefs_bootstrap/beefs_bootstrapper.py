@@ -34,14 +34,14 @@ class Entry():
                     "replicas": [rep.json() for rep in self.replicas]
                    }
 
-        def __allreplicas__(self):
+        def allreplicas(self):
             _all = list(self.replicas)
             _all.append(self.primary)
             return _all
 
         def replicas_by_osdid(self):
             by_osdid = {}
-            for rep in self.__allreplicas__():
+            for rep in self.allreplicas():
                 if not rep.osd_id in by_osdid:
                     by_osdid[rep.osd_id] = []
                 by_osdid[rep.osd_id].append(rep)
@@ -110,13 +110,14 @@ class Entry():
         def from_json(cls, _json):
             return Entry.OsdId(_json["hostname"], _json["port"], _json["dataPort"])
 
-    def __init__(self, inode_id, parent_id, fullpath, ftype, group):
+    def __init__(self, inode_id, parent_id, fullpath, ftype, size, group):
 
         if not ftype in ("f", "d"):
             raise ValueError("We allow f or d arg: %s", ftype)
 
         self.fullpath = fullpath
         self.ftype = ftype
+        self.fileSize = size
         self.group = group
         self.inode_id = inode_id
         self.parent_id = parent_id
@@ -136,13 +137,20 @@ class Entry():
                 "parentId": self.parent_id,
                 "path": self.fullpath,
                 "type": self.ftype,
+                "fileSize": self.fileSize,
                 "group": group_json
                }
 
     @classmethod
     def from_json(cls, _json):
+        if not "fileSize" in _json:
+            size = 0
+        else:
+            size = _json["fileSize"]
+
         return Entry(_json["inodeId"], _json["parentId"], _json["path"],
-                     _json["type"], Entry.Group.from_json(_json["group"]))
+                     _json["type"], size, 
+                     Entry.Group.from_json(_json["group"]))
 
 def generate_queenbee_metadata(boot_data_path, output_dir_path):
     """

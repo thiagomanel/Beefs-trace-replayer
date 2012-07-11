@@ -297,7 +297,8 @@ def distribution(namespace_path, rlevel, osd_generator, ignore):
 
     def dentry(fullpath, parent_id):
         inode_id = str(uuid.uuid4())
-        return Entry(inode_id, parent_id, fullpath, "d", None)
+        size = 0
+        return Entry(inode_id, parent_id, fullpath, "d", size, None)
 
     def fentry(fullpath, gen, rlevel, parent_id):
 
@@ -319,7 +320,8 @@ def distribution(namespace_path, rlevel, osd_generator, ignore):
             raise ValueError("rlevel should not be negative %d", rlevel)
 
         inode_id = str(uuid.uuid4())
-        return Entry(inode_id, parent_id, fullpath, "f", new_group(rlevel, gen))
+        size = os.path.getsize(fullpath)
+        return Entry(inode_id, parent_id, fullpath, "f", size, new_group(rlevel, gen))
 
 
     graph = {}

@@ -132,16 +132,5 @@ if __name__ == "__main__":
     boot_data_path = sys.argv[2]
     output_dir = sys.argv[3]
     network_id_path = sys.argv[4]
-    file_sizes_path = sys.argv[5]
 
-    
-    with open(file_sizes_path) as file_sizes:
-        sizes_to_replace = {}     
-        for line in file_sizes:
-            sto_id, size = line.split()
-            if sto_id in sizes_to_replace:
-                raise Exception("Duplicated sto_id:%s" % (sto_id))
-            sizes_to_replace[sto_id] = size
-
-        main(export_dir, boot_data_path, output_dir, network_id_path, 
-             sizes_to_replace)
+    main(export_dir, boot_data_path, output_dir, network_id_path)

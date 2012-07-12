@@ -21,7 +21,7 @@ do
     do
         total=`cat $trace_out | wc -l`
         rm /tmp/tmp.check
-        python check_replay_responsed.py $trace $trace_out > /tmp/tmp.check
+        python check_replay_responsed.py $trace.expected $trace_out > /tmp/tmp.check
         F=`grep False /tmp/tmp.check | wc -l`
         T=`grep True /tmp/tmp.check | wc -l`
         echo "check for file:" $trace_out "total" $total "False" $F "True" $T

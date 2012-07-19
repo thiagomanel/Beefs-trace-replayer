@@ -16,11 +16,12 @@ if __name__ == "__main__":
         format workflow_ops
                 operation_type rvalue
     """
-    workflow_ops_path = sys.argv[1]
-    replay_out_path = sys.argv[2]
+    workflow_ops_path = sys.argv[1]#it starts by real operation
+    replay_out_path = sys.argv[2]#it starts by fake root it
 
     with open(workflow_ops_path) as workflow_ops:
         with open(replay_out_path) as replay_out:
+            replay_out.readline()#excluding fake root
             for op_line in workflow_ops:
                 operation_type, rvalue = op_line.split()
                 begin_secs, begin_usec, end_sec, end_usec, delay,\

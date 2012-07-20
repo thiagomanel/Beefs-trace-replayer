@@ -51,7 +51,7 @@ do
     do
         plot_data=$file.`basename $trace`.plot.data
         python transform_output.py $trace.expected $file > $plot_data.tmp
-        awk -v d="$system" '{ printf("%s\t%s\n", $1, d); }' $plot_data.tmp > $plot_data
+        awk -v d="$system" '{ printf("%s\t%s\t%s\t%s\t\n", $1, $2, $3, d); }' $plot_data.tmp > $plot_data
         rm $plot_data.tmp
     done
 done

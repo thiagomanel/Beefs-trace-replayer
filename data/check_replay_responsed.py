@@ -18,7 +18,7 @@ if __name__ == "__main__":
         r_output.readline()#it skips fake root line
         with open(r_input_expected_path) as r_input_expected:
             for expected_line in r_input_expected:
-                expected = expected_line.strip() 
+                expected = expected_line.split()[1].strip() 
                 actual = actual_rvalue(r_output.readline())
                 if not expected == "#":
                     sys.stdout.write(" ".join([str(expected == actual),

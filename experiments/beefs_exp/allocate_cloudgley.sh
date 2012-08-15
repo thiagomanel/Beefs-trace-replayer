@@ -1,1 +1,0 @@
-../allocate_cloudgley.sh

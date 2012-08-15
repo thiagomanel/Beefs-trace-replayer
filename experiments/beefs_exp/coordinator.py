@@ -1,15 +1,12 @@
 import sys
 import os
 import random
-#import logging
 import subprocess
 from time import sleep
 
-EXPERIMENT_INPUT_DIR="/tmp/home/thiagoepdc/replay_scripts/"
-EXP_OUT_DIR = EXPERIMENT_INPUT_DIR + "/results/"
-
-#and stuff running at lsd LAN
-LAN_INPUT_DIR="/home/thiagoepdc/experiments/"
+#pass them as args
+SCRIPTS_DIR="/tmp/replay_scripts/"
+EXP_OUT_DIR = "/data/results/"
 
 class Component:
     def __init__(self, process_name, name):
@@ -64,22 +61,17 @@ class Config():
     def backup_metadir(self, ip):
         return self.config_data[ip][4]
 
-
 class Deploy():
-    def __init__(self, config, install_dir, mount_point):
-        """
-           Args:
-               config: the config object
-               install_dir (str) - path to a dir where beefs was installed.
-               mount_point (str) - path to the dir where honeybee mounts beefs.
-        """
+    def __init__(self, config, install_dir, mount_point, raw_dir):
         self.config = config
         self.mount_point = mount_point
         self.install_dir = install_dir
+        self.raw_dir = raw_dir
+
         self.beefs_script = "/".join([install_dir, "bin", "beefs"])
-        self.wait_and_replay_script_path = "/".join([EXPERIMENT_INPUT_DIR, 
+        self.wait_and_replay_script_path = "/".join([SCRIPTS_DIR, 
                                                      "wait_and_replay.sh"])
-        self.beefs_replayer_path = "/".join([EXPERIMENT_INPUT_DIR, 
+        self.beefs_replayer_path = "/".join([SCRIPTS_DIR, 
                                              "beefs_replayer"])
 
     def ds_nodes(self):
@@ -126,7 +118,9 @@ class Deploy():
         else:
             remote_cmd = command(component)
             out, err, rvalue = execute(remote_cmd, node, delay=None)
-            sleep(5)
+            sys.stdout.write("start cmd sent component=%s node=%s cmd=%s out=%s err=%s\n"
+                             % (component.name(), node, remote_cmd, out, err))
+            sleep(10)
             if not self.component_is_running(node, component):
                 raise Exception("unable to start component=%s node=%s cmd=%s out=%s err=%s\n"
                                 % (component.name(), node, remote_cmd, out, err))
@@ -153,8 +147,7 @@ class Deploy():
 
         def rollback_ds_raw_data(node):
             backup_path = self.config.backup_raw_dir(node)
-            #FIXME point to /dev/sda2 mount point
-            dst_path = "root@" + ":".join([node, "/tmp/storage/rawdir"])#receive this as param
+            dst_path = "root@" + ":".join([node, self.raw_dir])
 
             rollback_cmd = " ".join(["rsync", "-progtl", "--delete",
                                      backup_path + "/",
@@ -190,11 +183,12 @@ class Deploy():
 
         def rollback_deploy(node):
             sys.stdout.write("rolling back deploy node=%s\n" % (node))
-            backup_path = "beefs/*"
-            dst_path = "root@" + ":".join([node, "/beefs"])
+            backup_path = "beefs/"
+            dst_path = "root@" + ":".join([node, self.install_dir])
             rollback_cmd = " ".join(["rsync", "-progtl", "--delete",
                                      backup_path,
                                      dst_path])
+            print "rollback deploy cmd", rollback_cmd
             process = subprocess.Popen(rollback_cmd,
                                        shell=True,
                                        stdout=subprocess.PIPE,
@@ -236,7 +230,7 @@ class Deploy():
                         self.wait_and_replay_script_path,
                         str(deadline), self.beefs_replayer_path, input_path,
                         out_path, err_path, "&"])
-
+        print "wait&start cmd", cmd
         return execute(cmd, node)
 
     def time(self, node):
@@ -253,15 +247,47 @@ class Deploy():
             sys.stdout.write("Waiting worker nodes job termination\n")
             sleep(30)
 
-    def copy_result(self, node):
-        sys.stdout.write("collection results " + node + "\n")
-        out, err, rcode = execute("mv /tmp/*replay* " + EXP_OUT_DIR, node)
-        print out, err, rcode
+    def move_result(self, node, local_dst_path):
+        out, err, rvalue = self.copy_result(node, local_dst_path)
+        print "copy done", out, err, rvalue
+        if rvalue == 0:
+            rm_cmd = " ".join(["rm", "-r", EXP_OUT_DIR + "/*"])
+            print "copy ok, removing remote data cmd", rm_cmd
+            out, err, rvalue = execute(rm_cmd, node)
+            print "remote rm done", out, err, rvalue
+
+    def copy_result(self, node, local_dst_path):
+        remote_path = "root@" + node + ":" + EXP_OUT_DIR
+        getdata_cmd = " ".join(["scp", "-r",
+                                remote_path + "/*",
+                                local_dst_path])
+
+        print "copy results cmd", getdata_cmd
+        process = subprocess.Popen(getdata_cmd,
+                                   shell=True,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.STDOUT)
+        out, err = process.communicate()
+        return out, err, process.returncode
+
+    def copy_beefs_log(self, node, local_dst_path):
+        remote_log_path = "root@" + node + ":" + self.install_dir + "/logs/beefs.log"
+        getlog_cmd = " ".join(["scp",
+                               remote_log_path,
+                               local_dst_path + "/" + "beefs.log." + node])
+
+        print "copy beefs.log cmd", getlog_cmd
+        process = subprocess.Popen(getlog_cmd,
+                                   shell=True,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.STDOUT)
+        out, err = process.communicate()
+        print out, err, process.returncode
 
 def execute(remote_command, machine_addr, delay=None):
     process = subprocess.Popen(" ".join(["ssh",
-	                                     "root@" + machine_addr,
-                                             remote_command]),
+	                                 "root@" + machine_addr,
+                                         remote_command]),
 					 shell=True,
                                          stdout=subprocess.PIPE,
                                          stderr=subprocess.STDOUT)
@@ -271,16 +297,15 @@ def execute(remote_command, machine_addr, delay=None):
 def mount_client(addr, mount_point):
     return execute(" ".join(["mount", mount_point]), addr)
 
-def main(num_samples, config_data, mount_point, install_dir):
+def main(num_samples, deploy):
 
     def base_out_path(node, sample):
-        #/tmp/node.sample.random
-        return os.path.join("/tmp", 
+        #EXP_OUT_DIR/node.sample.random
+        return os.path.join(EXP_OUT_DIR, 
                             ".".join([node, str(sample), 
                                       str(int(random.random() * 10000000))])
                            )
-    
-    deploy = Deploy(Config(config_data), install_dir, mount_point)
+
     queenbee_node = deploy.ms_node()
     nodes = deploy.ds_nodes()
     for sample in range(num_samples):
@@ -303,6 +328,7 @@ def main(num_samples, config_data, mount_point, install_dir):
         deadline = now_epoch_secs + 30
         sys.stdout.write("now is: " + str(now_epoch_secs) +
                           " deadline will be " + str(deadline) + "\n")
+
         for node in nodes:#it'se better to have a separated for, help sync
             base_out = base_out_path(node, sample)
             out_file = base_out + ".replay.out"
@@ -310,8 +336,14 @@ def main(num_samples, config_data, mount_point, install_dir):
             deploy.wait_and_start_replay(node, deadline, out_file, err_file)
 
         deploy.wait_replay_end()
+        local_result_path = "_".join(["results", str(sample)])
+        if not os.path.exists(local_result_path):
+            os.mkdir(local_result_path)
         for node in nodes:
-            deploy.copy_result(node)
+            deploy.move_result(node, local_result_path)
+            deploy.copy_beefs_log(node, local_result_path)
+        deploy.copy_beefs_log(queenbee_node, local_result_path)
+
 
 def load_config(data):
     """ It creates a dict {ip:
@@ -349,20 +381,20 @@ if __name__ == "__main__":
                  input data
              communication to worker nodes is made by no-pass ssh
     """
-    #logging.basicConfig(filename='example.log',level=logging.DEBUG)
-    #logging.info('So should this')
-
-    if len(sys.argv) < 5:
-        sys.stderr.write("Usage: python coordinator.py num_samples config_file mount_point beefs_dir_on_vm\n")
+    if len(sys.argv) < 6:
+        sys.stderr.write("Usage: python coordinator.py num_samples config_file mount_point beefs_dir_on_vm storage_raw_dir\n")
         sys.exit(-1)
 
     num_samples = int(sys.argv[1])
     config_file = sys.argv[2]
     mount_point = sys.argv[3]
     beefs_dir_vm = sys.argv[4]
+    storage_raw_dir = sys.argv[5]
 
     with open(config_file) as config_data:
-        config = load_config(config_data)
+        _conf = load_config(config_data)
+        sys.stdout.write(" ".join(["loaded machines", str(_conf.keys()), "\n"]))
+        config = Config(_conf)
 
-    sys.stdout.write(" ".join(["loaded machines", str(config.keys()), "\n"]))
-    main(num_samples, config, mount_point, beefs_dir_vm)
+    deploy = Deploy(config, beefs_dir_vm, mount_point, storage_raw_dir)
+    main(num_samples, deploy)

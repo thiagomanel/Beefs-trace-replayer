@@ -1,0 +1,7 @@
+vm_replay_input=/tmp/input
+vm_replay_scripts=/tmp/replay_scripts
+vm_results=/data/results
+vm_data_dir=/data
+install_dir=/data/beefs
+raw_storage=/data/rawdir
+mount_point=/home

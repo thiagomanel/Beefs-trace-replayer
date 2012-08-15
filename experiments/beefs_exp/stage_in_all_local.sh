@@ -5,15 +5,16 @@
 # directories to cluster nodes, instead of running stage_in.py on cluster nodes.
 # Note the boot_data file should have fullpaths as seen on the remove server
 
-if [ $# -ne 3 ]
+if [ $# -ne 4 ]
 then
-	echo "Usage:" $0 "boot_data osd_map stagein_dst_dir"
+	echo "Usage:" $0 "boot_data osd_map stagein_dst_dir remove_storage_server"
 	exit 1
 fi
 
 boot_data=$1
 osd_map=$2
 stagein_dir=$3
+remote_server=$4
 
 if [ ! -f $boot_data ]
 then
@@ -40,5 +41,5 @@ do
     then
         mkdir $stagein_dir/$uuid
     fi
-    python stage_in.py $boot_data $uuid $stagein_dir/$uuid
+    python stage_in.py $boot_data $uuid $stagein_dir/$uuid $remote_server
 done

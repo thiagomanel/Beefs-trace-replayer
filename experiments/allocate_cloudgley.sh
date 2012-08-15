@@ -28,7 +28,8 @@ then
 fi
 
 # running instances
-euca-run-instances -k $KEY -t c1.medium -n $num_instances $EMI --addressing private
+euca-run-instances -k $KEY -t m1.large -n $num_instances $EMI --addressing private
+#euca-run-instances -k $KEY -t c1.medium -n $num_instances $EMI --addressing private
 #euca-run-instances -k $KEY -t m2.xlarge -n $num_instances $EMI
 
 # authorizing ssh access

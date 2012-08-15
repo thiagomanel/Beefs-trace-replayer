@@ -20,14 +20,14 @@ class WorkflowLine:
     def json(self):
         stamp = self.clean_call.stamp.split("-")
         begin = float(stamp[0])
-        end = long(stamp[1])
+        elapsed = long(stamp[1])
         return {
                 "id": self._id,
                 "parents": self.parents,
                 "children": self.children,
                 "stamp": {
                           "begin": begin,
-                          "elapsed": end
+                          "elapsed": elapsed
                          },
                 "call": self.clean_call.call,
                 "caller": {

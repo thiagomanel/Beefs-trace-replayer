@@ -48,18 +48,17 @@ if __name__ == "__main__":
        It changes the expected begin of trace calls to reflect 
        timing polices.
 
-       Usage: python timing.py workflow_path > new_workflow
+       Usage: python timing.py < workflow_path > new_workflow
     """
     def parse(line):
         entry = json.loads(line)
         return WorkflowLine.from_json(entry)
 
-    with open(sys.argv[1]) as workflow_file:
-        workflow = {}
-        for line in workflow_file:
-            entry = parse(line)
-            workflow[entry._id] = entry
-        update(workflow)
-        #take care, order is arbitrary FIXME
-        for entry in workflow.itervalues():
-            print json.dumps(entry.json())
+    workflow = {}
+    for line in sys.stdin:
+        entry = parse(line)
+        workflow[entry._id] = entry
+    update(workflow)
+    #take care, order is arbitrary FIXME
+    for entry in workflow.itervalues():
+        print json.dumps(entry.json())

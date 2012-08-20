@@ -56,6 +56,10 @@ class CleanCall():
             return self.args[0]
         raise Exception("unsupported operation " + str(self))
 
+    def stamp_as_num(self):
+        tokens = self.stamp.split("-")
+        return long(tokens[0]), long(tokens[1])
+
     def fd(self):
         if self.call == "open":
             return self.rvalue

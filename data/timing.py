@@ -5,8 +5,7 @@ from workflow import *
 
 def update(entries):
     def stamp(workflow_entry):
-        stamp = workflow_entry.clean_call.stamp.split("-")
-        return long(stamp[0]), long(stamp[1])
+        return workflow_entry.clean_call.stamp_as_num()
 
     def update_stamp(workflow_entry, workflow):
         def entry_by_id(entry_id):
@@ -61,5 +60,6 @@ if __name__ == "__main__":
             entry = parse(line)
             workflow[entry._id] = entry
         update(workflow)
-        for entry in workflow.itervalues():    
+        #take care, order is arbitrary FIXME
+        for entry in workflow.itervalues():
             print json.dumps(entry.json())

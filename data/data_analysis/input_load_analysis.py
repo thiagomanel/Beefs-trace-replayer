@@ -1,5 +1,6 @@
 import sys
-from workflow_objects import *
+import json
+from workflow import *
 
 if __name__ == "__main__":
     """
@@ -21,7 +22,10 @@ if __name__ == "__main__":
         if data_type is "r":
             return stamp(line.split()[5])
         elif data_type is "w":
-            return stamp(WorkflowLine(line.split()).syscall.split()[5])
+            _json = json.loads(line)
+            _workflow = WorkflowLine.from_json(_json)
+            _call = _workflow.clean_call
+            return stamp(_call.stamp)
 
     def bin_index(timestamp, first_stamp, bin_width):
         return (timestamp - first_stamp) / bin_width

@@ -7,7 +7,9 @@ file <- Args[1]
 replay <- read.table(file, header = T)
 attach(replay)
 
-abelhinha <- subset(replay, original_client)
+abelhinha <- subset(replay, original_client == "abelhinha")
+rm(replay)
+
 attach(abelhinha)
 agg <- ddply(abelhinha, c("system", "sample"), function (x) c(sum=sum(x$latency)))
 

@@ -7,4 +7,7 @@ file <- Args[1]
 replay <- read.table(file, header = T)
 attach(replay)
 
-agg <- ddply(abelhinha, c("original_client", "system", "sample"), function (x) c(sum=sum(x$latency)))
+filter_clm <- c("original_client", "call", "stamp", "system", "sample")
+agg <- ddply(replay, filter_clm, function (x) c(sum=sum(x$latency), mean=mean(x$latency)))
+
+write.table(agg, paste(file, "ops.agg", sep = "."))

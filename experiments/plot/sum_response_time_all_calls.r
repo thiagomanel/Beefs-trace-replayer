@@ -3,6 +3,7 @@
 
 # A point within each plot is the sum of response times recorded in each experiment repetition.
 library("ggplot2")
+library("plyr")
 
 Args <- commandArgs(TRUE)
 
@@ -28,8 +29,9 @@ data <- read.table(file, header = T, row.names = NULL)
 # Max.   :31.00   Max.   :411658043   Max.   :6.607e+06  
                                                         
 attach(data)
+filter <- c("original_client", "stamp", "system", "sample")
+agg <- ddply(data, filter, function (x) c(sum=sum(x$sum)))
 
-p <- ggplot(data, aes(factor(stamp), sum)) + geom_point() + scale_y_log10()
-p1 <- p + facet_grid(original_client~call, scales = "free_y")
-
+p <- ggplot(agg, aes(factor(stamp), sum)) + geom_boxplot() + scale_y_log10()
+p1 <- p + facet_grid(.~original_client, scales ="free_y", space ="free")
 ggsave(paste(file, "png", sep = "."), plot=p1)

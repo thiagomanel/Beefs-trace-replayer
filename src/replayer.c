@@ -57,13 +57,7 @@ Replay_result* result;
  */
 static int *pids_to_fd_pairs[PID_MAX];
 
-Workflow_element* alloc_workflow_element () {
-	Workflow_element* element = (Workflow_element*) malloc (sizeof (Workflow_element));
-	fill_workflow_element (element);
-	return element;
-}
-
-void fill_workflow_element (Workflow_element* element) {
+void workflow_element_init (Workflow_element* element) {
 
 	element->n_children = 0;
 	element->children_ids = NULL;
@@ -78,7 +72,7 @@ void fill_workflow_element (Workflow_element* element) {
 	element->command = NULL;
 }
 
-void fill_replay_workload (Replay_workload* r_workload) {
+void replay_workload_init (Replay_workload* r_workload) {
 	r_workload->current_cmd = -1;
 	r_workload->element_list = NULL;
 	r_workload->num_cmds = 1;

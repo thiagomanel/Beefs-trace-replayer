@@ -584,7 +584,7 @@ TEST(ReplayTest, 2_sequencial_command_mkdir_parsing_skipped) {
 	Replay_workload* rep_wld
 		= (Replay_workload*) malloc (sizeof (Replay_workload));
 
-	fill_replay_workload (rep_wld);
+	replay_workload_init (rep_wld);
 	rep_wld->element_list
 						= (Workflow_element*) malloc (3 * sizeof (Workflow_element));
 
@@ -597,7 +597,7 @@ TEST(ReplayTest, 2_sequencial_command_mkdir_parsing_skipped) {
 	root_cmd->command = NONE;
 
 	Workflow_element* root_element = (rep_wld->element_list);
-	fill_workflow_element(root_element);
+	workflow_element_init(root_element);
 	root_element->command = root_cmd;
 
 	root_element->command->traced_begin = 1318539134542649;
@@ -614,7 +614,7 @@ TEST(ReplayTest, 2_sequencial_command_mkdir_parsing_skipped) {
 
 	//element 1
 	Workflow_element* element_one = (rep_wld->element_list + 1);
-	fill_workflow_element(element_one);
+	workflow_element_init(element_one);
 
 	struct replay_command* one_cmd
 					= (struct replay_command*) malloc (sizeof (struct replay_command));
@@ -655,7 +655,7 @@ TEST(ReplayTest, 2_sequencial_command_mkdir_parsing_skipped) {
 
 	//element 1
 	Workflow_element* element_two = (rep_wld->element_list + 2);
-	fill_workflow_element(element_two);
+	workflow_element_init(element_two);
 	struct replay_command* cmd_two
 					= (struct replay_command*) malloc( sizeof (struct replay_command));
 	fill_replay_command(cmd_two);

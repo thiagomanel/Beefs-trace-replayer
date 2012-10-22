@@ -14,7 +14,7 @@
 * limitations under the License.
 */
 #include "loader.h"
-#include "replayer.h"
+//#include "replayer.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -88,7 +88,7 @@ int marker2operation(const char *string) {
 	return NONE;
 }
 
-void fill_replay_command (struct replay_command* cmd) {
+void replay_command_init (struct replay_command* cmd) {
 
 	cmd->caller = NULL;
 	cmd->command = NONE;
@@ -477,14 +477,14 @@ void assign_root_timestamp (Replay_workload* wld) {
 
 void fill_root_element (Workflow_element *root) {
 
-	fill_workflow_element(root);
+	workflow_element_init(root);
 	root->id = ROOT_ID;
 	root->produced = 1;
 	root->consumed = 1;
 
 	root->command
 		= (struct replay_command*) malloc( sizeof (struct replay_command));
-	fill_replay_command(root->command);
+	replay_command_init(root->command);
 	root->command->command = NONE;
 }
 
@@ -497,7 +497,7 @@ int load (Replay_workload* replay_wld, FILE* input_file) {
 	int loaded_commands = 0;
 	size_t num_cmds_on_file, i, len;
 
-	fill_replay_workload (replay_wld);
+	replay_workload_init (replay_wld);
 
 	if (input_file == NULL) {
 		replay_wld->current_cmd = 0;
@@ -526,11 +526,11 @@ int load (Replay_workload* replay_wld, FILE* input_file) {
 		Workflow_element* tmp_element
 			= (replay_wld->element_list + loaded_commands);
 
-		fill_workflow_element (tmp_element);
+		workflow_element_init (tmp_element);
 
 		struct replay_command *new_cmd =
 				(struct replay_command*) malloc (sizeof (struct replay_command));
-		fill_replay_command (new_cmd);
+		replay_command_init (new_cmd);
 
 		Caller *new_caller = (Caller*) malloc (sizeof (Caller));
 		new_cmd->caller = new_caller;

@@ -593,7 +593,7 @@ TEST(ReplayTest, 2_sequencial_command_mkdir_parsing_skipped) {
 	//bootstrap
 	struct replay_command* root_cmd
 				= (struct replay_command*) malloc( sizeof (struct replay_command));
-	fill_replay_command(root_cmd);
+	replay_command_init(root_cmd);
 	root_cmd->command = NONE;
 
 	Workflow_element* root_element = (rep_wld->element_list);
@@ -618,7 +618,7 @@ TEST(ReplayTest, 2_sequencial_command_mkdir_parsing_skipped) {
 
 	struct replay_command* one_cmd
 					= (struct replay_command*) malloc (sizeof (struct replay_command));
-	fill_replay_command(one_cmd);
+	replay_command_init(one_cmd);
 	one_cmd->command = MKDIR_OP;
 
 	one_cmd->traced_begin = 1318539134542649;
@@ -658,7 +658,7 @@ TEST(ReplayTest, 2_sequencial_command_mkdir_parsing_skipped) {
 	workflow_element_init(element_two);
 	struct replay_command* cmd_two
 					= (struct replay_command*) malloc( sizeof (struct replay_command));
-	fill_replay_command(cmd_two);
+	replay_command_init(cmd_two);
 	cmd_two->command = MKDIR_OP;
 
 	cmd_two->traced_begin = 1318539134542649;

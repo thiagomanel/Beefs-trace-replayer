@@ -14,7 +14,7 @@
 * limitations under the License.
 */
 #include "loader.h"
-//#include "replayer.h"
+#include "replayer.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

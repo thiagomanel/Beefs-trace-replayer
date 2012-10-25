@@ -490,8 +490,6 @@ int load (Replay_workload* replay_wld, FILE* input_file) {
 	size_t num_cmds_on_file, i;
         ssize_t len;
 
-	replay_workload_init (replay_wld);
-
 	if (input_file == NULL) {
 		replay_wld->current_cmd = 0;
 		replay_wld->num_cmds = 0;

@@ -132,9 +132,6 @@ typedef struct replay_result {
 	command_replay_result* cmds_replay_result;
 } Replay_result;
 
-//maybe, add a replay_workload_create(int num_elements)
-void replay_workload_init (Replay_workload* replay_workload);
-
 void workflow_element_init (Workflow_element* element);
 
 Workflow_element* element (Replay_workload* workload, int element_id);

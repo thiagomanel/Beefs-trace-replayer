@@ -584,8 +584,6 @@ TEST(ReplayTest, 2_sequencial_command_mkdir_parsing_skipped) {
 	//2 1 1 0 - 1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /tmp/jdt-images-2 511 0
 	Replay_workload* rep_wld
 		= (Replay_workload*) malloc (sizeof (Replay_workload));
-
-	replay_workload_init (rep_wld);
 	rep_wld->element_list = (Workflow_element*) malloc (3 * sizeof (Workflow_element));
 
 	rep_wld->num_cmds = 3;

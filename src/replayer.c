@@ -57,12 +57,6 @@ void workflow_element_init (Workflow_element* element) {
 	element->command = NULL;
 }
 
-void replay_workload_init (Replay_workload* r_workload) {
-	r_workload->current_cmd = -1;
-	r_workload->element_list = NULL;
-	r_workload->num_cmds = 1;
-}
-
 Workflow_element* element (Replay_workload* workload, int element_id) {//FIXME: do we need this boxing method ?
 	return &(workload->element_list[element_id]);
 }
@@ -71,17 +65,17 @@ Workflow_element* element (Replay_workload* workload, int element_id) {//FIXME: 
  * Return a pointer to the Replay_result struct which comes from the replay of the
  * Workflow_element identified by w_element_id
  */
-command_replay_result* replay_result (int w_element_id) {
+static command_replay_result* replay_result (int w_element_id) {
 	return &(result->cmds_replay_result[w_element_id]);
 }
 
 //FIXME: these 2 methods below share a lot
-Workflow_element* get_child (Workflow_element* parent, int child_index) {
+static Workflow_element* get_child (Workflow_element* parent, int child_index) {
 	int child_id = parent->children_ids[child_index];
     return element(workload, child_id);
 }
 
-Workflow_element* get_parent (Workflow_element* child, int parent_index) {
+static Workflow_element* get_parent (Workflow_element* child, int parent_index) {
 	int parent_id = child->parents_ids[parent_index];
 	return element(workload, parent_id);
 }
@@ -107,7 +101,7 @@ typedef struct _sbuffs_t {
 	struct frontier* frontier;
 } sbuffs_t;
 
-sbuffs_t* shared_buff = (sbuffs_t*) malloc( sizeof(sbuffs_t));
+static sbuffs_t* shared_buff = (sbuffs_t*) malloc( sizeof(sbuffs_t));
 
 static int all_produced (sbuffs_t* shared) {
 	return (shared->produced_count >= shared->total_commands);
@@ -320,13 +314,13 @@ void *produce (void *arg) {
 /**
  * Take a command from produced buffer
  */
-Workflow_element* take () {
+static Workflow_element* take () {
 	Workflow_element* cmd = shared_buff->produced_queue[shared_buff->last_produced];
 	--shared_buff->last_produced;
 	return cmd;
 }
 
-double delay_on_trace (struct replay_command* earlier, struct replay_command* later) {
+static double delay_on_trace (struct replay_command* earlier, struct replay_command* later) {
 	double delay = (double) (later->traced_begin - earlier->traced_begin);
 	if (delay < 0) {
 		fprintf (stderr, "earlier->begin=%f later->begin=%f.\n",
@@ -336,7 +330,7 @@ double delay_on_trace (struct replay_command* earlier, struct replay_command* la
 	return delay;
 }
 
-double elapsed_to_now (struct timeval *timestamp) {
+static double elapsed_to_now (struct timeval *timestamp) {
 
 	assert (timestamp != NULL);
 
@@ -355,7 +349,7 @@ double elapsed_to_now (struct timeval *timestamp) {
 FIXME: exceptional conditions ? such as command was not replayed yet ... at
 least it needs docs
  */
-long elapsed_since_replay (command_replay_result* cmd_replay_result) {
+static long elapsed_since_replay (command_replay_result* cmd_replay_result) {
 	assert (cmd_replay_result != NULL);
 	return elapsed_to_now (cmd_replay_result->dispatch_end);
 }
@@ -365,7 +359,7 @@ long elapsed_since_replay (command_replay_result* cmd_replay_result) {
  * dispatching a command. It should wait to preserve the timing between itself
  * and its parents described on trace data.
  */
-double delay (Workflow_element* to_replay) {
+static double delay (Workflow_element* to_replay) {
 //FIXME what if I have two parents. I don't think it is possible in your data but our workflow allows it
 //FIXME what if I don't have a parent ? :
 	Workflow_element* parent = get_parent (to_replay, 0);

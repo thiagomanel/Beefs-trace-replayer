@@ -59,6 +59,12 @@ typedef unsigned short op_t;
 
 #define ROOT_ID 0
 
+#define PID_MAX 32768
+
+//FIXME: FD_MAX is a way to high. I doubt trace has a single pid so high
+//maybe pre-process trace to uncover the biggest possible value ? 
+#define FD_MAX 32768
+
 typedef struct _caller {
 	int uid;
 	int pid;
@@ -133,16 +139,20 @@ void workflow_element_init (Workflow_element* element);
 
 Workflow_element* element (Replay_workload* workload, int element_id);
 
-//both is_child and is_parent are used only at loader.c maybe remove it from
-//include
-int is_child (Workflow_element* parent, Workflow_element* child);
-
-int is_parent (Workflow_element* parent, Workflow_element* child);
-
-//maybe, change by replay_command_create and remove the malloc from caller
-//also, it is possible to remove from include file ?
-void replay_command_init (struct replay_command* cmd);
-
+struct replay_command* replay_command_create ();
+struct replay_command* replay_command_create (Caller* caller, op_t command, Parms* params,
+			                       double traced_begin, long traced_elapsed_time,
+                       				int expected_retval);
+#define REPLAY_SUCCESS 0
+/**
+* Execute syscall specified on replay_command pointed by cmd. If syscall executes
+* properly, it returns REPLAY_SUCCESS or -1 otherwise. Executed syscall's
+* returned value is copied to call_rvalue in case of REPLAY_SUCCESS. *pids_to_fd_pairs[]
+* matrix maps traced pids to replayed file descriptors (fd values are not under our control
+* so, we need a mapping between replayed and traced fds)
+*/
+int exec (struct replay_command* to_exec, int *exec_rvalue, int *pids_to_fd_pairs[]);
+//typedef double (*delay)(void *data, void *key);
 Replay_result* replay (Replay_workload* rep_workload);
 
 #endif /* _REPLAYER_H */

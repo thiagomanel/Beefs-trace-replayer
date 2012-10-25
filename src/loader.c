@@ -24,7 +24,7 @@
 #include <unistd.h>
 
 static struct lookuptab {
-	char *string;
+	const char *string;
 	int code;
 } tab[] = {
 	{"close",	CLOSE_OP},
@@ -64,7 +64,7 @@ static struct lookuptab {
 };
 
 static struct lookupwhence {
-	char *string;
+	const char *string;
 	int whence;
 } whence_tab[] = {
 	{"SEEK_CUR",	SEEK_CUR},
@@ -72,31 +72,44 @@ static struct lookupwhence {
 	{"SEEK_SET",	SEEK_SET},
 };
 
-int str2whence(const char *string) {
-	int i;
+static int str2whence(const char *string) {
+	unsigned int i;
 	for (i = 0; i < sizeof(whence_tab) / sizeof(whence_tab[0]); i++)
 		if (strcmp(whence_tab[i].string, string) == 0)
 			return whence_tab[i].whence;
 	return -1;
 }
 
-int marker2operation(const char *string) {
-	int i;
+static int marker2operation(const char *string) {
+	unsigned int i;
 	for (i = 0; i < sizeof(tab) / sizeof(tab[0]); i++)
 		if (strcmp(tab[i].string, string) == 0)
 			return tab[i].code;
 	return NONE;
 }
 
-void replay_command_init (struct replay_command* cmd) {
+struct replay_command* 
+replay_command_create(Caller* caller, op_t command, Parms* params,
+		      double traced_begin, long traced_elapsed_time,
+		      int expected_retval) {
 
-	cmd->caller = NULL;
-	cmd->command = NONE;
-	cmd->expected_retval = -666; //:O
-	cmd->params = NULL;
+	struct replay_command* _new = (struct replay_command*) 
+					malloc (sizeof (struct replay_command));
+
+	_new->caller = caller;
+	_new->command = command;//NONE
+	_new->expected_retval = expected_retval;
+	_new->params = params;
+        _new->traced_begin = traced_begin;
+	_new->traced_elapsed_time = traced_elapsed_time;
+	return _new;
 }
 
-Parms* alloc_and_parse_parms (op_t cmd_type,  json_t *replay_object) {
+struct replay_command* replay_command_create() {
+	return replay_command_create(NULL, NONE, NULL, -666, -666, -666);
+}
+
+static Parms* alloc_and_parse_parms (op_t cmd_type,  json_t *replay_object) {
 
 	Parms* parm = NULL;
 	json_t 	*args = json_object_get (replay_object, "args");
@@ -125,8 +138,8 @@ Parms* alloc_and_parse_parms (op_t cmd_type,  json_t *replay_object) {
 		case DUP2_OP:
 		case DUP3_OP: {
 			parm = (Parms*) malloc(2 * sizeof(Parms));
-			const char *oldfd = json_string_value (json_array_get (args, 0));
-			const char *newfd = json_string_value (json_array_get (args, 1));
+			json_string_value (json_array_get (args, 0));//oldfd
+			json_string_value (json_array_get (args, 1));//newfd
 		}
 		break;
 		case WRITE_OP:
@@ -157,15 +170,15 @@ Parms* alloc_and_parse_parms (op_t cmd_type,  json_t *replay_object) {
 			parm[1].argm = (arg*) malloc (sizeof (arg));
 			parm[1].argm->i_val = atoi(fd);
 
-			unsigned long offset_high = atol (json_string_value
+			unsigned long long offset_high = atol (json_string_value
 					(json_array_get (args, 2)));
-			unsigned long offset_low = atol (json_string_value
+			unsigned long long offset_low = atol (json_string_value
 					(json_array_get (args, 3)));
 
-			off_t off = (offset_high<<32) | offset_low;
+			unsigned long long off = (offset_high << 32) | offset_low;
 
 			parm[2].argm = (arg*) malloc (sizeof (arg));
-			parm[2].argm->l_val = (long) off;
+			parm[2].argm->l_val = off;
 
 			const char *whence_str = json_string_value (json_array_get (args, 4));
 			parm[3].argm = (arg*) malloc (sizeof (arg));
@@ -186,15 +199,15 @@ Parms* alloc_and_parse_parms (op_t cmd_type,  json_t *replay_object) {
 		break;
 		case MKNOD_OP: {
 			parm = (Parms*) malloc(2 * sizeof(Parms));
-			const char *fullpath = json_string_value (json_array_get (args, 0));
-			const char *mode = json_string_value (json_array_get (args, 1));
-			const char *dev = json_string_value (json_array_get (args, 2));
+			json_string_value (json_array_get (args, 0));//fullpath
+			json_string_value (json_array_get (args, 1));//mode
+			json_string_value (json_array_get (args, 2));//dev
 		}
 		break;
 		case SYMLINK_OP: {
 			parm = (Parms*) malloc(2 * sizeof(Parms));
-			const char *fullpath_oldname = json_string_value (json_array_get (args, 0));
-			const char *fullpath_newname = json_string_value (json_array_get (args, 1));
+			json_string_value (json_array_get (args, 0));//fullpath_oldname
+			json_string_value (json_array_get (args, 1));//fullpath_newname
 		}
 		break;
 		case GETXATTR_OP:
@@ -204,15 +217,15 @@ Parms* alloc_and_parse_parms (op_t cmd_type,  json_t *replay_object) {
 		case LREMOVEXATTR_OP:
 		case LLISTXATTR_OP: {
 			parm = (Parms*) malloc(2 * sizeof(Parms));
-			const char *fullpath = json_string_value (json_array_get (args, 0));
+				json_string_value (json_array_get (args, 0));//fullpath
 		}
 		break;
 		case LSETXATTR_OP: {
 			parm = (Parms*) malloc(2 * sizeof(Parms));
-			const char *fullpath = json_string_value (json_array_get (args, 0));
-			const char *name = json_string_value (json_array_get (args, 1));
-			const char *value = json_string_value (json_array_get (args, 2));
-			const char *flag = json_string_value (json_array_get (args, 3));
+			json_string_value (json_array_get (args, 0));//fullpath
+			json_string_value (json_array_get (args, 1));//name
+			json_string_value (json_array_get (args, 2));//value
+			json_string_value (json_array_get (args, 3));//flag
 		}
 		break;
 		case CLOSE_OP: {
@@ -246,14 +259,7 @@ Parms* alloc_and_parse_parms (op_t cmd_type,  json_t *replay_object) {
 	return parm;
 }
 
-void parse_timestamps (struct replay_command* cmd, char* token) {
-	token = strtok (NULL, "-");
-	cmd->traced_begin = strtod (token, NULL);
-	token = strtok (NULL, " ");
-	cmd->traced_elapsed_time = atol (token);
-}
-
-int fill_parents (Workflow_element *element, json_t *replay_object) {
+static int fill_parents (Workflow_element *element, json_t *replay_object) {
 
 	int i;
 	json_t *parents = json_object_get (replay_object, "parents");
@@ -275,7 +281,7 @@ int fill_parents (Workflow_element *element, json_t *replay_object) {
 	return 0;
 }
 
-int fill_children (Workflow_element *element, json_t *replay_object) {
+static int fill_children (Workflow_element *element, json_t *replay_object) {
 
 	int i;
 	json_t *children = json_object_get (replay_object, "children");
@@ -296,7 +302,7 @@ int fill_children (Workflow_element *element, json_t *replay_object) {
 	return 0;
 }
 
-int fill_caller (Caller *caller, json_t *replay_object) {
+static int fill_caller (replay_command* command, json_t *replay_object) {
 
 	json_t *json_caller = json_object_get (replay_object, "caller");
 
@@ -304,13 +310,14 @@ int fill_caller (Caller *caller, json_t *replay_object) {
 		fprintf (stderr, "error: caller is not an object\n");
 		return PARSING_ERROR;
 	}
-	caller->pid = (int) json_integer_value (json_object_get (json_caller, "pid"));
-	caller->tid = (int) json_integer_value (json_object_get (json_caller, "tid"));
-	caller->uid = (int) json_integer_value (json_object_get (json_caller, "uid"));
+	command->caller = (Caller*) malloc (sizeof(Caller)); 
+	command->caller->pid = (int) json_integer_value (json_object_get (json_caller, "pid"));
+	command->caller->tid = (int) json_integer_value (json_object_get (json_caller, "tid"));
+	command->caller->uid = (int) json_integer_value (json_object_get (json_caller, "uid"));
 	return 0;
 }
 
-int fill_syscall (struct replay_command *cmd, json_t *replay_object) {
+static int fill_syscall (struct replay_command *cmd, json_t *replay_object) {
 
 	json_t *syscall = json_object_get (replay_object, "call");
 
@@ -323,7 +330,7 @@ int fill_syscall (struct replay_command *cmd, json_t *replay_object) {
 	return 0;
 }
 
-int fill_stamp (struct replay_command *cmd, json_t *replay_object) {
+static int fill_stamp (struct replay_command *cmd, json_t *replay_object) {
 //FIXME It failed silent when there is no "elapsed field"
 	json_t *stamp = json_object_get (replay_object, "stamp");
 
@@ -338,7 +345,7 @@ int fill_stamp (struct replay_command *cmd, json_t *replay_object) {
 	return 0;
 }
 
-int fill_rvalue (struct replay_command *cmd, json_t *replay_object) {
+static int fill_rvalue (struct replay_command *cmd, json_t *replay_object) {
 
 	json_t *rvalue = json_object_get (replay_object, "rvalue");
 	if (!json_is_number (rvalue)) {
@@ -349,7 +356,7 @@ int fill_rvalue (struct replay_command *cmd, json_t *replay_object) {
 	return 0;
 }
 
-int fill_id (Workflow_element *element, json_t *replay_object) {
+static int fill_id (Workflow_element *element, json_t *replay_object) {
 
 	json_t *id = json_object_get (replay_object, "id");
 	if (!json_is_number (id)) {
@@ -364,7 +371,7 @@ int fill_id (Workflow_element *element, json_t *replay_object) {
  * It parses a json replay object into a Workflow_element. Return 0 in case
  * of sucess, non-zero otherwise.
  */
-int parse_element (Workflow_element *element, json_t* replay_object) {
+static int parse_element (Workflow_element *element, json_t* replay_object) {
 
 	if (!json_is_object (replay_object)) {
 		fprintf (stderr, "error: replay_call is not an object\n");
@@ -383,7 +390,7 @@ int parse_element (Workflow_element *element, json_t* replay_object) {
 		return PARSING_ERROR;
 	}
 
-	if (fill_caller (element->command->caller, replay_object) == PARSING_ERROR) {
+	if (fill_caller (element->command, replay_object) == PARSING_ERROR) {
 		return PARSING_ERROR;
 	}
 
@@ -405,27 +412,15 @@ int parse_element (Workflow_element *element, json_t* replay_object) {
 	return (element->command->command == NONE) ? UNKNOW_OP_ERROR : 0;
 }
 
-/**
- * Increase array size by one element and add value_to_append to last position
- */
-void append(int* array, int array_size, int value_to_append) {
-	realloc (array, array_size + 1);
-	array[array_size] = value_to_append;
-}
+static int is_parent(Workflow_element* parent, Workflow_element* child) {
 
-//this function is used once, so I would not like to have it in header. I also
-//think resizing arrays smells bad, it necessary to insert the bootstrap element.
-void add_child (Workflow_element* parent, Workflow_element* child) {
-
-	//assuming that is A is child of B, B is parent of A. So, everybody should
-	//modify child/parent arrays using the available functions, never directly
-	if (! is_child (parent, child)) {
-		append (parent->children_ids, parent->n_children, child->id);
-		parent->n_children++;
-
-		append (child->parents_ids, child->n_parents, parent->id);
-		child->n_parents++;
+	int i;
+	for (i = 0; i < child->n_parents; i++) {
+		if (child->parents_ids[i] == parent->id) {
+			return 1;
+		}
 	}
+	return 0;
 }
 
 /**
@@ -438,7 +433,7 @@ void add_child (Workflow_element* parent, Workflow_element* child) {
  *
  * @return the number of collected orphans
  */
-int orphans (int *orphans_ids_result, Replay_workload* repl_wld)  {
+static int orphans (int *orphans_ids_result, Replay_workload* repl_wld)  {
 
 	int i;
 	int orphans_i = 0;
@@ -451,7 +446,7 @@ int orphans (int *orphans_ids_result, Replay_workload* repl_wld)  {
 	return orphans_i;
 }
 
-void assign_root_timestamp (Replay_workload* wld) {
+static void assign_root_timestamp (Replay_workload* wld) {
 
 	Workflow_element* root = element (wld, 0);
 
@@ -475,17 +470,14 @@ void assign_root_timestamp (Replay_workload* wld) {
 	root->command->traced_elapsed_time = 0;
 }
 
-void fill_root_element (Workflow_element *root) {
+static void fill_root_element (Workflow_element *root) {
 
 	workflow_element_init(root);
 	root->id = ROOT_ID;
 	root->produced = 1;
 	root->consumed = 1;
 
-	root->command
-		= (struct replay_command*) malloc( sizeof (struct replay_command));
-	replay_command_init(root->command);
-	root->command->command = NONE;
+	root->command = replay_command_create();
 }
 
 int load (Replay_workload* replay_wld, FILE* input_file) {
@@ -495,7 +487,8 @@ int load (Replay_workload* replay_wld, FILE* input_file) {
         size_t max_line_len = 1000;
 
 	int loaded_commands = 0;
-	size_t num_cmds_on_file, i, len;
+	size_t num_cmds_on_file, i;
+        ssize_t len;
 
 	replay_workload_init (replay_wld);
 
@@ -527,15 +520,7 @@ int load (Replay_workload* replay_wld, FILE* input_file) {
 			= (replay_wld->element_list + loaded_commands);
 
 		workflow_element_init (tmp_element);
-
-		struct replay_command *new_cmd =
-				(struct replay_command*) malloc (sizeof (struct replay_command));
-		replay_command_init (new_cmd);
-
-		Caller *new_caller = (Caller*) malloc (sizeof (Caller));
-		new_cmd->caller = new_caller;
-
-		tmp_element->command = new_cmd;
+		tmp_element->command = replay_command_create();
 
 		len = getline(&line, &max_line_len, input_file);
 	        if (len == -1) {

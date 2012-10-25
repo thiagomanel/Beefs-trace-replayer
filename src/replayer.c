@@ -13,48 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <pthread.h>
 #include "replayer.h"
 #include "loader.h"
+#include <pthread.h>
 #include <stdlib.h>
-#include <stdio.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
 #include <string.h>
 #include <assert.h>
 #include <sys/time.h>
 #include <unistd.h>
-#include <linux/unistd.h>
-#include <linux/types.h>
 
 #define PID_MAX 32768
-//FIXME: FD_MAX is a way to high. I doubt trace has a single pid so high.
-//maybe pre-process trace to uncover the biggest possible value ?
-#define FD_MAX 32768
 
 #define BUFF_SIZE   200
 #define DEBUG 1
 
-#define REPLAY_SUCCESS 0
-
-int N_ITEMS;
-
 static pthread_cond_t cmds_were_produced_cond = PTHREAD_COND_INITIALIZER;
 static pthread_cond_t cmds_were_consumed_cond = PTHREAD_COND_INITIALIZER;
 
-pthread_mutex_t lock;
+static pthread_mutex_t lock;
 
-Replay_workload* workload;
-Replay_result* result;
+static Replay_workload* workload;
+static Replay_result* result;
 
 /**
- * We cannot guarantee that a replayed call, e.g open, returns the same file
- * descriptor than when it was traced becaused the value of file descriptors
- * depends on operating system state.
- */
+* We cannot guarantee that a replayed call, e.g open, returns the same file
+* descriptor than when it was traced becaused the value of file descriptors
+* depends on operating system state.
+*/
 static int *pids_to_fd_pairs[PID_MAX];
 
 void workflow_element_init (Workflow_element* element) {
@@ -101,27 +86,6 @@ Workflow_element* get_parent (Workflow_element* child, int parent_index) {
 	return element(workload, parent_id);
 }
 
-int is_child (Workflow_element* parent, Workflow_element* child) {
-	int i;
-	for (i = 0; i < parent->n_children; i++) {
-		if (parent->children_ids[i] == child->id) {
-			return 1;
-		}
-	}
-	return 0;
-}
-
-int is_parent(Workflow_element* parent, Workflow_element* child) {
-
-	int i;
-	for (i = 0; i < child->n_parents; i++) {
-		if (child->parents_ids[i] == parent->id) {
-			return 1;
-		}
-	}
-	return 0;
-}
-
 struct frontier {//we can use a generic list instead of this struct
 	struct workflow_element* w_element;
 	struct frontier* next;
@@ -145,26 +109,26 @@ typedef struct _sbuffs_t {
 
 sbuffs_t* shared_buff = (sbuffs_t*) malloc( sizeof(sbuffs_t));
 
-int all_produced (sbuffs_t* shared) {
+static int all_produced (sbuffs_t* shared) {
 	return (shared->produced_count >= shared->total_commands);
 }
 
-int all_consumed (sbuffs_t* shared) {
+static int all_consumed (sbuffs_t* shared) {
 	return (shared->consumed_count >= shared->total_commands);
 }
 
-int has_commands_to_consume (sbuffs_t* shared) {
+static int has_commands_to_consume (sbuffs_t* shared) {
 	return shared->last_produced >= 0;
 }
 
-int commands_were_consumed (sbuffs_t* shared) {
+static int commands_were_consumed (sbuffs_t* shared) {
 	return shared->last_consumed >= 0;
 }
 
 //FIXME we can move this list method do an util list code outside replayer
 //FIXME this code can set the frontier to null, do we want this (because of this,
 //i had to modify _add method to malloc frontier when it is null
-struct frontier* _del (struct frontier* current, Workflow_element* to_remove) {
+static struct frontier* _del (struct frontier* current, Workflow_element* to_remove) {
 
 	if (current == NULL) {
 		return NULL;
@@ -180,19 +144,20 @@ struct frontier* _del (struct frontier* current, Workflow_element* to_remove) {
 	return current;
 }
 
-void fill_frontier (struct frontier* new_frontier) {
-	new_frontier->next = NULL;
-	new_frontier->w_element = NULL;
+static struct frontier* frontier_create() {
+	struct frontier* newf = NULL;
+        newf = (struct frontier*) malloc (sizeof (struct frontier));
+	newf->next = NULL;
+	newf->w_element = NULL;
+	return newf;
 }
 
 //We can think these add and remove to be specific to the frontier
 //or add one more indirection level and pass a frontier**
-void frontier_append (Workflow_element* to_add) {
+static void frontier_append (Workflow_element* to_add) {
 
 	if (shared_buff->frontier == NULL) {
-		shared_buff->frontier
-			= (struct frontier*) malloc (sizeof (struct frontier));
-		fill_frontier (shared_buff->frontier);
+		shared_buff->frontier = frontier_create();
 		shared_buff->frontier->w_element = to_add;
 	} else {
 		struct frontier* tmp = shared_buff->frontier;
@@ -200,14 +165,12 @@ void frontier_append (Workflow_element* to_add) {
 			tmp = tmp->next;
 		}
 
-		tmp->next = (struct frontier*) malloc (sizeof (struct frontier));
-		fill_frontier(tmp->next);
-
+		tmp->next = frontier_create();
 		tmp->next->w_element = to_add;
 	}
 }
 
-int _contains (struct frontier* current, Workflow_element* tocheck) {
+static int _contains (struct frontier* current, Workflow_element* tocheck) {
 
 	struct frontier* tmp = current;
 
@@ -220,11 +183,11 @@ int _contains (struct frontier* current, Workflow_element* tocheck) {
 	return 0;
 }
 
-int produced (Workflow_element* element) {//FIXME do we need this?
+static int produced (Workflow_element* element) {//FIXME do we need this?
 	return element->produced;
 }
 
-int consumed (Workflow_element* element) {
+static int consumed (Workflow_element* element) {
 	return element->consumed;
 }
 
@@ -232,7 +195,7 @@ int consumed (Workflow_element* element) {
  * Returns non-zero if all Workflow_element identified by the ids stored in
  * *element_ids were consumed (dispatched) or n_elements is zero
  */
-int _consumed (int* elements_ids, int n_elements) {
+static int _consumed (int* elements_ids, int n_elements) {
 
 	int i;
 	int total_consumed = 0;
@@ -245,122 +208,15 @@ int _consumed (int* elements_ids, int n_elements) {
 	return total_consumed == n_elements;
 }
 
-void mark_produced (Workflow_element* element) {
+static void mark_produced (Workflow_element* element) {
 	element->produced = 1;
 }
 
-void mark_consumed (Workflow_element* element) {
+static void mark_consumed (Workflow_element* element) {
 	element->consumed = 1;
 }
 
-/**
- * Maps traced file descriptors to the real one returned during
- * replay for each pid registered in trace calls.
- */
-int replayed_fd (int traced_pid, int traced_fd) {
-	int* fds = pids_to_fd_pairs[traced_pid];
-	return fds[traced_fd];
-}
-
-void map_fd (int traced_pid, int traced_fd, int replayed_fd) {
-
-	if (!pids_to_fd_pairs[traced_pid]) {
-		//TODO: create a function to allocate and memset this ?
-		pids_to_fd_pairs[traced_pid] = (int*) malloc (FD_MAX * sizeof (int));
-		memset (pids_to_fd_pairs[traced_pid], -1, FD_MAX * sizeof(int));
-	}
-
-	int* fd_pairs = pids_to_fd_pairs[traced_pid];
-	fd_pairs[traced_fd] = replayed_fd;
-}
-
-/**
- * Execute syscall specified on replay_command pointed by cmd. If syscall executes
- * properly, it returns REPLAY_SUCCESS or -1 otherwise. Executed syscall's
- * returned value is copied to call_rvalue in case of REPLAY_SUCCESS.
- */
-int do_replay (struct replay_command* cmd, int *call_rvalue) {
-
-	assert (cmd != NULL);
-	Parms* args = cmd->params;
-
-	switch (cmd->command) {
-		case MKDIR_OP: {
-			*call_rvalue = mkdir (args[0].argm->cprt_val, args[1].argm->i_val);
-		}
-		break;
-		case STAT_OP: {
-			struct stat sb;
-			*call_rvalue = stat(args[0].argm->cprt_val, &sb);
-		}
-		break;
-		case OPEN_OP: {
-			int replayed_fd =
-					open (args[0].argm->cprt_val, args[1].argm->i_val, args[2].argm->i_val);
-
-			*call_rvalue = replayed_fd;
-			int traced_fd = cmd->expected_retval;
-			if (traced_fd > 0) {
-				map_fd (cmd->caller->pid, traced_fd, replayed_fd);
-			}
-		}
-		break;
-		case READ_OP: {
-			int traced_fd = args[1].argm->i_val;
-			int repl_fd = replayed_fd (cmd->caller->pid, traced_fd);
-
-			//FIXME should share a big bufer to avoid malloc'ing time wasting ?
-			int read_count = args[2].argm->i_val;
-			char* buf = (char*) malloc (sizeof (char) * read_count);
-			*call_rvalue = read (repl_fd, buf, read_count);
-		}
-		break;
-		case WRITE_OP: {
-			int traced_fd = args[1].argm->i_val;
-			int repl_fd = replayed_fd (cmd->caller->pid, traced_fd);
-
-			//FIXME should share a big bufer to avoid malloc'ing time wasting ?
-			int write_count = args[2].argm->i_val;
-			char* buf = (char*) malloc (sizeof (char) * write_count);
-			*call_rvalue = write (repl_fd, buf, write_count);
-		}
-		break;
-		case CLOSE_OP: {
-			int traced_fd = args[0].argm->i_val;
-			int repl_fd = replayed_fd (cmd->caller->pid, traced_fd);
-			*call_rvalue = close (repl_fd);
-			//FIXME should we set the fd mapping to something impossible as -1
-			//i think i this way we do not mask programming errors
-		}
-		break;
-		case FSTAT_OP: {
-			struct stat sb;
-			int traced_fd = args[1].argm->i_val;
-			int repl_fd = replayed_fd (cmd->caller->pid, traced_fd);
-			*call_rvalue = fstat(repl_fd, &sb);
-		}
-		break;
-		case RMDIR_OP: {
-			*call_rvalue = unlink (args[0].argm->cprt_val);
-		}
-		break;
-		case LLSEEK_OP: {
-			int traced_fd = args[1].argm->i_val;
-			int repl_fd = replayed_fd (cmd->caller->pid, traced_fd);
-
-			off_t offset = (off_t) args[2].argm->l_val;
-			int whence = args[3].argm->i_val;
-			*call_rvalue = lseek (repl_fd, offset, whence);
-		}
-		break;
-		default:
-			return -1;
-	}
-
-	return REPLAY_SUCCESS;
-}
-
-void do_produce(Workflow_element* el_to_produce) {
+static void do_produce(Workflow_element* el_to_produce) {
 	//1. produce
 	shared_buff->produced_queue[++shared_buff->last_produced] = el_to_produce;
 	//2. mark
@@ -369,12 +225,12 @@ void do_produce(Workflow_element* el_to_produce) {
 	++shared_buff->produced_count;
 }
 
-void fill_command_replay_result (command_replay_result *result) {
+static void fill_command_replay_result (command_replay_result *result) {
 	result->dispatch_begin = (struct timeval*) malloc (sizeof (struct timeval));
 	result->dispatch_end = (struct timeval*) malloc (sizeof (struct timeval));
 }
 
-int produce_buffer_full() {
+static int produce_buffer_full() {
 	return (shared_buff->last_produced + 1) >= BUFF_SIZE;
 }
 
@@ -556,7 +412,7 @@ void *consume (void *arg) {
 			command_replay_result *cmd_result = replay_result (element->id);
 			fill_command_replay_result (cmd_result);
 			gettimeofday (cmd_result->dispatch_begin, NULL);
-			int result = do_replay (element->command, &actual_rvalue);
+			int result = exec (element->command, &actual_rvalue, pids_to_fd_pairs);
 			//assigning actual syscall returning value. We do not check
 			//REPLAY_SUCCESS because it will lead to program termination if it
 			//does not succeded properly anyway
@@ -590,7 +446,7 @@ void *consume (void *arg) {
 
 }
 
-void fill_shared_buffer (Replay_workload* workload, sbuffs_t* shared) {
+static void fill_shared_buffer (Replay_workload* workload, sbuffs_t* shared) {
 
 	//bootstrap element is consumed and produced
 	shared->produced_count = 1;
@@ -621,7 +477,7 @@ void fill_shared_buffer (Replay_workload* workload, sbuffs_t* shared) {
 /**
  * Fill command_replay_result array with expected_rvalues from input workload
  */
-void fill_expected_rvalue(command_replay_result *results, Replay_workload *wld) {
+static void fill_expected_rvalue(command_replay_result *results, Replay_workload *wld) {
 
 	int i;
 	for (i = 0; i < wld->num_cmds ; i++) {

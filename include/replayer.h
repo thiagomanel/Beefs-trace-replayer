@@ -126,16 +126,21 @@ typedef struct replay_result {
 	command_replay_result* cmds_replay_result;
 } Replay_result;
 
+//maybe, add a replay_workload_create(int num_elements)
 void replay_workload_init (Replay_workload* replay_workload);
 
 void workflow_element_init (Workflow_element* element);
 
 Workflow_element* element (Replay_workload* workload, int element_id);
 
+//both is_child and is_parent are used only at loader.c maybe remove it from
+//include
 int is_child (Workflow_element* parent, Workflow_element* child);
 
 int is_parent (Workflow_element* parent, Workflow_element* child);
 
+//maybe, change by replay_command_create and remove the malloc from caller
+//also, it is possible to remove from include file ?
 void replay_command_init (struct replay_command* cmd);
 
 Replay_result* replay (Replay_workload* rep_workload);

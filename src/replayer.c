@@ -15,6 +15,7 @@
  */
 #include "replayer.h"
 #include "loader.h"
+#include "list.h"
 #include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
@@ -41,6 +42,11 @@ static Replay_result* result;
 * depends on operating system state.
 */
 static int *pids_to_fd_pairs[PID_MAX];
+
+struct foo {
+    int age;
+    struct list_head baa;
+};
 
 void workflow_element_init (Workflow_element* element) {
 
@@ -101,7 +107,7 @@ typedef struct _sbuffs_t {
 	struct frontier* frontier;
 } sbuffs_t;
 
-static sbuffs_t* shared_buff = (sbuffs_t*) malloc( sizeof(sbuffs_t));
+static sbuffs_t* shared_buff;
 
 static int all_produced (sbuffs_t* shared) {
 	return (shared->produced_count >= shared->total_commands);
@@ -235,7 +241,7 @@ static int produce_buffer_full() {
  * come to frontier. A fake command acts as workflow's root to bootstrap the frontier.
  */
 void *produce (void *arg) {
-
+	//FIXME: maybe produce should not be a pthread stuff
 	//FIXME: what if produce does not wait ?
 
 	int i;
@@ -483,9 +489,11 @@ static void fill_expected_rvalue(command_replay_result *results, Replay_workload
 
 Replay_result* replay (Replay_workload* rep_workload) {
 
+	int i;
 	assert (rep_workload != NULL);
 	assert (rep_workload->num_cmds >= 0);
 
+        shared_buff = (sbuffs_t*) malloc( sizeof(sbuffs_t));
 	memset (pids_to_fd_pairs, 0, PID_MAX * sizeof (int*));
 
 	if (rep_workload->num_cmds > 0) {
@@ -513,7 +521,7 @@ Replay_result* replay (Replay_workload* rep_workload) {
 			? max_consumers : workload->num_cmds;
 
 	pthread_t *consumers = (pthread_t*) malloc (sizeof (pthread_t) * num_consumers);
-	for (int i = 0; i < num_consumers ; i++) {
+	for (i = 0; i < num_consumers ; i++) {
 		pthread_create (&consumers[i], NULL, consume, 0);
 	}
 

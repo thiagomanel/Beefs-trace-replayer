@@ -35,8 +35,6 @@ MAIN = beefs_replayer
 GTEST_HEADERS = $(GTEST_DIR)/include/gtest/*.h \
                 $(GTEST_DIR)/include/gtest/internal/*.h
 
-# House-keeping build targets.
-
 all : $(TESTS) $(MAIN)
 #all : $(MAIN)
 
@@ -71,16 +69,16 @@ gtest_main.a : gtest-all.o gtest_main.o
 # gtest_main.a, depending on whether it defines its own main()
 # function.
 
-loader.o : $(USER_DIR)/src/loader.c $(USER_DIR)/src/replayer.c $(USER_DIR)/include/replayer.h $(USER_DIR)/include/loader.h $(GTEST_HEADERS)
+loader.o : $(USER_DIR)/src/loader.c $(USER_DIR)/src/replayer.c $(USER_DIR)/include/replayer.h $(USER_DIR)/include/loader.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/src/loader.c
 
-dispatch.o : $(USER_DIR)/src/dispatch.c $(USER_DIR)/include/replayer.h $(GTEST_HEADERS)
+dispatch.o : $(USER_DIR)/src/dispatch.c $(USER_DIR)/include/replayer.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/src/dispatch.c
 
-replayer.o : $(USER_DIR)/src/loader.c $(USER_DIR)/src/replayer.c $(USER_DIR)/include/replayer.h $(USER_DIR)/include/loader.h $(GTEST_HEADERS)
+replayer.o : $(USER_DIR)/src/loader.c $(USER_DIR)/src/replayer.c $(USER_DIR)/include/replayer.h $(USER_DIR)/include/loader.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/src/replayer.c
 
-beefs_replayer.o : $(USER_DIR)/src/loader.c $(USER_DIR)/src/replayer.c $(USER_DIR)/include/replayer.h $(USER_DIR)/include/loader.h
+beefs_replayer.o : $(USER_DIR)/src/loader.c $(USER_DIR)/src/replayer.c $(USER_DIR)/src/beefs_replayer.c $(USER_DIR)/include/replayer.h $(USER_DIR)/include/loader.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/src/beefs_replayer.c
 	
 beefs_replayer : loader.o replayer.o beefs_replayer.o dispatch.o

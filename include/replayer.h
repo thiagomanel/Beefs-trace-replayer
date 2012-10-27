@@ -16,6 +16,8 @@
 #ifndef _REPLAYER_H
 #define _REPLAYER_H
 
+#include "list.h"
+
 #define MAX_ARGS 5
 #define PROC_NAME_LEN 256 //FIXME TOO BIG. search for exec name in task structs
 #define MAX_FILE_NAME 256 //FIXME TOO BIG.
@@ -107,6 +109,7 @@ typedef struct workflow_element {
 	int consumed;
 	int id;
 
+	struct list_head frontier;
 } Workflow_element;
 
 typedef struct _command_replay_result {
@@ -136,11 +139,11 @@ void workflow_element_init (Workflow_element* element);
 
 Workflow_element* element (Replay_workload* workload, int element_id);
 
-struct replay_command* replay_command_create ();
 struct replay_command* replay_command_create (Caller* caller, op_t command, Parms* params,
 			                       double traced_begin, long traced_elapsed_time,
                        				int expected_retval);
 #define REPLAY_SUCCESS 0
+
 /**
 * Execute syscall specified on replay_command pointed by cmd. If syscall executes
 * properly, it returns REPLAY_SUCCESS or -1 otherwise. Executed syscall's

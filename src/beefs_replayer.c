@@ -24,8 +24,12 @@
 #include "loader.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <sys/time.h>
 
 int main (int argc, const char* argv[]) {
+
+	int i;
+	command_replay_result *results, *tmp;
 
 	FILE* fp = fopen (argv[1], "r");
 	Replay_workload* rep_wld = (Replay_workload*) malloc (
@@ -37,15 +41,17 @@ int main (int argc, const char* argv[]) {
 	}
 
 	Replay_result *result = replay (rep_wld);
-	for (int i = 0; i < result->replayed_commands; i++) {
-		command_replay_result *cmd_result = &(result->cmds_replay_result[i]);
+	results = result->cmds_replay_result;
+        
+	for (i = 0; i < result->replayed_commands; i++) {
+		tmp = &(results[i]);
 		printf ("%ld %ld %ld %ld %f %d %d\n",
-				cmd_result->dispatch_begin->tv_sec,
-				cmd_result->dispatch_begin->tv_usec,
-				cmd_result->dispatch_end->tv_sec,
-				cmd_result->dispatch_end->tv_usec,
-				cmd_result->delay,
-				cmd_result->expected_rvalue,
-				cmd_result->actual_rvalue);
+				tmp->dispatch_begin->tv_sec,
+				tmp->dispatch_begin->tv_usec,
+				tmp->dispatch_end->tv_sec,
+				tmp->dispatch_end->tv_usec,
+				tmp->delay,
+				tmp->expected_rvalue,
+				tmp->actual_rvalue);
 	}
 }

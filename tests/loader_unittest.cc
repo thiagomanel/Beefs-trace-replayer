@@ -13,6 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+//extern "C" {
+  // Get declaration for f(int i, char c, float x)
+//  #include "list.h"
+ // #include "loader.h"
+  //#include "replayer.h"
+//}
+
+#include "list.h"
 #include "loader.h"
 #include "replayer.h"
 #include "gtest/gtest.h"
@@ -591,10 +599,7 @@ TEST(ReplayTest, 2_sequencial_command_mkdir_parsing_skipped) {
 	//bootstrap
 	Workflow_element* root_element = (rep_wld->element_list);
 	workflow_element_init(root_element);
-	root_element->command = replay_command_create();
-
-	root_element->command->traced_begin = 1318539134542649.0;
-	root_element->command->traced_elapsed_time = 479;
+	root_element->command = replay_command_create(NULL, NONE, NULL, 1318539134542649.0, 479, 0);
 
 	root_element->id = ROOT_ID;
 	root_element->produced = 1;

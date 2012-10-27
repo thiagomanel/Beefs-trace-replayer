@@ -25,8 +25,6 @@
 
 int parse_line (struct replay_command** cmd, char* line);
 
-int parse_element (Workflow_element* element, char* line);
-
 int load (struct replay_workload* replay_wld, FILE* input_file);
 
 #endif /* _LOADER_H */

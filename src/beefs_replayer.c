@@ -21,6 +21,7 @@
  *  Author: Thiago Emmanuel Pereira, thiago.manel@gmail.com
  */
 #include "replayer.h"
+#include "conservative_timing.h"
 #include "loader.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -31,16 +32,22 @@ int main (int argc, const char* argv[]) {
 	int i;
 	command_replay_result *results, *tmp;
 
-	FILE* fp = fopen (argv[1], "r");
-	Replay_workload* rep_wld = (Replay_workload*) malloc (
-			sizeof (Replay_workload));
+	Replay_workload* workload = (Replay_workload*) malloc (sizeof (Replay_workload));
+	workload->num_cmds = 0;
+	workload->current_cmd = 0;
+	workload->element_list = NULL;
 
-	int ret = load (rep_wld, fp);
+	FILE* fp = fopen (argv[1], "r");
+	int ret = load (workload, fp);
 	if (ret < 0) {
 		perror("Error loading trace\n");
 	}
 
-	Replay_result *result = replay (rep_wld);
+	struct replay* repl = create_replay (workload);
+	repl->timing_ops = conservative_police_ops;
+	replay (repl);
+
+	Replay_result *result = repl->result;
 	results = result->cmds_replay_result;
         
 	for (i = 0; i < result->replayed_commands; i++) {

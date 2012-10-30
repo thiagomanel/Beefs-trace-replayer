@@ -135,24 +135,52 @@ typedef struct replay_result {
 	command_replay_result* cmds_replay_result;
 } Replay_result;
 
+struct timing_police {
+	double (*delay) (struct replay*, Workflow_element*);
+};
+
+struct replay {
+
+	/* 
+	   **pids_to_fd_pairs matrix maps traced pids to replayed file descriptors
+	   (fd values are not under our control so, we need a mapping between replayed
+	    and traced fds)
+	*/
+	int **pids_to_fd_pairs;
+
+	Replay_workload* workload;
+	Replay_result* result;
+
+	struct timing_police timing_ops;
+};
+
 void workflow_element_init (Workflow_element* element);
 
 Workflow_element* element (Replay_workload* workload, int element_id);
+Workflow_element* parent (Replay_workload* workload, Workflow_element* child, 
+				int parent_index);
 
 struct replay_command* replay_command_create (Caller* caller, op_t command, Parms* params,
 			                       double traced_begin, long traced_elapsed_time,
                        				int expected_retval);
+
+struct replay* create_replay (Replay_workload* workload);
+
 #define REPLAY_SUCCESS 0
 
 /**
 * Execute syscall specified on replay_command pointed by cmd. If syscall executes
 * properly, it returns REPLAY_SUCCESS or -1 otherwise. Executed syscall's
-* returned value is copied to call_rvalue in case of REPLAY_SUCCESS. *pids_to_fd_pairs[]
-* matrix maps traced pids to replayed file descriptors (fd values are not under our control
-* so, we need a mapping between replayed and traced fds)
+* returned value is copied to call_rvalue in case of REPLAY_SUCCESS.
 */
-int exec (struct replay_command* to_exec, int *exec_rvalue, int *pids_to_fd_pairs[]);
-//typedef double (*delay)(void *data, void *key);
-Replay_result* replay (Replay_workload* rep_workload);
+int exec (struct replay_command* to_exec, int *exec_rvalue, struct replay* rep);
+
+void replay (struct replay* rpl);
+
+#define IS_CONSUMED(element) ((element)->consumed)
+#define IS_PRODUCED(element) ((element)->produced)
+
+//a boxing function to get the replay result from a given element_id
+#define RESULT(_replay, el_id) &(_replay->result->cmds_replay_result[el_id])
 
 #endif /* _REPLAYER_H */

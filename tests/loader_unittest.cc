@@ -13,16 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//extern "C" {
-  // Get declaration for f(int i, char c, float x)
-//  #include "list.h"
- // #include "loader.h"
-  //#include "replayer.h"
-//}
-
 #include "list.h"
 #include "loader.h"
 #include "replayer.h"
+#include "conservative_timing.h"
 #include "gtest/gtest.h"
 #include <stdlib.h>
 
@@ -515,18 +509,27 @@ TEST(LoaderTest, LoadLsetxattr) {
     EXPECT_EQ(32362, caller_id->tid);
 }
 
+static Replay_workload* create_workload () {
+	Replay_workload* workload = (Replay_workload*) malloc (sizeof (Replay_workload));
+	workload->num_cmds = 0;
+	workload->current_cmd = 0;
+	workload->element_list = NULL;
+	return workload;
+}
+
 TEST(ReplayTest, SingleOperationReplay) {
 
 	//1 0 - 0 - 1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /tmp/jdt-images 511 0
-	Replay_workload* rep_wld
-		= (Replay_workload*) malloc (sizeof (Replay_workload));
-	FILE * input_f = fopen("tests/replay_input/workflow_samples/workflow_single_command_mkdir", "r");
-	load(rep_wld, input_f);
+	Replay_workload* workload = create_workload ();
+	FILE * input_f = fopen ("tests/replay_input/workflow_samples/workflow_single_command_mkdir", "r");
+	load (workload, input_f);
 
-	Replay_result* actual_result = replay (rep_wld);
+	struct replay* repl = create_replay (workload);
+	repl->timing_ops = conservative_police_ops;
+	replay (repl);
 
-	EXPECT_EQ (2, actual_result->replayed_commands);//boostrap + 1
-	EXPECT_EQ (2, actual_result->produced_commands);//boostrap + 1
+	EXPECT_EQ (2, repl->result->replayed_commands);//boostrap + 1
+	EXPECT_EQ (2, repl->result->produced_commands);//boostrap + 2
 	fclose(input_f);
 }
 
@@ -535,43 +538,43 @@ TEST(ReplayTest, SingleOperationReplay) {
 //out that its command type is NONE instead of OPEN
 TEST(ReplayTest, SingleOpenOperationReplay) {
 
-	Replay_workload* rep_wld
-		= (Replay_workload*) malloc (sizeof (Replay_workload));
-
+	Replay_workload* workload = create_workload ();
 	FILE * input_f = fopen (
 			"tests/replay_input/workflow_samples/workflow_single_command_open",
 			"r");
 
-	load (rep_wld, input_f);
+	load (workload, input_f);
+	struct replay* repl = create_replay (workload);
+	repl->timing_ops = conservative_police_ops;
+	replay (repl);
 
-	Replay_result* actual_result = replay (rep_wld);
-
-	EXPECT_EQ (2, actual_result->replayed_commands);//boostrap + 1
-	EXPECT_EQ (2, actual_result->produced_commands);//boostrap + 1
+	EXPECT_EQ (2, repl->result->replayed_commands);//boostrap + 1
+	EXPECT_EQ (2, repl->result->produced_commands);//boostrap + 1
 	fclose (input_f);
 }
 
 //This method try to capture the same bug report in the above method
 TEST(LoaderTest, LoadWorkflowSingleOpenOperation) {
-    Replay_workload* rep_wld = (Replay_workload*) malloc (sizeof (Replay_workload));
-    FILE * input_f = fopen (
-    		"tests/replay_input/workflow_samples/workflow_single_command_open",
-    		"r");
-    int ret = load(rep_wld, input_f);
+	Replay_workload* workload = create_workload ();
+	FILE * input_f = fopen (
+		"tests/replay_input/workflow_samples/workflow_single_command_open",
+		"r");
 
-    EXPECT_EQ(0, ret);
-    EXPECT_EQ(2, rep_wld->num_cmds);//fake + 1
-    EXPECT_EQ(0, rep_wld->current_cmd);
+	int ret = load(workload, input_f);
+
+	EXPECT_EQ(0, ret);
+	EXPECT_EQ(2, workload->num_cmds);//fake + 1
+	EXPECT_EQ(0, workload->current_cmd);
 
     //bootstraper
-    Workflow_element* w_element = element(rep_wld, 0);
+    Workflow_element* w_element = element(workload, 0);
     EXPECT_EQ(0, w_element->id);
     EXPECT_EQ(1, w_element->n_children);
     EXPECT_EQ(0, w_element->n_parents);
     int child_id = w_element->children_ids[0];
     EXPECT_EQ(1, child_id);
 
-    w_element = element(rep_wld, 1);
+    w_element = element(workload, 1);
     EXPECT_EQ(1, w_element->id);
     EXPECT_EQ(0, w_element->n_children);
     EXPECT_EQ(1, w_element->n_parents);
@@ -590,8 +593,8 @@ TEST(ReplayTest, 2_sequencial_command_mkdir_parsing_skipped) {
 
 	//1 0 - 1 2 1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /tmp/jdt-images-1 511 0
 	//2 1 1 0 - 1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /tmp/jdt-images-2 511 0
-	Replay_workload* rep_wld
-		= (Replay_workload*) malloc (sizeof (Replay_workload));
+
+	Replay_workload* rep_wld = create_workload ();
 	rep_wld->element_list = (Workflow_element*) malloc (3 * sizeof (Workflow_element));
 
 	rep_wld->num_cmds = 3;
@@ -671,25 +674,28 @@ TEST(ReplayTest, 2_sequencial_command_mkdir_parsing_skipped) {
 	element_two->parents_ids = (int*) malloc (sizeof (int));
 	element_two->parents_ids[0] = 1;
 
-	Replay_result* actual_result = replay (rep_wld);
+	struct replay* repl = create_replay (rep_wld);
+	repl->timing_ops = conservative_police_ops;
+	replay (repl);
 
-	EXPECT_EQ (3, actual_result->replayed_commands);//boostrap + 2
-	EXPECT_EQ (3, actual_result->produced_commands);//boostrap + 2
+	EXPECT_EQ (3, repl->result->replayed_commands);//boostrap + 2
+	EXPECT_EQ (3, repl->result->produced_commands);//boostrap + 2
 }
 
 TEST(ReplayTest, 2_sequencial_command_mkdir) {
 
 	//1 0 - 1 2 1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /tmp/jdt-images-1 511 0
 	//2 1 1 0 - 1159 2364 32311 (eclipse) mkdir 1318539134542649-479 /tmp/jdt-images-2 511 0
-	Replay_workload* rep_wld
-		= (Replay_workload*) malloc (sizeof (Replay_workload));
+	Replay_workload* workload = create_workload ();
 	FILE * input_f = fopen("tests/replay_input/workflow_samples/workflow_2_sequencial_command_mkdir", "r");
-	load(rep_wld, input_f);
+	load(workload, input_f);
 
-	Replay_result* actual_result = replay (rep_wld);
+	struct replay* repl = create_replay (workload);
+	repl->timing_ops = conservative_police_ops;
+	replay (repl);
 
-	EXPECT_EQ (3, actual_result->replayed_commands);//boostrap + 2
-	EXPECT_EQ (3, actual_result->produced_commands);//boostrap + 2
+	EXPECT_EQ (3, repl->result->replayed_commands);//boostrap + 2
+	EXPECT_EQ (3, repl->result->produced_commands);//boostrap + 2
 	fclose(input_f);
 }
 
@@ -701,12 +707,15 @@ TEST(ReplayTest, sequencial_open_read_close_same_file) {
 	//1 0 - 0 - 0 2097 2097 (udisks-daemon) open 1318539063003892-2505 workflow_samples/workflow_single_command_open 34816 0 7
 	//2 1 3 1 1 0 2097 2097 (udisks-daemon) read 1318539063004000-329 workflow_samples/workflow_single_command_open 7 5 5
 	//3 1 2 0 - 0 2097 2097 (udisks-daemon) close 1318539063006403-37 7 0
-	Replay_workload* rep_wld
-		= (Replay_workload*) malloc (sizeof (Replay_workload));
+	Replay_workload* workload = create_workload ();
 	FILE * input_f = fopen("tests/replay_input/workflow_samples/workflow_sequencial_open_read_close_same_file", "r");
-	load(rep_wld, input_f);
+	load(workload, input_f);
 
-	Replay_result* actual_result = replay (rep_wld);
+	struct replay* repl = create_replay (workload);
+	repl->timing_ops = conservative_police_ops;
+	replay (repl);
+
+	Replay_result* actual_result = repl->result;
 
 	EXPECT_EQ (4, actual_result->replayed_commands);//boostrap + 3
 	EXPECT_EQ (4, actual_result->produced_commands);//boostrap + 2
@@ -718,12 +727,15 @@ TEST(ReplayTest, open_seek_close) {
 //1 0 - 0 - 0 2097 2097 (udisks-daemon) open 1318539063003892-2505 workflow_samples/workflow_open_seek_close 34816 0 7
 //2 1 3 1 1 0 2097 2097 (udisks-daemon) read 1318539063004000-329 workflow_samples/workflow_open_seek_close 7 0 0 SEEK_CUR 0
 //3 1 2 0 - 0 2097 2097 (udisks-daemon) close 1318539063006403-37 7 0
-	Replay_workload* rep_wld
-		= (Replay_workload*) malloc (sizeof (Replay_workload));
+	Replay_workload* workload = create_workload ();
 	FILE * input_f = fopen("tests/replay_input/workflow_samples/workflow_sequencial_open_seek_close_same_file", "r");
-	load(rep_wld, input_f);
+	load(workload, input_f);
 
-	Replay_result* actual_result = replay (rep_wld);
+	struct replay* repl = create_replay (workload);
+	repl->timing_ops = conservative_police_ops;
+	replay (repl);
+
+	Replay_result* actual_result = repl->result;
 
 	EXPECT_EQ (4, actual_result->replayed_commands);
 	EXPECT_EQ (4, actual_result->produced_commands);

@@ -43,7 +43,8 @@ void map_fd (int traced_pid, int traced_fd, int replayed_fd, int *pids_to_fd_pai
 	fd_pairs[traced_fd] = replayed_fd;
 }
 
-int exec (struct replay_command* to_exec, int *exec_rvalue, int *pids_to_fd_pairs[]) {
+//int exec (struct replay_command* to_exec, int *exec_rvalue, int *pids_to_fd_pairs[]) {
+int exec (struct replay_command* to_exec, int *exec_rvalue, struct replay* rpl) {
 
 	assert (to_exec != NULL);
 	Parms* args = to_exec->params;
@@ -65,13 +66,13 @@ int exec (struct replay_command* to_exec, int *exec_rvalue, int *pids_to_fd_pair
 			*exec_rvalue = replayed_fd;
 			int traced_fd = to_exec->expected_retval;
 			if (traced_fd > 0) {
-				map_fd (to_exec->caller->pid, traced_fd, replayed_fd, pids_to_fd_pairs);
+				map_fd (to_exec->caller->pid, traced_fd, replayed_fd, rpl->pids_to_fd_pairs);
 			}
 		}
 		break;
 		case READ_OP: {
 			int traced_fd = args[1].argm->i_val;
-			int repl_fd = replayed_fd (to_exec->caller->pid, traced_fd, pids_to_fd_pairs);
+			int repl_fd = replayed_fd (to_exec->caller->pid, traced_fd, rpl->pids_to_fd_pairs);
 
 			//FIXME should share a big bufer to avoid malloc'ing time wasting ?
 			int read_count = args[2].argm->i_val;
@@ -81,7 +82,7 @@ int exec (struct replay_command* to_exec, int *exec_rvalue, int *pids_to_fd_pair
 		break;
 		case WRITE_OP: {
 			int traced_fd = args[1].argm->i_val;
-			int repl_fd = replayed_fd (to_exec->caller->pid, traced_fd, pids_to_fd_pairs);
+			int repl_fd = replayed_fd (to_exec->caller->pid, traced_fd, rpl->pids_to_fd_pairs);
 
 			//FIXME should share a big bufer to avoid malloc'ing time wasting ?
 			int write_count = args[2].argm->i_val;
@@ -91,7 +92,7 @@ int exec (struct replay_command* to_exec, int *exec_rvalue, int *pids_to_fd_pair
 		break;
 		case CLOSE_OP: {
 			int traced_fd = args[0].argm->i_val;
-			int repl_fd = replayed_fd (to_exec->caller->pid, traced_fd, pids_to_fd_pairs);
+			int repl_fd = replayed_fd (to_exec->caller->pid, traced_fd, rpl->pids_to_fd_pairs);
 			*exec_rvalue = close (repl_fd);
 			//FIXME should we set the fd mapping to something impossible as -1
 			//i think i this way we do not mask programming errors
@@ -100,7 +101,7 @@ int exec (struct replay_command* to_exec, int *exec_rvalue, int *pids_to_fd_pair
 		case FSTAT_OP: {
 			struct stat sb;
 			int traced_fd = args[1].argm->i_val;
-			int repl_fd = replayed_fd (to_exec->caller->pid, traced_fd, pids_to_fd_pairs);
+			int repl_fd = replayed_fd (to_exec->caller->pid, traced_fd, rpl->pids_to_fd_pairs);
 			*exec_rvalue = fstat(repl_fd, &sb);
 		}
 		break;
@@ -110,7 +111,7 @@ int exec (struct replay_command* to_exec, int *exec_rvalue, int *pids_to_fd_pair
 		break;
 		case LLSEEK_OP: {
 			int traced_fd = args[1].argm->i_val;
-			int repl_fd = replayed_fd (to_exec->caller->pid, traced_fd, pids_to_fd_pairs);
+			int repl_fd = replayed_fd (to_exec->caller->pid, traced_fd, rpl->pids_to_fd_pairs);
 
 			off_t offset = (off_t) args[2].argm->l_val;
 			int whence = args[3].argm->i_val;

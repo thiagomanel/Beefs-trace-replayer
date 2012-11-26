@@ -316,7 +316,7 @@ void *consume (void *arg) {
 	int actual_rvalue = 0;
 
 	while (1) {
-
+	
 		pthread_mutex_lock (&lock);
 
 		while (! has_commands_to_consume (shared_buff) && 
@@ -452,8 +452,7 @@ void replay (struct replay* rpl) {
 	pthread_t producer;
 	pthread_create (&producer, NULL, produce, 0);
 
-//	int max_consumers = 10;
-	int max_consumers = 1;
+	int max_consumers = 10;
 	int num_consumers = (__replay->workload->num_cmds >= max_consumers)
 				? max_consumers : __replay->workload->num_cmds;
 

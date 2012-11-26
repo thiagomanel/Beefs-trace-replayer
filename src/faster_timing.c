@@ -13,8 +13,9 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-#include "conservative_timing.h"
+#include "faster_timing.h"
 #include <assert.h>
+#include <stdlib.h>
 
 static double faster_delay (struct replay* rep, Workflow_element* to_replay);
 

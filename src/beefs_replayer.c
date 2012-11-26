@@ -22,15 +22,24 @@
  */
 #include "replayer.h"
 #include "conservative_timing.h"
+#include "faster_timing.h"
 #include "loader.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/time.h>
+#include <string.h>
 
 int main (int argc, const char* argv[]) {
 
 	int i;
 	command_replay_result *results, *tmp;
+	char const *faster_police = "faster";
+	char const *conservative_police = "conservative";
+
+	if (argc != 3) {
+		perror("Wrong args. Usage: beefs_replayer $replay_input $timing_police\n");
+		exit(1);
+	}
 
 	Replay_workload* workload = (Replay_workload*) malloc (sizeof (Replay_workload));
 	workload->num_cmds = 0;
@@ -41,10 +50,20 @@ int main (int argc, const char* argv[]) {
 	int ret = load (workload, fp);
 	if (ret < 0) {
 		perror("Error loading trace\n");
+		exit(1);
 	}
 
 	struct replay* repl = create_replay (workload);
-	repl->timing_ops = conservative_police_ops;
+
+	if (strcmp(argv[2], faster_police) == 0) {
+		repl->timing_ops = faster_police_ops;
+	} else if (strcmp(argv[2], conservative_police) == 0) {
+		repl->timing_ops = conservative_police_ops;
+	} else {
+		perror("Error on timing police allowed: [faster, conservative])\n");
+		exit(1);
+	}
+
 	replay (repl);
 
 	Replay_result *result = repl->result;

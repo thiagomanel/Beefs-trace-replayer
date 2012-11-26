@@ -67,8 +67,6 @@ double conservative_delay (struct replay* rep, Workflow_element* to_replay) {
 //FIXME what if I have two parents. I don't think it is possible in your data
 //	but our workflow allows it
 //FIXME what if I don't have a parent ?
-/**	return 5.5;*/
-///**
 	assert (rep != NULL);
 	assert (to_replay != NULL);
 
@@ -85,5 +83,4 @@ double conservative_delay (struct replay* rep, Workflow_element* to_replay) {
 	command_replay_result* parent_cmd_result = RESULT (rep, _parent->id);
 	double elapsed = elapsed_since_replay (parent_cmd_result);
 	return dlay_trace - elapsed;
-//*/
 }

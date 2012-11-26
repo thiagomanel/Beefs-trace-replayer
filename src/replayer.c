@@ -327,9 +327,9 @@ void *consume (void *arg) {
 
 		if ( has_commands_to_consume (shared_buff)) {
 
+			Workflow_element* element = take ();
 			pthread_mutex_unlock (&lock);
 
-			Workflow_element* element = take ();
 			double dlay = __replay->timing_ops.delay (__replay, element);
 			if (dlay > 0) {
 				usleep (dlay);

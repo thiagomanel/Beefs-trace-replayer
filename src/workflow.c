@@ -13,18 +13,14 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-#ifndef _LOADER_H
-#define _LOADER_H
-
 #include "replayer.h"
-#include <stdio.h>
 
-#define UNKNOW_OP_ERROR -2
-#define NULL_FILE_OP_ERROR -3
-#define PARSING_ERROR -4
+Workflow_element* element (Replay_workload* workload, int element_id) {
+        return &(workload->element_list[element_id]);
+}
 
-int parse_line (struct replay_command** cmd, char* line);
-
-int load (struct replay_workload* replay_wld, FILE* input_file);
-
-#endif /* _LOADER_H */
+Workflow_element* parent (Replay_workload* workload, Workflow_element* child, 
+				int parent_index) {
+        int parent_id = child->parents_ids[parent_index];
+        return element(workload, parent_id);
+}

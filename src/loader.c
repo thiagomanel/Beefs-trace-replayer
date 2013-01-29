@@ -15,6 +15,8 @@
 */
 #include "loader.h"
 #include "replayer.h"
+#include "list.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -105,7 +107,7 @@ replay_command_create(Caller* caller, op_t command, Parms* params,
 	return _new;
 }
 
-struct replay_command* replay_command_create() {
+struct replay_command* __replay_command_create() {
 	return replay_command_create(NULL, NONE, NULL, -666, -666, -666);
 }
 
@@ -302,7 +304,7 @@ static int fill_children (Workflow_element *element, json_t *replay_object) {
 	return 0;
 }
 
-static int fill_caller (replay_command* command, json_t *replay_object) {
+static int fill_caller (struct replay_command *command, json_t *replay_object) {
 
 	json_t *json_caller = json_object_get (replay_object, "caller");
 
@@ -477,7 +479,7 @@ static void fill_root_element (Workflow_element *root) {
 	root->produced = 1;
 	root->consumed = 1;
 
-	root->command = replay_command_create();
+	root->command = __replay_command_create();
 }
 
 int load (Replay_workload* replay_wld, FILE* input_file) {
@@ -518,7 +520,7 @@ int load (Replay_workload* replay_wld, FILE* input_file) {
 			= (replay_wld->element_list + loaded_commands);
 
 		workflow_element_init (tmp_element);
-		tmp_element->command = replay_command_create();
+		tmp_element->command = __replay_command_create();
 
 		len = getline(&line, &max_line_len, input_file);
 	        if (len == -1) {

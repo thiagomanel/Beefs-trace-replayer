@@ -35,8 +35,6 @@ MAIN = beefs_replayer
 GTEST_HEADERS = $(GTEST_DIR)/include/gtest/*.h \
                 $(GTEST_DIR)/include/gtest/internal/*.h
 
-# House-keeping build targets.
-
 all : $(TESTS) $(MAIN)
 #all : $(MAIN)
 
@@ -71,24 +69,33 @@ gtest_main.a : gtest-all.o gtest_main.o
 # gtest_main.a, depending on whether it defines its own main()
 # function.
 
-loader.o : $(USER_DIR)/src/loader.c $(USER_DIR)/src/replayer.c $(USER_DIR)/include/replayer.h $(USER_DIR)/include/loader.h $(GTEST_HEADERS)
+workflow.o : $(USER_DIR)/src/workflow.c $(USER_DIR)/include/replayer.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/src/workflow.c
+
+conservative_timing.o : $(USER_DIR)/src/conservative_timing.c $(USER_DIR)/include/replayer.h $(USER_DIR)/include/conservative_timing.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/src/conservative_timing.c
+
+faster_timing.o : $(USER_DIR)/src/faster_timing.c $(USER_DIR)/include/replayer.h $(USER_DIR)/include/faster_timing.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/src/faster_timing.c
+
+loader.o : $(USER_DIR)/src/loader.c $(USER_DIR)/src/replayer.c $(USER_DIR)/include/replayer.h $(USER_DIR)/include/loader.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/src/loader.c
 
-dispatch.o : $(USER_DIR)/src/dispatch.c $(USER_DIR)/include/replayer.h $(GTEST_HEADERS)
+dispatch.o : $(USER_DIR)/src/dispatch.c $(USER_DIR)/include/replayer.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/src/dispatch.c
 
-replayer.o : $(USER_DIR)/src/loader.c $(USER_DIR)/src/replayer.c $(USER_DIR)/include/replayer.h $(USER_DIR)/include/loader.h $(GTEST_HEADERS)
+replayer.o : $(USER_DIR)/src/loader.c $(USER_DIR)/src/replayer.c $(USER_DIR)/include/replayer.h $(USER_DIR)/include/loader.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/src/replayer.c
 
-beefs_replayer.o : $(USER_DIR)/src/loader.c $(USER_DIR)/src/replayer.c $(USER_DIR)/include/replayer.h $(USER_DIR)/include/loader.h
+beefs_replayer.o : $(USER_DIR)/src/loader.c $(USER_DIR)/src/replayer.c $(USER_DIR)/src/beefs_replayer.c $(USER_DIR)/include/replayer.h $(USER_DIR)/include/loader.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/src/beefs_replayer.c
 	
-beefs_replayer : loader.o replayer.o beefs_replayer.o dispatch.o
+beefs_replayer : loader.o replayer.o beefs_replayer.o dispatch.o workflow.o conservative_timing.o faster_timing.o
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $^ -o $@ -ljansson -pthread
 
 loader_unittest.o : $(USER_DIR)/tests/loader_unittest.cc \
                      $(GTEST_HEADERS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/tests/loader_unittest.cc
 
-loader_unittest : loader.o replayer.o dispatch.o loader_unittest.o gtest_main.a
+loader_unittest : loader.o replayer.o dispatch.o workflow.o conservative_timing.o faster_timing.o loader_unittest.o gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $^ -o $@ -ljansson -pthread

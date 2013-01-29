@@ -21,31 +21,63 @@
  *  Author: Thiago Emmanuel Pereira, thiago.manel@gmail.com
  */
 #include "replayer.h"
+#include "conservative_timing.h"
+#include "faster_timing.h"
 #include "loader.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <sys/time.h>
+#include <string.h>
 
 int main (int argc, const char* argv[]) {
 
-	FILE* fp = fopen (argv[1], "r");
-	Replay_workload* rep_wld = (Replay_workload*) malloc (
-			sizeof (Replay_workload));
+	int i;
+	command_replay_result *results, *tmp;
+	char const *faster_police = "faster";
+	char const *conservative_police = "conservative";
 
-	int ret = load (rep_wld, fp);
-	if (ret < 0) {
-		perror("Error loading trace\n");
+	if (argc != 3) {
+		perror("Wrong args. Usage: beefs_replayer $replay_input $timing_police\n");
+		exit(1);
 	}
 
-	Replay_result *result = replay (rep_wld);
-	for (int i = 0; i < result->replayed_commands; i++) {
-		command_replay_result *cmd_result = &(result->cmds_replay_result[i]);
+	Replay_workload* workload = (Replay_workload*) malloc (sizeof (Replay_workload));
+	workload->num_cmds = 0;
+	workload->current_cmd = 0;
+	workload->element_list = NULL;
+
+	FILE* fp = fopen (argv[1], "r");
+	int ret = load (workload, fp);
+	if (ret < 0) {
+		perror("Error loading trace\n");
+		exit(1);
+	}
+
+	struct replay* repl = create_replay (workload);
+
+	if (strcmp(argv[2], faster_police) == 0) {
+		repl->timing_ops = faster_police_ops;
+	} else if (strcmp(argv[2], conservative_police) == 0) {
+		repl->timing_ops = conservative_police_ops;
+	} else {
+		perror("Error on timing police allowed: [faster, conservative])\n");
+		exit(1);
+	}
+
+	replay (repl);
+
+	Replay_result *result = repl->result;
+	results = result->cmds_replay_result;
+        
+	for (i = 0; i < result->replayed_commands; i++) {
+		tmp = &(results[i]);
 		printf ("%ld %ld %ld %ld %f %d %d\n",
-				cmd_result->dispatch_begin->tv_sec,
-				cmd_result->dispatch_begin->tv_usec,
-				cmd_result->dispatch_end->tv_sec,
-				cmd_result->dispatch_end->tv_usec,
-				cmd_result->delay,
-				cmd_result->expected_rvalue,
-				cmd_result->actual_rvalue);
+				tmp->dispatch_begin->tv_sec,
+				tmp->dispatch_begin->tv_usec,
+				tmp->dispatch_end->tv_sec,
+				tmp->dispatch_end->tv_usec,
+				tmp->delay,
+				tmp->expected_rvalue,
+				tmp->actual_rvalue);
 	}
 }

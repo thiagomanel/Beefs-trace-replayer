@@ -15,6 +15,7 @@
  */
 #include "replayer.h"
 #include "loader.h"
+#include "list.h"
 #include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
@@ -31,16 +32,7 @@ static pthread_cond_t cmds_were_produced_cond = PTHREAD_COND_INITIALIZER;
 static pthread_cond_t cmds_were_consumed_cond = PTHREAD_COND_INITIALIZER;
 
 static pthread_mutex_t lock;
-
-static Replay_workload* workload;
-static Replay_result* result;
-
-/**
-* We cannot guarantee that a replayed call, e.g open, returns the same file
-* descriptor than when it was traced becaused the value of file descriptors
-* depends on operating system state.
-*/
-static int *pids_to_fd_pairs[PID_MAX];
+static struct replay* __replay;
 
 void workflow_element_init (Workflow_element* element) {
 
@@ -57,27 +49,10 @@ void workflow_element_init (Workflow_element* element) {
 	element->command = NULL;
 }
 
-Workflow_element* element (Replay_workload* workload, int element_id) {//FIXME: do we need this boxing method ?
-	return &(workload->element_list[element_id]);
-}
-
-/**
- * Return a pointer to the Replay_result struct which comes from the replay of the
- * Workflow_element identified by w_element_id
- */
-static command_replay_result* replay_result (int w_element_id) {
-	return &(result->cmds_replay_result[w_element_id]);
-}
-
 //FIXME: these 2 methods below share a lot
 static Workflow_element* get_child (Workflow_element* parent, int child_index) {
 	int child_id = parent->children_ids[child_index];
-    return element(workload, child_id);
-}
-
-static Workflow_element* get_parent (Workflow_element* child, int parent_index) {
-	int parent_id = child->parents_ids[parent_index];
-	return element(workload, parent_id);
+    return element(__replay->workload, child_id);
 }
 
 struct frontier {//we can use a generic list instead of this struct
@@ -101,7 +76,7 @@ typedef struct _sbuffs_t {
 	struct frontier* frontier;
 } sbuffs_t;
 
-static sbuffs_t* shared_buff = (sbuffs_t*) malloc( sizeof(sbuffs_t));
+static sbuffs_t* shared_buff;
 
 static int all_produced (sbuffs_t* shared) {
 	return (shared->produced_count >= shared->total_commands);
@@ -177,14 +152,6 @@ static int _contains (struct frontier* current, Workflow_element* tocheck) {
 	return 0;
 }
 
-static int produced (Workflow_element* element) {//FIXME do we need this?
-	return element->produced;
-}
-
-static int consumed (Workflow_element* element) {
-	return element->consumed;
-}
-
 /**
  * Returns non-zero if all Workflow_element identified by the ids stored in
  * *element_ids were consumed (dispatched) or n_elements is zero
@@ -195,7 +162,7 @@ static int _consumed (int* elements_ids, int n_elements) {
 	int total_consumed = 0;
 
 	for (i = 0; i < n_elements; i++) {
-		Workflow_element* el = element(workload, elements_ids[i]);
+		Workflow_element* el = element(__replay->workload, elements_ids[i]);
 		total_consumed += el->consumed;
 	}
 
@@ -229,13 +196,13 @@ static int produce_buffer_full() {
 }
 
 /**
- * Produce commands to be dispatched. Dispatching evolves according to a
- * dispatch frontier. Commands enter the frontier after they have
- * been consumed (dispatched) and they left the frontier when all of their children
- * come to frontier. A fake command acts as workflow's root to bootstrap the frontier.
+ * Produce commands to be dispatched. Dispatching evolves according to a dispatch
+ * frontier. Commands enter the frontier after they have been consumed (dispatched)
+ * and they left the frontier when all of their children come to frontier. A fake
+ * command acts as workflow's root to bootstrap the frontier.
  */
 void *produce (void *arg) {
-
+	//FIXME: maybe produce should not be a pthread stuff
 	//FIXME: what if produce does not wait ?
 
 	int i;
@@ -254,10 +221,17 @@ void *produce (void *arg) {
 		        //dispatch children that was not dispatched yet
 				w_element = frontier->w_element;
 				int chl_index;
-				for (chl_index = 0; chl_index < w_element->n_children; chl_index++) {
-					Workflow_element* child = get_child (w_element, chl_index);
-					if (! produced (child) && 
-						_consumed (child->parents_ids, child->n_parents)) {
+				for (chl_index = 0; 
+					chl_index < w_element->n_children; 
+					chl_index++) {
+
+					Workflow_element* child = 
+						get_child (w_element, chl_index);
+
+					if (! IS_PRODUCED (child) && 
+						_consumed (child->parents_ids, 
+								child->n_parents)) {
+
 						if ( ! produce_buffer_full ()) {
 							do_produce (child);
 						}
@@ -271,21 +245,30 @@ void *produce (void *arg) {
 			}
 
 			if (commands_were_consumed(shared_buff)) {
-				//items come to the frontier after they have been consumed (dispatched)
+				//items come to the frontier after 
+				//they have been consumed (dispatched)
 				Workflow_element* consumed;
 				for (i = 0; i <= shared_buff->last_consumed; i++) {
 
 					consumed = shared_buff->consumed_queue[i];
 					int parent_i;
-					for (parent_i = 0; parent_i < consumed->n_parents; parent_i++) {
+					for (parent_i = 0; 
+						parent_i < consumed->n_parents; 
+						parent_i++) {
 
-						Workflow_element* parent = get_parent (consumed, parent_i);
+						Workflow_element* _parent = 
+							parent (__replay->workload,
+								 consumed, parent_i);
 
-						//items left the frontier if its children were consumed (dispatched)
+						//items left the frontier if its children 
+						//were consumed (dispatched)
 						int all_children_consumed =
-								_consumed (parent->children_ids, parent->n_children);
+							_consumed (_parent->children_ids,
+									 _parent->n_children);
 						if ( all_children_consumed ) {
-							shared_buff->frontier = _del (shared_buff->frontier, parent);
+							shared_buff->frontier = 
+								_del (shared_buff->frontier,
+									 _parent);
 						}
 					}
 
@@ -298,7 +281,9 @@ void *produce (void *arg) {
 				shared_buff->last_consumed = -1;
 			} else {
 				while ( ! commands_were_consumed(shared_buff)) {
-					pthread_cond_wait (&cmds_were_consumed_cond, &lock);//SPURIOUS IF, docs says to use a while
+					//SPURIOUS IF, docs says to use a while
+					pthread_cond_wait (&cmds_were_consumed_cond,
+								 &lock);
 				}
 			}
 
@@ -306,7 +291,8 @@ void *produce (void *arg) {
 	}
 
 	while ( ! all_consumed (shared_buff)) {
-		pthread_cond_broadcast (&cmds_were_produced_cond);//last chance to wake consumers up, how ugly it can be ?
+		//last chance to wake consumers up, how ugly it can be ?
+		pthread_cond_broadcast (&cmds_were_produced_cond);
 	}
 	pthread_exit(NULL);
 }
@@ -320,61 +306,6 @@ static Workflow_element* take () {
 	return cmd;
 }
 
-static double delay_on_trace (struct replay_command* earlier, struct replay_command* later) {
-	double delay = (double) (later->traced_begin - earlier->traced_begin);
-	if (delay < 0) {
-		fprintf (stderr, "earlier->begin=%f later->begin=%f.\n",
-				earlier->traced_begin, later->traced_begin);
-	}
-//	assert (delay >= 0);
-	return delay;
-}
-
-static double elapsed_to_now (struct timeval *timestamp) {
-
-	assert (timestamp != NULL);
-
-	struct timeval now;
-	gettimeofday (&now, NULL);
-	double us_elapsed = (now.tv_sec - timestamp->tv_sec) * 1000000
-    		+ (now.tv_usec - timestamp->tv_usec);
-
-	assert (us_elapsed >= 0);
-	return us_elapsed;
-}
-
-/**
- * Returns the amount of microseconds since the replay of replay_command from
- * Workflow_element identified by w_element_id
-FIXME: exceptional conditions ? such as command was not replayed yet ... at
-least it needs docs
- */
-static long elapsed_since_replay (command_replay_result* cmd_replay_result) {
-	assert (cmd_replay_result != NULL);
-	return elapsed_to_now (cmd_replay_result->dispatch_end);
-}
-
-/**
- * This function returns the number of microseconds a thread needs to wait before
- * dispatching a command. It should wait to preserve the timing between itself
- * and its parents described on trace data.
- */
-static double delay (Workflow_element* to_replay) {
-//FIXME what if I have two parents. I don't think it is possible in your data but our workflow allows it
-//FIXME what if I don't have a parent ? :
-	Workflow_element* parent = get_parent (to_replay, 0);
-	assert (consumed (parent));
-
-	command_replay_result* parent_cmd_result = replay_result (parent->id);
-	double dlay_trace = delay_on_trace (parent->command, to_replay->command);
-	if (dlay_trace < 0)  {
-		fprintf (stderr, "negative dlay to_replay_id=%d parent_id=%d\n", to_replay->id, parent->id);
-		exit (1);
-	}
-	double elapsed = elapsed_since_replay (parent_cmd_result);
-	return dlay_trace - elapsed;
-}
-
 /**
  * 1.take a command C from produced queue
  * 2.dispatch C
@@ -385,31 +316,34 @@ void *consume (void *arg) {
 	int actual_rvalue = 0;
 
 	while (1) {
-
+	
 		pthread_mutex_lock (&lock);
 
-		while (! has_commands_to_consume (shared_buff) && ! all_consumed (shared_buff)) {
+		while (! has_commands_to_consume (shared_buff) && 
+			! all_consumed (shared_buff)) {
 			//if we use "if" we can get spurious behaviour
 			pthread_cond_wait (&cmds_were_produced_cond, &lock);
 		}
 
 		if ( has_commands_to_consume (shared_buff)) {
-			Workflow_element* element = take ();
 
+			Workflow_element* element = take ();
 			pthread_mutex_unlock (&lock);
 
-			double dlay = delay (element);
+			double dlay = __replay->timing_ops.delay (__replay, element);
 			if (dlay > 0) {
 				usleep (dlay);
 			}
 
-			command_replay_result *cmd_result = replay_result (element->id);
+			command_replay_result *cmd_result = RESULT (__replay, element->id);
 			fill_command_replay_result (cmd_result);
 			gettimeofday (cmd_result->dispatch_begin, NULL);
-			int result = exec (element->command, &actual_rvalue, pids_to_fd_pairs);
+			int result = exec (element->command, &actual_rvalue, __replay);
+
 			//assigning actual syscall returning value. We do not check
 			//REPLAY_SUCCESS because it will lead to program termination if it
 			//does not succeded properly anyway
+
 			//FIXME: We need to set expected rvalue
 			cmd_result->actual_rvalue = actual_rvalue;
 			gettimeofday (cmd_result->dispatch_end, NULL);
@@ -420,14 +354,17 @@ void *consume (void *arg) {
 				shared_buff->consumed_queue[++shared_buff->last_consumed] = element;
 				mark_consumed (element);
 				++shared_buff->consumed_count;
-				fprintf (stderr, "replay_count=%d workfow_id=%d\n", shared_buff->consumed_count, element->id);
+				fprintf (stderr, "replay_count=%d workfow_id=%d\n",
+						shared_buff->consumed_count, element->id);
 			} else {
-				fprintf (stderr, "Error on replaying command workflow_id=%d type=%d\n", element->id, element->command->command);
+				fprintf (stderr, 
+					"Err replaying command workflow_id=%d type=%d\n",
+					element->id, element->command->command);
 				pthread_mutex_unlock (&lock);
 				exit (1);
 			}
 
-			replay_result (element->id)->delay = dlay;
+			cmd_result->delay = dlay;
 
 			pthread_cond_broadcast (&cmds_were_consumed_cond);
 			pthread_mutex_unlock (&lock);
@@ -437,7 +374,6 @@ void *consume (void *arg) {
 			pthread_exit(NULL);
 		}
 	}
-
 }
 
 static void fill_shared_buffer (Replay_workload* workload, sbuffs_t* shared) {
@@ -458,7 +394,7 @@ static void fill_shared_buffer (Replay_workload* workload, sbuffs_t* shared) {
 	shared->frontier->next = NULL;
 
 	//stamping root
-	command_replay_result *root_result = replay_result (ROOT_ID);
+	command_replay_result *root_result = RESULT (__replay, ROOT_ID);
 
 	root_result->actual_rvalue = -666;
 	root_result->delay = 0;
@@ -468,10 +404,7 @@ static void fill_shared_buffer (Replay_workload* workload, sbuffs_t* shared) {
 	gettimeofday (root_result->dispatch_end, NULL);
 }
 
-/**
- * Fill command_replay_result array with expected_rvalues from input workload
- */
-static void fill_expected_rvalue(command_replay_result *results, Replay_workload *wld) {
+static void assign_expected_rvalue (command_replay_result *results, Replay_workload *wld) {
 
 	int i;
 	for (i = 0; i < wld->num_cmds ; i++) {
@@ -480,28 +413,39 @@ static void fill_expected_rvalue(command_replay_result *results, Replay_workload
 	}
 }
 
+struct replay* create_replay (Replay_workload* workload) {
 
-Replay_result* replay (Replay_workload* rep_workload) {
+	struct replay* repl = (struct replay*) malloc (sizeof (struct replay));
+	repl->workload = workload;
 
-	assert (rep_workload != NULL);
-	assert (rep_workload->num_cmds >= 0);
-
-	memset (pids_to_fd_pairs, 0, PID_MAX * sizeof (int*));
-
-	if (rep_workload->num_cmds > 0) {
-		assert (rep_workload->element_list != NULL);
+	if (repl->workload->num_cmds > 0) {
+		assert (repl->workload->element_list != NULL);
 	}
 
-	workload = rep_workload;
+	repl->pids_to_fd_pairs = (int**) malloc (PID_MAX * sizeof (int*));
+	memset (repl->pids_to_fd_pairs, 0, PID_MAX * sizeof (int*));
 
-	result = (Replay_result*) malloc (sizeof(Replay_result));
-	result->produced_commands = 0;
-	result->replayed_commands = 0;
-	result->cmds_replay_result = (command_replay_result*) malloc (
+	repl->result = (Replay_result*) malloc (sizeof(Replay_result));
+	repl->result->produced_commands = 0;
+	repl->result->replayed_commands = 0;
+	repl->result->cmds_replay_result = (command_replay_result*) malloc (
 			sizeof (command_replay_result) * workload->num_cmds);
+	assign_expected_rvalue (repl->result->cmds_replay_result, workload);
 
-	fill_shared_buffer (workload, shared_buff);
-	fill_expected_rvalue(result->cmds_replay_result, workload);
+	return repl;
+}
+
+void replay (struct replay* rpl) {
+
+	int i;
+	assert (rpl != NULL);
+	assert (rpl->workload != NULL);
+	assert (rpl->result != NULL);
+
+	__replay = rpl;
+
+        shared_buff = (sbuffs_t*) malloc( sizeof(sbuffs_t));
+	fill_shared_buffer (__replay->workload, shared_buff);
 
 	pthread_mutex_init (&lock, NULL);
 
@@ -509,21 +453,16 @@ Replay_result* replay (Replay_workload* rep_workload) {
 	pthread_create (&producer, NULL, produce, 0);
 
 	int max_consumers = 10;
-	int num_consumers = (workload->num_cmds >= max_consumers)
-			? max_consumers : workload->num_cmds;
+	int num_consumers = (__replay->workload->num_cmds >= max_consumers)
+				? max_consumers : __replay->workload->num_cmds;
 
 	pthread_t *consumers = (pthread_t*) malloc (sizeof (pthread_t) * num_consumers);
-	for (int i = 0; i < num_consumers ; i++) {
+	for (i = 0; i < num_consumers ; i++) {
 		pthread_create (&consumers[i], NULL, consume, 0);
 	}
 
 	pthread_join(producer, NULL);
-	//for (int i = 0; i < num_consumers ; i++) {
-		//pthread_join(consumers[i], NULL);
-	//}
 
-	result->produced_commands = shared_buff->produced_count;
-	result->replayed_commands = shared_buff->consumed_count;
-
-	return result;
+	__replay->result->produced_commands = shared_buff->produced_count;
+	__replay->result->replayed_commands = shared_buff->consumed_count;
 }

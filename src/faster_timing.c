@@ -13,18 +13,20 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-#ifndef _LOADER_H
-#define _LOADER_H
+#include "faster_timing.h"
+#include <assert.h>
+#include <stdlib.h>
 
-#include "replayer.h"
-#include <stdio.h>
+static double faster_delay (struct replay* rep, Workflow_element* to_replay);
 
-#define UNKNOW_OP_ERROR -2
-#define NULL_FILE_OP_ERROR -3
-#define PARSING_ERROR -4
+const struct timing_police faster_police_ops = {
+	faster_delay,
+};
 
-int parse_line (struct replay_command** cmd, char* line);
+double faster_delay (struct replay* rep, Workflow_element* to_replay) {
 
-int load (struct replay_workload* replay_wld, FILE* input_file);
+	assert (rep != NULL);
+	assert (to_replay != NULL);
 
-#endif /* _LOADER_H */
+	return 0.0;
+}

@@ -41,6 +41,44 @@ class TestOrderTrace(unittest.TestCase):
 #FIXME test more than one fd being used by tid
 #FIXME test fd removal at close syscall
 
+    def test_weak_fs_open_locks_the_path_and_write_read_fstat_close_touch_the_path(self):
+        lines = [
+                 WorkflowLine(1, [], [],
+                  CleanCall("0", "940", "940", "(tar)", "open", "1319227151896624-20", ["/home/user/bla1.rrd", "32961", "384"], "5")),
+                 WorkflowLine(2, [], [], 
+                  CleanCall("0", "940", "941", "(tar)", "stat", "1319227151896625-20", ["/home/user/bla1.rrd", "5"], "0")),
+                 WorkflowLine(3, [], [], 
+                  CleanCall("0", "940", "942", "(tar)", "write", "1319227151896626-20", ["/home/user/bla1.rrd", "5", "5120"], "5120")),
+                 WorkflowLine(4, [], [], 
+                  CleanCall("0", "940", "943", "(tar)", "read", "1319227151896627-20", ["/home/user/bla1.rrd", "5", "5120"], "5120")),
+                 WorkflowLine(5, [], [], 
+                  CleanCall("0", "940", "944", "(tar)", "close", "1319227151896628-20", ["5"], "0")),
+
+                 WorkflowLine(6, [], [], 
+                  CleanCall("0", "941", "945", "(tar)", "open", "1319227151896625-20", ["/home/user/bla1.rrd", "32961", "384"], "5")),
+                 WorkflowLine(7, [], [], 
+                  CleanCall("0", "941", "946", "(tar)", "stat", "1319227151896626-20", ["/home/user/bla1.rrd", "5"], "0")),
+                 WorkflowLine(8, [], [], 
+                  CleanCall("0", "941", "947", "(tar)", "write", "1319227151896627-20", ["/home/user/bla1.rrd", "5", "5120"], "5120")),
+                 WorkflowLine(9, [], [], 
+                  CleanCall("0", "941", "948", "(tar)", "read", "1319227151896628-20", ["/home/user/bla1.rrd", "5", "5120"], "5120")),
+                 WorkflowLine(10, [], [], 
+                  CleanCall("0", "941", "949", "(tar)", "close", "1319227151896629-20", ["5"], "0"))
+                ]
+
+        actual = sorted(weak_fs_dependency_sort(lines), key=lambda line: line._id)
+
+        self.assertWLine(actual[0], 1, [], [2, 3], lines[0].clean_call)
+        self.assertWLine(actual[1], 2, [1], [], lines[1].clean_call)
+        self.assertWLine(actual[2], 3, [1], [4, 6], lines[2].clean_call)
+        self.assertWLine(actual[3], 4, [3], [5], lines[3].clean_call)
+        self.assertWLine(actual[4], 5, [4], [], lines[4].clean_call)
+        self.assertWLine(actual[5], 6, [3], [7, 8], lines[5].clean_call)
+        self.assertWLine(actual[6], 7, [6], [], lines[6].clean_call)
+        self.assertWLine(actual[7], 8, [6], [9], lines[7].clean_call)
+        self.assertWLine(actual[8], 9, [8], [10], lines[8].clean_call)
+        self.assertWLine(actual[9], 10, [9], [], lines[9].clean_call)
+
     def test_open_locks_the_path_and_write_read_fstat_close_touch_the_fd(self):
         lines = [
                  WorkflowLine(1, [], [],

@@ -73,6 +73,11 @@ class CleanCall():
             return self.args[0]
         raise Exception("unsupported operation " + str(self))
 
+    def fd_based(self):
+        return (self.call == "open") or (self.call == "fstat") or \
+               (self.call == "read") or (self.call == "write") or \
+               (self.call == "llseek") or (self.call == "close")
+
     def raw_str(self):
         return " ".join([self.uid, self.pid, self.tid, self.pname,
                          self.call, self.stamp] + 

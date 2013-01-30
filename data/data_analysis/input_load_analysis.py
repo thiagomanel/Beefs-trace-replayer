@@ -15,9 +15,6 @@ if __name__ == "__main__":
            1319204032986598 301 machine_name
            1319204037986598 106 machine_name
     """
-    def stamp(stamp_str):
-        return long(stamp_str.split("-")[0])
-
     def timestamp(data_type, line):
         if data_type is "r":
             return stamp(line.split()[5])
@@ -25,7 +22,7 @@ if __name__ == "__main__":
             _json = json.loads(line)
             _workflow = WorkflowLine.from_json(_json)
             _call = _workflow.clean_call
-            return stamp(_call.stamp)
+            return _call.stamp[0]
 
     def bin_index(timestamp, first_stamp, bin_width):
         return (timestamp - first_stamp) / bin_width

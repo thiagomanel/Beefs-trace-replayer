@@ -16,10 +16,12 @@ if __name__ == "__main__":
        Usage: python trace_polices.py "wfs"|"c" < worfklow.data > workflow.new.data
          wfs and c are Zhu's fs dependency (we call it weak fs in code) and conservative polices
     """
-    police = sys.argv[1]
+    sys.stdin.readline()#excluding head
+
     w_lines = [clean_order(wline) for wline in \
                 [WorkflowLine.from_json(json.loads(line)) for line in sys.stdin]]
 
+    police = sys.argv[1]
     if police == "wfs":
         new_lines = sorted(weak_fs_dependency_sort(w_lines),
                                key=lambda line: line._id)#sort by _id
@@ -27,13 +29,13 @@ if __name__ == "__main__":
         new_lines = sorted(conservative_sort(w_lines), 
                              key=lambda line: line._id)#sort by _id
 
+
+    #we need a conservative check. i'm afraid of a single chaing
+
     #json dumps cannot handle our data
-    sys.stdout.write("[\n")
-    sys.stdout.write(str(new_lines[0]))
-    for w_line in new_lines[1:]:
-        try:
-            sys.stdout.write(",\n" + str(w_line))
-        except ValueError:
-            sys.stderr.write(str(w_line.clean_call))
-            raise 
-    sys.stdout.write("\n]")
+    sys.stdout.write(str(len(new_lines)))
+    for w_line in new_lines:
+        #this json layout is different from default workflow  __str__
+        #no \n lines
+        json_str = json.dumps(w_line.json())
+        sys.stdout.write("\n" + json_str.strip())

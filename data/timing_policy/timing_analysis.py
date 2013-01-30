@@ -9,7 +9,7 @@ def bin_begin(bin_index, first_stamp, bin_width):
     return first_stamp + (bin_index * bin_width)
 
 def stamp(entry):
-    return entry.clean_call.stamp_as_num()
+    return entry.clean_call.stamp()
 
 if __name__ == "__main__":
     """ 

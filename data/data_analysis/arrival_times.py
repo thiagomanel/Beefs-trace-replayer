@@ -9,7 +9,7 @@ if __name__ == "__main__":
        It outputs the begin stamp of each workflow input data
     """
     def begin(call):
-        return long(call.stamp.split("-")[0])
+        return call.stamp()[0]
 
     def workflow_entry(line):
         _json = json.loads(line)

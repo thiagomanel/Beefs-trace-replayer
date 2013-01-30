@@ -18,9 +18,10 @@ class WorkflowLine:
         self.clean_call = clean_call
 
     def json(self):
-        stamp = self.clean_call.stamp.split("-")
+        stamp = self.clean_call.stamp()
+        #TODO: I do not remember this shit is a float, but I'll keep it
         begin = float(stamp[0])
-        elapsed = long(stamp[1])
+        elapsed = stamp[1]
         return {
                 "id": self._id,
                 "parents": self.parents,
@@ -260,20 +261,25 @@ def fs_dependency_order(workflow_lines):#do we assume _id or timestamp order ?
 def conservative_sort(w_lines):
     #I guess cleaned calls are timestamp sorted TODO: check
     #I assume order information (parents and children) are empty lists
-    def finished_before(wlines, stamp):
+    def finished_before(wlines, current_pos, stamp):
         """ wlines are stamp-begin sorted, we return the last which finished
             before stamp begin. If there is no such wline, we return None
         """
-        for wline in reversed(wlines):
-            candidate_stamp = wline.clean_call.stamp_as_num()
-            candidate_end, stamp_begin = candidate_stamp[1], stamp[0]
+        for pos in range(current_pos - 1, -1, -1):
+            wline = wlines[pos]
+            candidate_stamp = wline.clean_call.stamp()
+            candidate_end = candidate_stamp[0] + candidate_stamp[1]
+            stamp_begin = stamp[0]
             if (candidate_end < stamp_begin):
                 return wline
         return None
-            
-    for current_wline in w_lines:
-        stamp = current_wline.cleaned_call.stamp_as_num()
-        parent_wline = finished_before(w_lines, stamp)
+
+    for pos in range(len(w_lines)):
+        if (pos % 1000 == 0):
+            sys.stderr.write("pos: " + str(pos) + "\n")
+        current_wline = w_lines[pos]
+        stamp = current_wline.clean_call.stamp()
+        parent_wline = finished_before(w_lines, pos, stamp)
         if parent_wline:
             join(parent_wline, current_wline)
 

@@ -56,8 +56,10 @@ def dispatch_count(replay, time_window):
     return bin_counter
 
 if __name__ == "__main__":
-    #it analyis replay output load
-    #Usage: python output_load_analysis.py < replay_out > analysis.out
+    """
+       It analyses replay output load
+        Usage: python output_load_analysis.py < replay_out > analysis.out
+    """
     replay_out = [parse(line) for line in sys.stdin]
 
     count = dispatch_count(replay_out, 1)

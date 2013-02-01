@@ -57,5 +57,8 @@ if __name__ == "__main__":
                 bin_counter[b_begin] = 0
             bin_counter[b_begin] = bin_counter[b_begin] + 1
 
+    _min = -1
     for key in sorted(bin_counter.keys()):
-        print key, bin_counter[key], machine_name
+        if (_min == -1):
+            _min = key
+        print (key - _min), key, bin_counter[key], machine_name

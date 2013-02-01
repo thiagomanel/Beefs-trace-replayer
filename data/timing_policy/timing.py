@@ -5,7 +5,7 @@ from workflow import *
 
 def update(entries):
     def stamp(workflow_entry):
-        return workflow_entry.clean_call.stamp_as_num()
+        return workflow_entry.clean_call.stamp()
 
     def update_stamp(workflow_entry, workflow):
         def entry_by_id(entry_id):
@@ -37,8 +37,10 @@ def update(entries):
             new_entry_begin = parent_begin + parent_elapsed
             check_new_begin(new_entry_begin, workflow_entry)
             old_begin, old_elapsed = stamp(entry)
-            workflow_entry.clean_call.stamp = "-".join([str(new_entry_begin), \
-                                                        str(old_elapsed)])
+
+            #sure, it's ugly but I really want to expose these variables
+            workflow_entry.clean_call._CleanCall__stamp_begin = new_entry_begin
+            workflow_entry.clean_call._CleanCall__stamp_elapsed = old_elapsed
     
     for entry in entries.itervalues():
         update_stamp(entry, entries)

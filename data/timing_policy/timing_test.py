@@ -4,9 +4,9 @@ from timing import *
 class TestUpdate(unittest.TestCase):
 
     def assertStamp(self, entry, expected_begin, expected_elapsed):
-        stamp = entry.clean_call.stamp.split("-")
-        self.assertEquals(stamp[0], expected_begin)
-        self.assertEquals(stamp[1], expected_elapsed)
+        stamp = entry.clean_call.stamp()
+        self.assertEquals(stamp[0], long(expected_begin))
+        self.assertEquals(stamp[1], long(expected_elapsed))
     
     def testUpdate(self):
         lines = [

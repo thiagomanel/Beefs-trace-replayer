@@ -11,7 +11,9 @@ class CleanCall():
         self.tid = tid
         self.pname = pname
         self.call = call
-        self.stamp = stamp
+        tokens = stamp.split("-")
+        self.__stamp_begin = long(tokens[0])
+        self.__stamp_elapsed = long(tokens[1])
         self.args = callargs
         self.rvalue = rvalue
 
@@ -44,7 +46,7 @@ class CleanCall():
                          "<tid="+self.tid+"\>", 
                          "<pname="+self.pname+"\>",
                          "<call="+self.call+"\>",
-                         "<stamp="+self.stamp+"\>"] + 
+                         "<stamp="+self.__stamp_str__()+"\>"] + 
                          ["<arg="+arg+"\>" for arg in self.args] +
                          ["<rvalue="+self.rvalue+"\>"])
 
@@ -56,9 +58,8 @@ class CleanCall():
             return self.args[0]
         raise Exception("unsupported operation " + str(self))
 
-    def stamp_as_num(self):
-        tokens = self.stamp.split("-")
-        return long(tokens[0]), long(tokens[1])
+    def stamp(self):
+        return (self.__stamp_begin, self.__stamp_elapsed)
 
     def fd(self):
         if self.call == "open":
@@ -73,9 +74,17 @@ class CleanCall():
             return self.args[0]
         raise Exception("unsupported operation " + str(self))
 
+    def fd_based(self):
+        return (self.call == "open") or (self.call == "fstat") or \
+               (self.call == "read") or (self.call == "write") or \
+               (self.call == "llseek") or (self.call == "close")
+
+    def __stamp_str__(self):
+        return "-".join(map(str, self.stamp()))
+
     def raw_str(self):
         return " ".join([self.uid, self.pid, self.tid, self.pname,
-                         self.call, self.stamp] + 
+                         self.call, self.__stamp_str__()] + 
                          self.args + 
                          [self.rvalue])
 

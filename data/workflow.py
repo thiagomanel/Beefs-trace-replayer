@@ -7,15 +7,16 @@ import json
 
 # if things start to get complicated we should try using ReplayInput class from match_syscall.py
 #TODO: open with creation semantics is different
-#FIXME maybe we should move this an util module, in this module we handle input and output and 
+#FIXME maybe we should move this an util module, in this module we handle input and output and
 #code this fs_obj methods. Timestamp methods also. In summary, any method manipulating input and output
 
 class WorkflowLine:
-    def __init__(self, _id, parents, children, clean_call):
+    def __init__(self, _id, session_id, parents, children, clean_call):
         self._id = _id
         self.parents = parents
         self.children = children
         self.clean_call = clean_call
+        self.session_id = session_id
 
     def json(self):
         stamp = self.clean_call.stamp()
@@ -37,8 +38,9 @@ class WorkflowLine:
                            "pid": self.clean_call.pid,
                            "tid": self.clean_call.tid
                           },
+                "session_id": self.session_id,
                 "args": self.clean_call.args,
-                "rvalue": int(self.clean_call.rvalue) 
+                "rvalue": int(self.clean_call.rvalue)
               }
 
     @classmethod
@@ -51,7 +53,14 @@ class WorkflowLine:
         stamp_str = str(int(_json["stamp"]["begin"])) + "-" \
                     + str(_json["stamp"]["elapsed"])
 
+        #FIXME 28/mar I added this new session_id element, but I not willing to
+        #change all codebase right now. So I adding this switch here, to convert
+        #old json to the new format
+        if not "session_id" in _json:
+           _json["session_id"] = "-1"
+
         return WorkflowLine( _json["id"],
+                             int(_json["session_id"]),
                              _json["parents"],
                              _json["children"],
                              CleanCall(uid, pid, tid,
@@ -60,14 +69,14 @@ class WorkflowLine:
                                        stamp_str,
                                        [ str(arg) for arg in _json["args"]],
                                        str(_json["rvalue"]))
-                            )  
-                                       
+                            )
+
 
     def __str__(self):
         return json.dumps(self.json(), sort_keys=True, indent=4)
 
 def graph(workflow_lines, bottom_up=False):
-    """ 
+    """
         it builds a graph based on replay workflow data. On this map-based graph, node id
         is the key and the arcs is the value as a list of ids
         trace workflow excerpt
@@ -85,7 +94,7 @@ def graph(workflow_lines, bottom_up=False):
 class Operations():
     """
     Operations which have a particular relationship. For example, operations
-    over the same file system object.  We do not allow duplicated lines and 
+    over the same file system object.  We do not allow duplicated lines and
     expose a list to iterate over the same append order
     """
     def __init__(self):
@@ -95,7 +104,7 @@ class Operations():
     def append(self, wline):
         if not wline in self:
             self.wlines.append(wline)
-            self.ids.add(wline._id)		
+            self.ids.add(wline._id)
 
     def __len__(self): return len(self.wlines)
 
@@ -143,7 +152,7 @@ def weak_fs_dependency_sort(workflow_lines):
             pidfid = (clean_call.pid, clean_call.fd())
             filepath = pid_fid_to_path[pidfid]
             return [filepath]
-        else: 
+        else:
             raise Exception("unsupported operation " + str(clean_call))
 
     def update_session(wline, session_table):
@@ -180,6 +189,22 @@ def weak_fs_dependency_sort(workflow_lines):
     for (obj, operations) in lines_by_fs_obj.iteritems():
         for i in reversed(range(len(operations))):
             update_dependency(operations[i], operations[:i])
+
+    session_counter = -1
+    for (pidfid, operations) in pid_fd_sessions.iteritems():
+        #note it's possible to have more than one open-to-close session for the
+        #same pid_fd e.g:
+        #pid=111 open("/foo") -> 4
+        #pid=111 close(4)
+        #pid=111 open("/baa") -> 4
+        #pid=111 close(4)
+        if not operations[0].clean_call.call == "open":
+            raise Exception("Something got wrong ! We should start a session with a open syscall")
+
+        for w_line in operations:
+            if w_line.clean_call.call == "open":
+                session_counter = session_counter + 1
+            w_line.session_id = session_counter
 
     #CLOSE CASE: we keep operations sessions (from open to close).
     #we make close's parent its antecessor on session
@@ -220,12 +245,12 @@ def fs_dependency_order(workflow_lines):#do we assume _id or timestamp order ?
               or (clean_call.call == "close"):
             return [(clean_call.pid, clean_call.fd())]
 
-        else: 
+        else:
             raise Exception("unsupported operation " + str(line_tokens))
-    
+
     """
     we assume lines have been ordered by pidfid algorithm
-    
+
     op                structure              type
     -----------------------------------------------
     stat                obj                  read
@@ -233,16 +258,17 @@ def fs_dependency_order(workflow_lines):#do we assume _id or timestamp order ?
     rmdir               parent, [obj]        write
     mkdir               parent               write
     unlink              parent, [obj]        write
-    open                
+    open
     close
     write               obj                  write
-    read                obj                  read 
+    read                obj                  read
     llseek              obj                  write
     open/create         obj                  write
     -----------------------------------------------
     """
     lines_by_fs_obj = {}
     pid_fd2fs_obj = {}
+
     #FIXME we can create a map_by_fsobt method and after that the order method
     for w_line in workflow_lines:
         clean_call = w_line.clean_call
@@ -307,7 +333,7 @@ def order_by_pidfid(cleaned_calls):#FIXME: change to sort_by_pidfid
     for lines in wlines_by_fidpidprocess.values():
         for (father, son) in pairwise(lines):
             join(father, son)
-    
+
     #stackoverflow says it is faster
     #FIXME: unit should be broken after this change
     result = []

@@ -314,24 +314,19 @@ static Caller* fill_caller (struct replay_command *command, json_t *replay_objec
 	}
 
 	caller = (Caller*) malloc (sizeof(Caller));
-	//fprintf (stderr, "ZERO\n");
         const char *tid_s = json_string_value (json_object_get (json_caller, "tid"));
 	const char *pid_s = json_string_value (json_object_get (json_caller, "pid"));
 	const char *uid_s = json_string_value (json_object_get (json_caller, "uid"));
 	const char *exec = json_string_value (json_object_get (json_caller, "exec"));
 
-	//fprintf (stderr, "UM\n");
-	//fprintf (stderr, "TIDs=%s PIDs=%s UIDs=%s\n", tid_s, pid_s, uid_s);
 	int tid = atoi(tid_s);
 	int pid = atoi(pid_s);
 	int uid = atoi(uid_s);
-	//fprintf (stderr, "TID=%d PID=%d UID=%d\n", tid, pid, uid);
 
 	caller->tid = tid;
 	caller->pid = pid;
 	caller->uid = uid;
 
-	//fprintf (stderr, "TIDc=%d PIDc=%d UIDc=%d\n", caller->tid, caller->pid, caller->uid);
 	return caller;
 }
 

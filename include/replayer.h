@@ -64,7 +64,7 @@ typedef unsigned short op_t;
 #define PID_MAX 32768
 
 //FIXME: FD_MAX is a way to high. I doubt trace has a single pid so high
-//maybe pre-process trace to uncover the biggest possible value ? 
+//maybe pre-process trace to uncover the biggest possible value ?
 #define FD_MAX 32768
 
 typedef struct _caller {
@@ -141,7 +141,7 @@ struct timing_police {
 
 struct replay {
 
-	/* 
+	/*
 	   **pids_to_fd_pairs matrix maps traced pids to replayed file descriptors
 	   (fd values are not under our control so, we need a mapping between replayed
 	    and traced fds)
@@ -157,7 +157,7 @@ struct replay {
 void workflow_element_init (Workflow_element* element);
 
 Workflow_element* element (Replay_workload* workload, int element_id);
-Workflow_element* parent (Replay_workload* workload, Workflow_element* child, 
+Workflow_element* parent (Replay_workload* workload, Workflow_element* child,
 				int parent_index);
 
 struct replay_command* replay_command_create (Caller* caller, op_t command, Parms* params,

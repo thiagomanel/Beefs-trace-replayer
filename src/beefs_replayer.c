@@ -68,7 +68,7 @@ int main (int argc, const char* argv[]) {
 
 	Replay_result *result = repl->result;
 	results = result->cmds_replay_result;
-        
+
 	for (i = 0; i < result->replayed_commands; i++) {
 		tmp = &(results[i]);
 		printf ("%ld %ld %ld %ld %f %d %d\n",

@@ -21,6 +21,7 @@
 #include <assert.h>
 #include <fcntl.h>
 #include <string.h>
+#include <stdio.h>
 
 /*
 * Maps traced file descriptors to the real one returned during
@@ -65,6 +66,7 @@ int exec (struct replay_command* to_exec, int *exec_rvalue, struct replay* rpl) 
 
 			*exec_rvalue = replayed_fd;
 			int traced_fd = to_exec->expected_retval;
+			//fprintf (stderr, "open-replayed_fd=%d traced_fd=%d traced_pid=%d\n", replayed_fd, traced_fd, to_exec->caller->pid);
 			if (traced_fd > 0) {
 				map_fd (to_exec->caller->pid, traced_fd, replayed_fd, rpl->pids_to_fd_pairs);
 			}
@@ -94,6 +96,7 @@ int exec (struct replay_command* to_exec, int *exec_rvalue, struct replay* rpl) 
 			int traced_fd = args[0].argm->i_val;
 			int repl_fd = replayed_fd (to_exec->caller->pid, traced_fd, rpl->pids_to_fd_pairs);
 			*exec_rvalue = close (repl_fd);
+			//fprintf (stderr, "close-replayed_fd=%d traced_fd=%d traced_pid=%d\n", repl_fd, traced_fd, to_exec->caller->pid);
 			//FIXME should we set the fd mapping to something impossible as -1
 			//i think i this way we do not mask programming errors
 		}
@@ -103,6 +106,7 @@ int exec (struct replay_command* to_exec, int *exec_rvalue, struct replay* rpl) 
 			int traced_fd = args[1].argm->i_val;
 			int repl_fd = replayed_fd (to_exec->caller->pid, traced_fd, rpl->pids_to_fd_pairs);
 			*exec_rvalue = fstat(repl_fd, &sb);
+			//fprintf (stderr, "fstat-replayed_fd=%d traced_fd=%d traced_pid=%d\n", repl_fd, traced_fd, to_exec->caller->pid);
 		}
 		break;
 		case RMDIR_OP: {
@@ -116,6 +120,7 @@ int exec (struct replay_command* to_exec, int *exec_rvalue, struct replay* rpl) 
 			off_t offset = (off_t) args[2].argm->l_val;
 			int whence = args[3].argm->i_val;
 			*exec_rvalue = lseek (repl_fd, offset, whence);
+			//fprintf (stderr, "llseek-replayed_fd=%d traced_fd=%d traced_pid=%d\n", repl_fd, traced_fd, to_exec->caller->pid);
 		}
 		break;
 		default:

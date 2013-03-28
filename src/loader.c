@@ -90,12 +90,12 @@ static int marker2operation(const char *string) {
 	return NONE;
 }
 
-struct replay_command* 
+struct replay_command*
 replay_command_create(Caller* caller, op_t command, Parms* params,
 		      double traced_begin, long traced_elapsed_time,
 		      int expected_retval) {
 
-	struct replay_command* _new = (struct replay_command*) 
+	struct replay_command* _new = (struct replay_command*)
 					malloc (sizeof (struct replay_command));
 
 	_new->caller = caller;
@@ -304,19 +304,35 @@ static int fill_children (Workflow_element *element, json_t *replay_object) {
 	return 0;
 }
 
-static int fill_caller (struct replay_command *command, json_t *replay_object) {
+static Caller* fill_caller (struct replay_command *command, json_t *replay_object) {
 
+	Caller* caller = NULL;
 	json_t *json_caller = json_object_get (replay_object, "caller");
 
 	if (!json_is_object (json_caller)) {
 		fprintf (stderr, "error: caller is not an object\n");
-		return PARSING_ERROR;
 	}
-	command->caller = (Caller*) malloc (sizeof(Caller)); 
-	command->caller->pid = (int) json_integer_value (json_object_get (json_caller, "pid"));
-	command->caller->tid = (int) json_integer_value (json_object_get (json_caller, "tid"));
-	command->caller->uid = (int) json_integer_value (json_object_get (json_caller, "uid"));
-	return 0;
+
+	caller = (Caller*) malloc (sizeof(Caller));
+	//fprintf (stderr, "ZERO\n");
+        const char *tid_s = json_string_value (json_object_get (json_caller, "tid"));
+	const char *pid_s = json_string_value (json_object_get (json_caller, "pid"));
+	const char *uid_s = json_string_value (json_object_get (json_caller, "uid"));
+	const char *exec = json_string_value (json_object_get (json_caller, "exec"));
+
+	//fprintf (stderr, "UM\n");
+	//fprintf (stderr, "TIDs=%s PIDs=%s UIDs=%s\n", tid_s, pid_s, uid_s);
+	int tid = atoi(tid_s);
+	int pid = atoi(pid_s);
+	int uid = atoi(uid_s);
+	//fprintf (stderr, "TID=%d PID=%d UID=%d\n", tid, pid, uid);
+
+	caller->tid = tid;
+	caller->pid = pid;
+	caller->uid = uid;
+
+	//fprintf (stderr, "TIDc=%d PIDc=%d UIDc=%d\n", caller->tid, caller->pid, caller->uid);
+	return caller;
 }
 
 static int fill_syscall (struct replay_command *cmd, json_t *replay_object) {
@@ -392,9 +408,7 @@ static int parse_element (Workflow_element *element, json_t* replay_object) {
 		return PARSING_ERROR;
 	}
 
-	if (fill_caller (element->command, replay_object) == PARSING_ERROR) {
-		return PARSING_ERROR;
-	}
+	element->command->caller = fill_caller (element->command, replay_object);
 
 	if (fill_syscall (element->command, replay_object) == PARSING_ERROR) {
 		return PARSING_ERROR;
@@ -497,7 +511,7 @@ int load (Replay_workload* replay_wld, FILE* input_file) {
 		replay_wld->num_cmds = 0;
 		return NULL_FILE_OP_ERROR;
 	}
-	
+
 	char *line = (char*) malloc(max_line_len * sizeof(char));
 	len = getline(&line, &max_line_len, input_file);
         if (len == -1) {
@@ -506,7 +520,7 @@ int load (Replay_workload* replay_wld, FILE* input_file) {
         }
 	num_cmds_on_file = atoi(line);
 
-	replay_wld->element_list = 
+	replay_wld->element_list =
 		(Workflow_element*) malloc ((num_cmds_on_file + 1) * sizeof (Workflow_element));
 
 	//fake element is also element_list's head
@@ -527,7 +541,7 @@ int load (Replay_workload* replay_wld, FILE* input_file) {
 			fprintf (stderr, "error: Unable to load data header.\n");
 			return PARSING_ERROR;
 	        }
-                
+
 		replay_call = json_loads (line, 0, &error);
 		if (parse_element (tmp_element, replay_call) == PARSING_ERROR) {
 			return PARSING_ERROR;
@@ -558,7 +572,7 @@ int load (Replay_workload* replay_wld, FILE* input_file) {
 			root_element->children_ids[i] = orphans_ids[i];
 
 			//poor orphan baby gets a new papa
-			Workflow_element *child 
+			Workflow_element *child
 				= element (replay_wld, root_element->children_ids[i]);
 
 			assert (! is_parent (root_element, child));

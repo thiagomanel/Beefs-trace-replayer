@@ -78,8 +78,7 @@ int exec (struct replay_command* to_exec, int *exec_rvalue, struct replay* rpl) 
 				set_session_fd (current_session_id, replayed_fd, rpl);
 			} else {
 				int traced_fd = to_exec->expected_retval;
-				//fprintf (stderr, "<open traced_begin=%f replayed_fd=%d traced_fd=%d traced_pid=%d>\n",
-						to_exec->traced_begin, replayed_fd, traced_fd, to_exec->caller->pid);
+				//fprintf (stderr, "<open traced_begin=%f replayed_fd=%d traced_fd=%d traced_pid=%d>\n", to_exec->traced_begin, replayed_fd, traced_fd, to_exec->caller->pid);
 				if (traced_fd > 0) {
 					map_fd (to_exec->caller->pid, traced_fd, replayed_fd, rpl->pids_to_fd_pairs);
 				}
@@ -98,8 +97,7 @@ int exec (struct replay_command* to_exec, int *exec_rvalue, struct replay* rpl) 
 			char* buf = (char*) malloc (sizeof (char) * read_count);
 			*exec_rvalue = read (repl_fd, buf, read_count);
 
-			//fprintf (stderr, "<read traced_begin=%f replayed_fd=%d traced_fd=%d traced_pid=%d rpl_rvalue=%d>\n",
-						to_exec->traced_begin, repl_fd, traced_fd, to_exec->caller->pid, *exec_rvalue);
+			//fprintf (stderr, "<read traced_begin=%f replayed_fd=%d traced_fd=%d traced_pid=%d rpl_rvalue=%d>\n", to_exec->traced_begin, repl_fd, traced_fd, to_exec->caller->pid, *exec_rvalue);
 		}
 		break;
 		case WRITE_OP: {

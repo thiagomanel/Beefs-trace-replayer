@@ -369,6 +369,17 @@ static int fill_rvalue (struct replay_command *cmd, json_t *replay_object) {
 	return 0;
 }
 
+static int fill_session_id (struct replay_command *cmd, json_t *replay_object) {
+
+	json_t *rvalue = json_object_get (replay_object, "session_id");
+	if (!json_is_number (rvalue)) {
+		fprintf (stderr, "error: rvalue is not a number\n");
+		return PARSING_ERROR;
+	}
+	cmd->session_id = (int) json_integer_value(rvalue);
+	return 0;
+}
+
 static int fill_id (Workflow_element *element, json_t *replay_object) {
 
 	json_t *id = json_object_get (replay_object, "id");
@@ -410,6 +421,10 @@ static int parse_element (Workflow_element *element, json_t* replay_object) {
 	}
 
 	if (fill_stamp (element->command, replay_object) == PARSING_ERROR) {
+		return PARSING_ERROR;
+	}
+
+	if (fill_session_id (element->command, replay_object) == PARSING_ERROR) {
 		return PARSING_ERROR;
 	}
 

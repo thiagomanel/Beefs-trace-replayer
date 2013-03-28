@@ -32,6 +32,14 @@ int replayed_fd (int traced_pid, int traced_fd, int *pids_to_fd_pairs[]) {
 	return fds[traced_fd];
 }
 
+void set_session_fd (int session_id, int repl_fd, struct replay* rpl) {
+	rpl->session_id_to_fd[session_id] = repl_fd;
+}
+
+int session_fd (int session_id, struct replay* rpl) {
+	return rpl->session_id_to_fd[session_id];
+}
+
 void map_fd (int traced_pid, int traced_fd, int replayed_fd, int *pids_to_fd_pairs[]) {
 
 	if (!pids_to_fd_pairs[traced_pid]) {
@@ -49,6 +57,7 @@ int exec (struct replay_command* to_exec, int *exec_rvalue, struct replay* rpl) 
 
 	assert (to_exec != NULL);
 	Parms* args = to_exec->params;
+	int current_session_id = to_exec->session_id;
 
 	switch (to_exec->command) {
 		case MKDIR_OP: {
@@ -65,38 +74,55 @@ int exec (struct replay_command* to_exec, int *exec_rvalue, struct replay* rpl) 
 					open (args[0].argm->cprt_val, args[1].argm->i_val, args[2].argm->i_val);
 
 			*exec_rvalue = replayed_fd;
-			int traced_fd = to_exec->expected_retval;
-			//fprintf (stderr, "open-replayed_fd=%d traced_fd=%d traced_pid=%d\n", replayed_fd, traced_fd, to_exec->caller->pid);
-			if (traced_fd > 0) {
-				map_fd (to_exec->caller->pid, traced_fd, replayed_fd, rpl->pids_to_fd_pairs);
+			if (rpl->session_enabled) {
+				set_session_fd (current_session_id, replayed_fd, rpl);
+			} else {
+				int traced_fd = to_exec->expected_retval;
+				//fprintf (stderr, "<open traced_begin=%f replayed_fd=%d traced_fd=%d traced_pid=%d>\n",
+						to_exec->traced_begin, replayed_fd, traced_fd, to_exec->caller->pid);
+				if (traced_fd > 0) {
+					map_fd (to_exec->caller->pid, traced_fd, replayed_fd, rpl->pids_to_fd_pairs);
+				}
 			}
 		}
 		break;
 		case READ_OP: {
+
 			int traced_fd = args[1].argm->i_val;
-			int repl_fd = replayed_fd (to_exec->caller->pid, traced_fd, rpl->pids_to_fd_pairs);
+			int repl_fd =  (rpl->session_enabled) ?
+						session_fd (current_session_id, rpl) :
+						replayed_fd (to_exec->caller->pid, traced_fd, rpl->pids_to_fd_pairs);
 
 			//FIXME should share a big bufer to avoid malloc'ing time wasting ?
 			int read_count = args[2].argm->i_val;
 			char* buf = (char*) malloc (sizeof (char) * read_count);
 			*exec_rvalue = read (repl_fd, buf, read_count);
+
+			//fprintf (stderr, "<read traced_begin=%f replayed_fd=%d traced_fd=%d traced_pid=%d rpl_rvalue=%d>\n",
+						to_exec->traced_begin, repl_fd, traced_fd, to_exec->caller->pid, *exec_rvalue);
 		}
 		break;
 		case WRITE_OP: {
 			int traced_fd = args[1].argm->i_val;
-			int repl_fd = replayed_fd (to_exec->caller->pid, traced_fd, rpl->pids_to_fd_pairs);
+			int repl_fd =  (rpl->session_enabled) ?
+						session_fd (current_session_id, rpl) :
+						replayed_fd (to_exec->caller->pid, traced_fd, rpl->pids_to_fd_pairs);
 
 			//FIXME should share a big bufer to avoid malloc'ing time wasting ?
 			int write_count = args[2].argm->i_val;
 			char* buf = (char*) malloc (sizeof (char) * write_count);
 			*exec_rvalue = write (repl_fd, buf, write_count);
+			//fprintf (stderr, "<read traced_begin=%f write replayed_fd=%d traced_fd=%d traced_pid=%d rpl_rvalue=%d>\n", to_exec->traced_begin, repl_fd, traced_fd, to_exec->caller->pid, *exec_rvalue);
 		}
 		break;
 		case CLOSE_OP: {
 			int traced_fd = args[0].argm->i_val;
-			int repl_fd = replayed_fd (to_exec->caller->pid, traced_fd, rpl->pids_to_fd_pairs);
+			int repl_fd =  (rpl->session_enabled) ?
+						session_fd (current_session_id, rpl) :
+						replayed_fd (to_exec->caller->pid, traced_fd, rpl->pids_to_fd_pairs);
+
 			*exec_rvalue = close (repl_fd);
-			//fprintf (stderr, "close-replayed_fd=%d traced_fd=%d traced_pid=%d\n", repl_fd, traced_fd, to_exec->caller->pid);
+			//fprintf (stderr, "<close traced_begin=%f replayed_fd=%d traced_fd=%d traced_pid=%d>\n", to_exec->traced_begin, repl_fd, traced_fd, to_exec->caller->pid);
 			//FIXME should we set the fd mapping to something impossible as -1
 			//i think i this way we do not mask programming errors
 		}
@@ -104,9 +130,12 @@ int exec (struct replay_command* to_exec, int *exec_rvalue, struct replay* rpl) 
 		case FSTAT_OP: {
 			struct stat sb;
 			int traced_fd = args[1].argm->i_val;
-			int repl_fd = replayed_fd (to_exec->caller->pid, traced_fd, rpl->pids_to_fd_pairs);
+			int repl_fd =  (rpl->session_enabled) ?
+						session_fd (current_session_id, rpl) :
+						replayed_fd (to_exec->caller->pid, traced_fd, rpl->pids_to_fd_pairs);
+
 			*exec_rvalue = fstat(repl_fd, &sb);
-			//fprintf (stderr, "fstat-replayed_fd=%d traced_fd=%d traced_pid=%d\n", repl_fd, traced_fd, to_exec->caller->pid);
+			//fprintf (stderr, "<fstat traced_begin=%f replayed_fd=%d traced_fd=%d traced_pid=%d>\n", to_exec->traced_begin, repl_fd, traced_fd, to_exec->caller->pid);
 		}
 		break;
 		case RMDIR_OP: {
@@ -115,12 +144,14 @@ int exec (struct replay_command* to_exec, int *exec_rvalue, struct replay* rpl) 
 		break;
 		case LLSEEK_OP: {
 			int traced_fd = args[1].argm->i_val;
-			int repl_fd = replayed_fd (to_exec->caller->pid, traced_fd, rpl->pids_to_fd_pairs);
+			int repl_fd =  (rpl->session_enabled) ?
+						session_fd (current_session_id, rpl) :
+						replayed_fd (to_exec->caller->pid, traced_fd, rpl->pids_to_fd_pairs);
 
 			off_t offset = (off_t) args[2].argm->l_val;
 			int whence = args[3].argm->i_val;
 			*exec_rvalue = lseek (repl_fd, offset, whence);
-			//fprintf (stderr, "llseek-replayed_fd=%d traced_fd=%d traced_pid=%d\n", repl_fd, traced_fd, to_exec->caller->pid);
+			//fprintf (stderr, "<llseek trace_begin=%f replayed_fd=%d traced_fd=%d traced_pid=%d>\n", to_exec->traced_begin, repl_fd, traced_fd, to_exec->caller->pid);
 		}
 		break;
 		default:

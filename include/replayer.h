@@ -67,6 +67,9 @@ typedef unsigned short op_t;
 //maybe pre-process trace to uncover the biggest possible value ?
 #define FD_MAX 32768
 
+//FIXME: find a value to this
+#define SESSION_ID_MAX 32768
+
 typedef struct _caller {
 	int uid;
 	int pid;
@@ -92,6 +95,7 @@ struct replay_command {
 	double traced_begin;
 	long traced_elapsed_time;
 
+	int session_id;
 	int expected_retval;
 };
 
@@ -141,11 +145,26 @@ struct timing_police {
 
 struct replay {
 
-	/*
-	   **pids_to_fd_pairs matrix maps traced pids to replayed file descriptors
-	   (fd values are not under our control so, we need a mapping between replayed
-	    and traced fds)
-	*/
+	/**
+	 *  As we are a single process replayer, we need some magic to handle a
+	 *  trace with multiple process. To make it clear, note that our trace
+	 *  may have concurrent processes manipulating file descriptors of the
+	 *  same value, since fd is a per-process variable.
+	 *
+	 *  We use two methods to manage file descriptors:
+	 *
+	 *  session_id - session_id in a unique number assigned to trace
+	 *  	operations related to the same open-to-close sequence.
+	 *  	*session_id_to_fd array is a {session_id:replayed_fd} mapping
+	 *
+	 * pids_to_fid - In replay time, we map and lookup pid to traced and
+	 * 	replayed file descriptor tuples. Maps are made by open syscalls
+	 * 	and remove by close syscalls.
+	 *
+	 * FIXME: convert conservative traces to use session_id too.
+	 **/
+	int session_enabled;
+	int *session_id_to_fd;
 	int **pids_to_fd_pairs;
 
 	Replay_workload* workload;

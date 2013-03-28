@@ -221,15 +221,15 @@ void *produce (void *arg) {
 		        //dispatch children that was not dispatched yet
 				w_element = frontier->w_element;
 				int chl_index;
-				for (chl_index = 0; 
-					chl_index < w_element->n_children; 
+				for (chl_index = 0;
+					chl_index < w_element->n_children;
 					chl_index++) {
 
-					Workflow_element* child = 
+					Workflow_element* child =
 						get_child (w_element, chl_index);
 
-					if (! IS_PRODUCED (child) && 
-						_consumed (child->parents_ids, 
+					if (! IS_PRODUCED (child) &&
+						_consumed (child->parents_ids,
 								child->n_parents)) {
 
 						if ( ! produce_buffer_full ()) {
@@ -245,28 +245,28 @@ void *produce (void *arg) {
 			}
 
 			if (commands_were_consumed(shared_buff)) {
-				//items come to the frontier after 
+				//items come to the frontier after
 				//they have been consumed (dispatched)
 				Workflow_element* consumed;
 				for (i = 0; i <= shared_buff->last_consumed; i++) {
 
 					consumed = shared_buff->consumed_queue[i];
 					int parent_i;
-					for (parent_i = 0; 
-						parent_i < consumed->n_parents; 
+					for (parent_i = 0;
+						parent_i < consumed->n_parents;
 						parent_i++) {
 
-						Workflow_element* _parent = 
+						Workflow_element* _parent =
 							parent (__replay->workload,
 								 consumed, parent_i);
 
-						//items left the frontier if its children 
+						//items left the frontier if its children
 						//were consumed (dispatched)
 						int all_children_consumed =
 							_consumed (_parent->children_ids,
 									 _parent->n_children);
 						if ( all_children_consumed ) {
-							shared_buff->frontier = 
+							shared_buff->frontier =
 								_del (shared_buff->frontier,
 									 _parent);
 						}
@@ -316,10 +316,10 @@ void *consume (void *arg) {
 	int actual_rvalue = 0;
 
 	while (1) {
-	
+
 		pthread_mutex_lock (&lock);
 
-		while (! has_commands_to_consume (shared_buff) && 
+		while (! has_commands_to_consume (shared_buff) &&
 			! all_consumed (shared_buff)) {
 			//if we use "if" we can get spurious behaviour
 			pthread_cond_wait (&cmds_were_produced_cond, &lock);
@@ -357,7 +357,7 @@ void *consume (void *arg) {
 				fprintf (stderr, "replay_count=%d workfow_id=%d\n",
 						shared_buff->consumed_count, element->id);
 			} else {
-				fprintf (stderr, 
+				fprintf (stderr,
 					"Err replaying command workflow_id=%d type=%d\n",
 					element->id, element->command->command);
 				pthread_mutex_unlock (&lock);
@@ -422,8 +422,22 @@ struct replay* create_replay (Replay_workload* workload) {
 		assert (repl->workload->element_list != NULL);
 	}
 
+	//it'd be a way simpler if we had a header line on trace input with
+	//this kind of meta-information
+	int sample_session_id = element (repl->workload, 1)->command->session_id;
+	if (sample_session_id == -1) {
+		repl->session_enabled = 0;
+	} else {
+		repl->session_enabled = 1;
+	}
+
+	//FIXME: I'll keep both, pids_to_fd and session_id, allocations. The plan
+	//is to have just session_id in the future. Check replayer.h annotations
 	repl->pids_to_fd_pairs = (int**) malloc (PID_MAX * sizeof (int*));
 	memset (repl->pids_to_fd_pairs, 0, PID_MAX * sizeof (int*));
+
+	repl->session_id_to_fd = (int*) malloc (SESSION_ID_MAX * sizeof (int));
+	memset (repl->session_id_to_fd, -1, SESSION_ID_MAX * sizeof (int));
 
 	repl->result = (Replay_result*) malloc (sizeof(Replay_result));
 	repl->result->produced_commands = 0;

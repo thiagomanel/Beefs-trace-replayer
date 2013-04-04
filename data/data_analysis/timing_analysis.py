@@ -4,14 +4,12 @@ from clean_trace import *
 
 if __name__ == "__main__":
     """
-    It receives the workflow input and output data and writes to stdout a 7-tuple
-    for each command:
-        (op, cmd_workflow_begin, cmd_workflow_end, replay_begin, replay_end, 
-         delta_from_input, delta_from_replay, waiting_delay)
-    time measured as microsends
+        It receives the workflow input and output data and writes to stdout a 7-tuple
+        for each command:
+            (op, cmd_workflow_begin, cmd_workflow_end, replay_begin,
+             replay_end, delta_from_input, delta_from_replay, waiting_delay)
 
-    output data is 5-token format based on timeval struct:
-         (cmd_begin_secs, cmd_being_usecs, cmd_end_secs, cmd_end_usecs, sleep_delay_usecs)
+        time measured as microseconds
     """
     def out_stamps(out_line):
         tokens = out_line.split()
@@ -93,5 +91,5 @@ if __name__ == "__main__":
                 sys.stdout.write("\t".join([_call,
                                             str(in_begin), str(in_end),
                                             str(out_begin), str(out_end),
-                                            str(delta_from_input), str(delta_from_replay), 
+                                            str(delta_from_input), str(delta_from_replay),
                                             str(waiting_dlay)]) + "\n")

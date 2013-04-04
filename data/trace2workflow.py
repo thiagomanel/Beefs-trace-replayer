@@ -12,9 +12,9 @@ if __name__ == "__main__":
     """
     lines = sys.stdin.readlines()
     cleaned_calls = [CleanCall.from_str(line) for line in lines]
-    workflow_lines = []
+    w_lines = []
     for (_id, cleaned_call) in enumerate(cleaned_calls):
-        workflow_lines.append(WorkflowLine(_id + 1, [], [], cleaned_call))
+        w_lines.append(WorkflowLine(_id + 1, -1, [], [], cleaned_call))
 
     police = sys.argv[1]
     if police == "wfs":

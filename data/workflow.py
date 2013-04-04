@@ -291,7 +291,7 @@ def conservative_sort(w_lines):
         """ wlines are stamp-begin sorted, we return the last which finished
             before stamp begin. If there is no such wline, we return None
         """
-        for pos in range(current_pos - 1, -1, -1):
+        for pos in xrange(current_pos - 1, -1, -1):
             wline = wlines[pos]
             candidate_stamp = wline.clean_call.stamp()
             candidate_end = candidate_stamp[0] + candidate_stamp[1]
@@ -300,9 +300,10 @@ def conservative_sort(w_lines):
                 return wline
         return None
 
-    for pos in range(len(w_lines)):
+    _l = len(w_lines)
+    for pos in range(_l):
         if (pos % 1000 == 0):
-            sys.stderr.write("pos: " + str(pos) + "\n")
+            sys.stderr.write("pos: " + str(pos) + " len: " + str(_l) + "\n")
         current_wline = w_lines[pos]
         stamp = current_wline.clean_call.stamp()
         parent_wline = finished_before(w_lines, pos, stamp)

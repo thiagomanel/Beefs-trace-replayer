@@ -44,6 +44,43 @@ class WorkflowLine:
               }
 
     @classmethod
+    def from_json_safe(cls, _json):
+        #we override problematic encoded string with a stub string.
+        #this method is useful when we want to analyse workflow without
+        #replaying it (so we do not need proper args values)
+
+        #creates itself based on json dict defined on self.json()
+        uid = _json["caller"]["uid"]
+        pid = _json["caller"]["pid"]
+        tid = _json["caller"]["tid"]
+        pname = _json["caller"]["exec"]
+        stamp_str = str(int(_json["stamp"]["begin"])) + "-" \
+                    + str(_json["stamp"]["elapsed"])
+
+        #FIXME 28/mar I added this new session_id element, but I not willing to
+        #change all codebase right now. So I adding this switch here, to convert
+        #old json to the new format
+        if not "session_id" in _json:
+           _json["session_id"] = "-1"
+
+        try:
+            _args = [ str(arg) for arg in _json["args"]]
+        except UnicodeEncodeError:
+            _args = ["bad_encoded_string"]
+
+        return WorkflowLine( _json["id"],
+                             int(_json["session_id"]),
+                             _json["parents"],
+                             _json["children"],
+                             CleanCall(uid, pid, tid,
+                                       pname,
+                                       _json["call"],
+                                       stamp_str,
+                                       _args,
+                                       str(_json["rvalue"]))
+                            )
+
+    @classmethod
     def from_json(cls, _json):
         #creates itself based on json dict defined on self.json()
         uid = _json["caller"]["uid"]
@@ -75,6 +112,15 @@ class WorkflowLine:
     def __str__(self):
         return json.dumps(self.json(), sort_keys=True, indent=4)
 
+def i_graph(wline, g, bottom_up=False):
+    """
+        To reduce memory consumption, build the graph line by line
+    """
+    if bottom_up:
+        g[wline._id] = wline.parents
+    else:
+        g[wline._id] = wline.children
+
 def graph(workflow_lines, bottom_up=False):
     """
         it builds a graph based on replay workflow data. On this map-based graph, node id
@@ -85,10 +131,7 @@ def graph(workflow_lines, bottom_up=False):
     """
     _graph = {}
     for wline in workflow_lines:
-        if bottom_up:
-            _graph[wline._id] = wline.parents
-        else:
-            _graph[wline._id] = wline.children
+        i_graph(wline, _graph, bottom_up)
     return _graph
 
 class Operations():

@@ -1,0 +1,139 @@
+/local/thiagoepdc/tmp_clean_trace/2011_10_14-viola.join.clean.fs
+Graph loaded
+[]
+/local/thiagoepdc/tmp_clean_trace/2011_10_14-palmito.join.clean.fs
+Graph loaded
+[]
+/local/thiagoepdc/tmp_clean_trace/2011_10_14-bandeira.join.clean.fs
+Graph loaded
+[160, 0]
+/local/thiagoepdc/tmp_clean_trace/2011_10_14-traira.join.clean.fs
+Problems on input data
+/local/thiagoepdc/tmp_clean_trace/2011_10_14-ourico.join.clean.fs
+Problems on input data
+/local/thiagoepdc/tmp_clean_trace/2011_10_14-roncador.join.clean.fs
+Problems on input data
+/local/thiagoepdc/tmp_clean_trace/2011_10_14-surubim.join.clean.conservative
+Graph loaded
+[130]
+/local/thiagoepdc/tmp_clean_trace/2011_10_14-viola.join.clean.conservative
+Graph loaded
+[1048702]
+/local/thiagoepdc/tmp_clean_trace/2011_10_14-morcego.join.clean.conservative
+Graph loaded
+[761327]
+/local/thiagoepdc/tmp_clean_trace/2011_10_14-mulato.join.clean.conservative
+Graph loaded
+[1288869]
+/local/thiagoepdc/tmp_clean_trace/2011_10_14-ourico.join.clean.conservative
+Problems on input data
+/local/thiagoepdc/tmp_clean_trace/2011_10_14-stuart.join.clean.conservative
+Graph loaded
+[239229]
+/local/thiagoepdc/tmp_clean_trace/2011_10_14-sargento.join.clean.conservative
+Graph loaded
+[37]
+/local/thiagoepdc/tmp_clean_trace/2011_10_14-stuart.join.clean.fs
+Graph loaded
+[664, 0]
+/local/thiagoepdc/tmp_clean_trace/2011_10_14-pimpim.join.clean.fs
+Graph loaded
+[252, 0]
+/local/thiagoepdc/tmp_clean_trace/2011_10_14-traira.join.clean.conservative
+Problems on input data
+/local/thiagoepdc/tmp_clean_trace/2011_10_14-cherne.join.clean.conservative
+Graph loaded
+Traceback (most recent call last):
+  File "graph_metrics.py", line 62, in <module>
+    path_sizes.append(i_longest_path_size(_graph, root_child))
+  File "graph_metrics.py", line 18, in i_longest_path_size
+    for p, n in bfs(graph, node):
+  File "/local/thiagoepdc/cppworkspace/TheBeefsReplayer/data/data_analysis/workflow_analysis/bfs.py", line 8, in bfs
+    new = set(g[n]) - enqueued
+KeyError: 205999
+/local/thiagoepdc/tmp_clean_trace/2011_10_14-morcego.join.clean.fs
+Graph loaded
+[]
+/local/thiagoepdc/tmp_clean_trace/2011_10_14-mussum.join.clean.conservative
+Problems on input data
+/local/thiagoepdc/tmp_clean_trace/2011_10_14-jurupoca.join.clean.conservative
+Graph loaded
+[225697]
+/local/thiagoepdc/tmp_clean_trace/2011_10_14-pimpim.join.clean.conservative
+Graph loaded
+[975734]
+/local/thiagoepdc/tmp_clean_trace/2011_10_14-abelhinha.join.clean.conservative
+Problems on input data
+/local/thiagoepdc/tmp_clean_trace/2011_10_14-gupi.join.clean.conservative
+Problems on input data
+/local/thiagoepdc/tmp_clean_trace/2011_10_14-pepino.join.clean.conservative
+Graph loaded
+[198358]
+/local/thiagoepdc/tmp_clean_trace/2011_10_14-sargento.join.clean.fs
+Graph loaded
+[]
+/local/thiagoepdc/tmp_clean_trace/2011_10_14-pitu.join.clean.conservative
+Graph loaded
+Traceback (most recent call last):
+  File "graph_metrics.py", line 62, in <module>
+    path_sizes.append(i_longest_path_size(_graph, root_child))
+  File "graph_metrics.py", line 18, in i_longest_path_size
+    for p, n in bfs(graph, node):
+  File "/local/thiagoepdc/cppworkspace/TheBeefsReplayer/data/data_analysis/workflow_analysis/bfs.py", line 8, in bfs
+    new = set(g[n]) - enqueued
+KeyError: 18831
+/local/thiagoepdc/tmp_clean_trace/2011_10_14-bandeira.join.clean.conservative
+Graph loaded
+[2293]
+/local/thiagoepdc/tmp_clean_trace/2011_10_14-mulato.join.clean.fs
+Graph loaded
+[7332, 0]
+/local/thiagoepdc/tmp_clean_trace/2011_10_14-cherne.join.clean.fs
+Graph loaded
+Traceback (most recent call last):
+  File "graph_metrics.py", line 62, in <module>
+    path_sizes.append(i_longest_path_size(_graph, root_child))
+  File "graph_metrics.py", line 18, in i_longest_path_size
+    for p, n in bfs(graph, node):
+  File "/local/thiagoepdc/cppworkspace/TheBeefsReplayer/data/data_analysis/workflow_analysis/bfs.py", line 8, in bfs
+    new = set(g[n]) - enqueued
+KeyError: 206797
+/local/thiagoepdc/tmp_clean_trace/2011_10_14-jurupoca.join.clean.fs
+Graph loaded
+[0]
+/local/thiagoepdc/tmp_clean_trace/2011_10_14-pepino.join.clean.fs
+Graph loaded
+[]
+/local/thiagoepdc/tmp_clean_trace/2011_10_14-surubim.join.clean.fs
+Graph loaded
+[]
+/local/thiagoepdc/tmp_clean_trace/2011_10_14-celacanto.join.clean.conservative
+Problems on input data
+/local/thiagoepdc/tmp_clean_trace/2011_10_14-pitu.join.clean.fs
+Graph loaded
+Traceback (most recent call last):
+  File "graph_metrics.py", line 62, in <module>
+    path_sizes.append(i_longest_path_size(_graph, root_child))
+  File "graph_metrics.py", line 18, in i_longest_path_size
+    for p, n in bfs(graph, node):
+  File "/local/thiagoepdc/cppworkspace/TheBeefsReplayer/data/data_analysis/workflow_analysis/bfs.py", line 8, in bfs
+    new = set(g[n]) - enqueued
+KeyError: 19857
+/local/thiagoepdc/tmp_clean_trace/2011_10_14-charroco.join.clean.conservative
+Graph loaded
+[708850]
+/local/thiagoepdc/tmp_clean_trace/2011_10_14-roncador.join.clean.conservative
+Problems on input data
+/local/thiagoepdc/tmp_clean_trace/2011_10_14-charroco.join.clean.fs
+Graph loaded
+[]
+/local/thiagoepdc/tmp_clean_trace/2011_10_14-palmito.join.clean.conservative
+Graph loaded
+Traceback (most recent call last):
+  File "graph_metrics.py", line 62, in <module>
+    path_sizes.append(i_longest_path_size(_graph, root_child))
+  File "graph_metrics.py", line 18, in i_longest_path_size
+    for p, n in bfs(graph, node):
+  File "/local/thiagoepdc/cppworkspace/TheBeefsReplayer/data/data_analysis/workflow_analysis/bfs.py", line 8, in bfs
+    new = set(g[n]) - enqueued
+KeyError: 1452

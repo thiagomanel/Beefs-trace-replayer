@@ -1,0 +1,10 @@
+from bfs import *
+
+g = {
+	1:[2, 3],
+	2:[],
+	3:[4],
+	4:[]}
+
+for p, n in bfs(g, 1):
+	print p, n

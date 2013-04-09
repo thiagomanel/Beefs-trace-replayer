@@ -2,14 +2,10 @@ import sys
 import json
 from workflow import *
 
-def stamp(stamp_str):
-   return long(stamp_str.split("-")[0])
-
-def timestamp(line):
-    _json = json.loads(line)
-    _workflow = WorkflowLine.from_json(_json)
-    _call = _workflow.clean_call
-    return stamp(_call.stamp)
+def timestamp(wline):
+    _call = wline.clean_call
+    begin, elapsed = _call.stamp()
+    return begin
 
 def bin_index(timestamp, first_stamp, bin_width):
     return (timestamp - first_stamp) / bin_width
@@ -29,8 +25,16 @@ if __name__ == "__main__":
     with open(filepath, 'r') as data:
         lines = data.readline()#excluding header
         first_stamp = None
+
         for line in data:
-            line_stamp = timestamp(line)
+            _json = json.loads(line)
+            try:
+                wline = WorkflowLine.from_json(_json)
+            except:
+                sys.stderr.write(" ".join(["Bad line", line]) + "\n")
+                continue
+
+            line_stamp = timestamp(wline)
             if not first_stamp:
                 first_stamp = line_stamp
             b_index = bin_index(line_stamp, first_stamp, bin_width)

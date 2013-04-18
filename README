@@ -1,7 +1,1 @@
 Beefs (www.lsd.ufcg.edu.br/beefs) trace replayer - It replays traces collected at syscall level.
-
-
-This code borrows ideas and code from Erez Zadok tracefs. 
-I do not know how to proceed with licesing, for this reason code that is close to tracefs keeps its licesing header as demanded by ftp://ftp.filesystems.org/pub/fist/COPYING. If there is any code in Beefs trace replayer that is not a clear original work and does not respect proper licesing, I do declare it was due to a lack of reasoning or mental disorder, as consequence I give up of any rights that I wrongly declared before for the contented code.
-
-loader.c - load replay input file into replay data structures

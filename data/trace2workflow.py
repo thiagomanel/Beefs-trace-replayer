@@ -6,9 +6,10 @@ if __name__ == "__main__":
     """
        It converts from a cleaned data file to workflow data.
 
-       Usage: python trace2workflow.py "wfs"|"c" < file.clean > output
+       Usage: python trace2workflow.py "wfs"|"c"|"sfs" < file.clean > output
             wfs and c are Zhu's fs dependency (we call it weak fs in code) and
-            conservative polices
+            conservative polices, sfs is a modified zhu police using pid fid
+            dependency
     """
     lines = sys.stdin.readlines()
     cleaned_calls = [CleanCall.from_str(line) for line in lines]
@@ -18,13 +19,16 @@ if __name__ == "__main__":
 
     police = sys.argv[1]
     if police == "wfs":
-         new_lines = weak_fs_dependency_sort(w_lines)
+        weak_fs_dependency_sort(w_lines)
     elif police == "c":
-        new_lines = conservative_sort(w_lines)
+        conservative_sort(w_lines)
+    elif police == "sfs":
+        sort_by_pidfid(w_lines)
+        weak_fs_dependency_sort(w_lines)
 
     #json dumps cannot handle our data
-    sys.stdout.write(str(len(new_lines)))
-    for w_line in new_lines:
+    sys.stdout.write(str(len(w_lines)))
+    for w_line in w_lines:
          #this json is different from default workflow  __str__ no \n lines
          json_str = json.dumps(w_line.json())
          sys.stdout.write("\n" + json_str.strip())

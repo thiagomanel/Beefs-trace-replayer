@@ -25,42 +25,40 @@ if __name__ == "__main__":
     def file_pos(fileinfo):
         return fileinfo[0]
 
-    def workflow_pathname(pre_replay_pathname):
+    def workflow_pathname(pre_replay_pathname, lead_path):
         """
-            It converts from pre_replay paths to workflow paths, e,g 
+            It converts from pre_replay paths to workflow paths, e,g
             when /local/thiagoepdc/espadarte_nfs//home/patrickjem/.cache/google-chrome/Default/Cache/f_0038dd
             then /home/patrickjem/.cache/google-chrome/Default/Cache/f_0038dd
+            where lead_path is /local/thiagoepdc/espadarte_nfs/
         """
-        return pre_replay_pathname[pre_replay_pathname.find("/home"):]
+        return pre_replay_pathname.split(lead_path)[1]
 
-    def lead_path(pre_replay_pathname):
-        return pre_replay_pathname[:pre_replay_pathname.find("/home")]
-        
     """
         It finds save file sizes to pre_replay data
-        Usage: python solve_pre_replay_fsize.py pre_replay_data replay_input > checked_pre_replay 2> checking_log
-        replay_input is original workflow data using /home diretories, for example:
+        Usage: python solve_pre_replay_fsize.py pre_replay_data pre_replay_leading_path replay_input > checked_pre_replay 2> checking_log
+        replay_input is original workflow data, for example:
             /home/patrickjem/.cache/google-chrome/Default/Cache/f_0038dd
         pre_replay_data might have a diferente pathname, for example:
             /local/thiagoepdc/espadarte_nfs//home/patrickjem/.cache/google-chrome/Default/Cache/f_0038dd
     """
     file2safe_size = {}
-    _lead_path = None
+    _lead_path = sys.argv[2]
     with open(sys.argv[1]) as pre_replay_data:
         for pre_replay_line in pre_replay_data:
             path, ftype = parse_pre_replay(pre_replay_line)
             if ftype == "f":
-                file2safe_size[workflow_pathname(path)] = -1
-            if not _lead_path:
-                _lead_path = lead_path(path)
+                file2safe_size[workflow_pathname(path, _lead_path)] = -1
 
-    with open(sys.argv[2]) as workflow_file:
+    with open(sys.argv[3]) as workflow_file:
         open_files = {}#pid_fd->pos, path
 
-        workflow_json = json.load(workflow_file)
-        for w_line in [WorkflowLine.from_json(wline_json) 
-                      for wline_json in workflow_json]:
+	workflow_file.readline()
+       	wlines = []
+	for line in workflow_file:
+	    wlines.append(WorkflowLine.from_json(json.loads(line)))
 
+        for w_line in wlines:
             clean_call = w_line.clean_call
             syscall = clean_call.call
 
@@ -89,8 +87,9 @@ if __name__ == "__main__":
                     del open_files[pid_fd]
 
     for filename, size in file2safe_size.iteritems():
+	print filename, size
         if not size == -1:
             #adding the leading path back
             #from /home/patrickjem/.cache/google-chrome/Default/Cache/f_0038dd
             #to   /local/thiagoepdc/espadarte_nfs//home/patrickjem/.cache/google-chrome/Default/Cache/f_0038dd
-            sys.stdout.write("\t".join(["<path="+ _lead_path + filename + "/>", "<ftype=f/>", "<fsize="+str(size)+"/>"]) + "\n") 
+            sys.stdout.write("\t".join(["<path="+ _lead_path + filename + "/>", "<ftype=f/>", "<fsize="+str(size)+"/>"]) + "\n")

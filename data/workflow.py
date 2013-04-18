@@ -230,7 +230,7 @@ def weak_fs_dependency_sort(workflow_lines):
                 lines_by_fs_obj[obj].append(w_line)
 
     for (obj, operations) in lines_by_fs_obj.iteritems():
-        for i in reversed(range(len(operations))):
+        for i in reversed(xrange(len(operations))):
             update_dependency(operations[i], operations[:i])
 
     session_counter = -1
@@ -252,7 +252,7 @@ def weak_fs_dependency_sort(workflow_lines):
     #CLOSE CASE: we keep operations sessions (from open to close).
     #we make close's parent its antecessor on session
     for (pidfid, operations) in pid_fd_sessions.iteritems():
-        for i in reversed(range(len(operations))):
+        for i in reversed(xrange(len(operations))):
             current_wline = operations[i]
             if (current_wline.clean_call.call == "close"):
                #assuming a close cannot be the 0th on operations list
@@ -260,8 +260,6 @@ def weak_fs_dependency_sort(workflow_lines):
                parent_candidate = operations[i - 1]
                if not parent_candidate.clean_call.call == "close":
                    join(parent_candidate, current_wline)
-
-    return workflow_lines
 
 def fs_dependency_order(workflow_lines):#do we assume _id or timestamp order ?
 #TODO: Does it modify workflow_line or it creates a new collection
@@ -353,7 +351,22 @@ def conservative_sort(w_lines):
         if parent_wline:
             join(parent_wline, current_wline)
 
-    return w_lines
+def sort_by_pidfid(wlines):
+
+    def pidfidprocess(wline):
+        clean_call = wline.clean_call
+        return (clean_call.pid, clean_call.tid, clean_call.pname)
+
+    wlines_by_fidpidprocess = {}
+
+    for wline in wlines:
+        pfp = pidfidprocess(wline)
+        if not pfp in wlines_by_fidpidprocess:
+            wlines_by_fidpidprocess[pfp] = []
+        wlines_by_fidpidprocess[pfp].append(wline)
+        if (len(wlines_by_fidpidprocess[pfp]) > 1):
+            father, son = wlines_by_fidpidprocess[pfp][-2], wlines_by_fidpidprocess[pfp][-1]
+            join(father, son)
 
 def order_by_pidfid(cleaned_calls):#FIXME: change to sort_by_pidfid
     """ From a collection of CleanCalls to a collection of

@@ -59,24 +59,22 @@ if __name__ == "__main__":
         replay_dir is a path to mount point where remote file system was mounted.
         For example a remote directory, e.g /local/nfs_to_export is exported in
         the server machine and mounted at client side at /tmp/home, so replay_dir
-        is /tmp. A directory within the exported directory, e.g 
+        is /tmp. A directory within the exported directory, e.g
         /local/nfs_to_export/thiagoepdc, will be seen as /tmp/home/manel
     """
     #FIXME use opt
-    usage_msg = "Usage: python pre_replay.py replay_dir workflow_path\n"
+    usage_msg = "Usage: python pre_replay.py replay_dir < workflow_path\n"
 
-    if not len(sys.argv) == 3:
+    if not len(sys.argv) == 2:
         sys.stderr.write(usage_msg)
         sys.exit(1)
 
     replay_dir = sys.argv[1]
-    with open(sys.argv[2], 'r') as workflow_file:
-        workflow_json = json.load(workflow_file)
-        w_lines = [WorkflowLine.from_json(wline_json) 
-                      for wline_json in workflow_json]
+    sys.stdin.readline()#excluding header
+    w_lines = [WorkflowLine.from_json(json.loads(line)) for line in sys.stdin]
 
-        created_dirs, created_files = build_namespace(replay_dir, w_lines)
-        for _dir in created_dirs:
-            sys.stdout.write("\t".join([format_path(_dir), "<ftype=d/>", "\n"]))
-        for _file in created_files:
-            sys.stdout.write("\t".join([format_path(_file), "<ftype=f/>", "\n"]))
+    created_dirs, created_files = build_namespace(replay_dir, w_lines)
+    for _dir in created_dirs:
+        sys.stdout.write("\t".join([format_path(_dir), "<ftype=d/>", "\n"]))
+    for _file in created_files:
+        sys.stdout.write("\t".join([format_path(_file), "<ftype=f/>", "\n"]))

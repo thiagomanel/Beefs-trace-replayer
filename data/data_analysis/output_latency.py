@@ -1,5 +1,4 @@
 import sys
-from workflow_objects import *
 from clean_trace import *
 
 def latency(replay_output_line):
@@ -16,7 +15,7 @@ def parse(secs_str, u_secs_str):
     return usecs + long(u_secs_str)
 
 if __name__ == "__main__":
-    """" 
+    """"
          Usage: python latency.py replay_output replay.data > latency.out
          It gives the per-operation latency based on replayer output e.g
            1331666684 740701 1331666684 740702
@@ -27,7 +26,7 @@ if __name__ == "__main__":
            1 read
            5 read
            4 close
-           
+
     """
     replay_output = open(sys.argv[1])
     with open(sys.argv[1]) as replay_output:

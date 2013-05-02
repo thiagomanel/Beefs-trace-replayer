@@ -1,6 +1,7 @@
 import sys
-from latency import *
+from output_latency import *
 from clean_trace import *
+from workflow import *
 
 if __name__ == "__main__":
     """
@@ -20,12 +21,9 @@ if __name__ == "__main__":
     def waiting_delay(out_line):
         return float(out_line.split()[-1])
 
-    def in_stamps(traced_syscall):
-        syscall = traced_syscall.split()
-        stamp_tokens = syscall_timestamp(syscall).split("-")
-        begin = long(stamp_tokens[0])
-        end = begin + long(stamp_tokens[1])
-        return begin, end
+    def in_stamps(clean_call):
+        begin, elapsed = clean_call.stamp()
+        return begin, begin + elapsed
 
     def newest_parent(w_line, stamps):
         """ Returns parent_id for w_line's parent that terminates as last """
@@ -57,19 +55,20 @@ if __name__ == "__main__":
             # as they are very rare, we just skip this line and send a report to stderr
 
             for in_line in r_in_file:
-                w_line = WorkflowLine(in_line.split())
+                _json = json.loads(in_line)
+                w_line = WorkflowLine.from_json(_json)
+
                 out_line = r_out_file.readline()
 
                 current_id = w_line._id
                 try:
-                    input_stamps[current_id] = in_stamps(w_line.syscall)
+                    input_stamps[current_id] = in_stamps(w_line.clean_call)
                 except ValueError:
                     sys.stderr.write("Error " + in_line + "\n")
                     continue
 
                 output_stamps[current_id] = out_stamps(out_line)
 
-                _call = call(w_line.syscall.split())
                 in_begin, in_end = input_stamps[current_id]
                 out_begin, out_end = output_stamps[current_id]
 
@@ -88,7 +87,7 @@ if __name__ == "__main__":
 
                 waiting_dlay = waiting_delay(out_line)
 
-                sys.stdout.write("\t".join([_call,
+                sys.stdout.write("\t".join([w_line.clean_call.call,
                                             str(in_begin), str(in_end),
                                             str(out_begin), str(out_end),
                                             str(delta_from_input), str(delta_from_replay),

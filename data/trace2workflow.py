@@ -23,8 +23,10 @@ if __name__ == "__main__":
     elif police == "c":
         conservative_sort(w_lines)
     elif police == "sfs":
-        sort_by_pidfid(w_lines)
-        weak_fs_dependency_sort(w_lines)
+        sfs(w_lines)
+    else:
+        sys.stderr.write("wrong parameter\n")
+        exit(1)
 
     #json dumps cannot handle our data
     sys.stdout.write(str(len(w_lines)))

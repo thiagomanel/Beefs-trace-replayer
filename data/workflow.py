@@ -172,6 +172,106 @@ def update_dependency(w_line_to_update, w_line_target_parents):
             join(parent, w_line_to_update)
             break
 
+def sfs(workflow_lines):
+    """
+        TODO:
+    """
+    def sfs_update_dependency(w_line_to_update, w_line_target_parents):
+
+        def same_thread(w1, w2):
+            return pidfidprocess(w1) == pidfidprocess(w2)
+        def orphan(w):
+            return not w.parents
+
+        for parent in reversed(w_line_target_parents):
+            clean_call = parent.clean_call
+            if write_semantics(clean_call.call) and not same_thread(parent, w_line_to_update):
+                join(parent, w_line_to_update)
+                break
+
+    def fs_obj(clean_call, pid_fid_to_path):
+
+        if (clean_call.call == "mkdir") or (clean_call.call == "unlink") \
+           or (clean_call.call == "rmdir"):
+            filepath = clean_call.fullpath()
+            parent = parent_path(filepath)
+            return [filepath, parent]
+        elif (clean_call.call == "stat") or (clean_call.call == "open") \
+           or (clean_call.call == "write") or (clean_call.call == "read") \
+           or (clean_call.call == "llseek"):
+            return [clean_call.fullpath()]
+        elif (clean_call.call == "fstat"):
+            pidfid = (clean_call.pid, clean_call.fd())
+            filepath = pid_fid_to_path[pidfid]
+            return [filepath]
+        else:
+            raise Exception("unsupported operation " + str(clean_call))
+
+    def update_session(wline, session_table):
+        clean_call = wline.clean_call
+        pidfd = (clean_call.pid, clean_call.fd())
+        if not pidfd in session_table:
+            session_table[pidfd] = []
+        session_table[pidfd].append(wline)
+        return pidfd
+
+    sort_by_pidfid(workflow_lines)
+
+    lines_by_fs_obj = {}
+    pid_fd_sessions = {}
+
+    pid_fd_to_path = {}
+
+    for w_line in workflow_lines:
+
+        clean_call = w_line.clean_call
+
+        if clean_call.fd_based():
+            pidfd = update_session(w_line, pid_fd_sessions)
+
+        if clean_call.call == "open":
+            pid_fd_to_path[pidfd] = clean_call.fullpath()
+        elif clean_call.call == "close":
+            del pid_fd_to_path[pidfd]
+
+        if not clean_call.call == "close":#see CLOSE_CASE below
+            for obj in fs_obj(clean_call, pid_fd_to_path):
+                if not obj in lines_by_fs_obj:
+                    lines_by_fs_obj[obj] = Operations()
+                lines_by_fs_obj[obj].append(w_line)
+
+    for (obj, operations) in lines_by_fs_obj.iteritems():
+        for i in reversed(xrange(len(operations))):
+            sfs_update_dependency(operations[i], operations[:i])
+
+    session_counter = -1
+    for (pidfid, operations) in pid_fd_sessions.iteritems():
+        #note it's possible to have more than one open-to-close session for the
+        #same pid_fd e.g:
+        #pid=111 open("/foo") -> 4
+        #pid=111 close(4)
+        #pid=111 open("/baa") -> 4
+        #pid=111 close(4)
+        if not operations[0].clean_call.call == "open":
+            raise Exception("Something got wrong ! We should start a session with a open syscall")
+
+        for w_line in operations:
+            if w_line.clean_call.call == "open":
+                session_counter = session_counter + 1
+            w_line.session_id = session_counter
+
+    #CLOSE CASE: we keep operations sessions (from open to close).
+    #we make close's parent its antecessor on session
+    for (pidfid, operations) in pid_fd_sessions.iteritems():
+        for i in reversed(xrange(len(operations))):
+            current_wline = operations[i]
+            if (current_wline.clean_call.call == "close"):
+               #assuming a close cannot be the 0th on operations list
+               #this code works
+               parent_candidate = operations[i - 1]
+               if not parent_candidate.clean_call.call == "close":
+                   join(parent_candidate, current_wline)
+
 def weak_fs_dependency_sort(workflow_lines):
     """
         We implement the serialization algorithm based on
@@ -261,70 +361,6 @@ def weak_fs_dependency_sort(workflow_lines):
                if not parent_candidate.clean_call.call == "close":
                    join(parent_candidate, current_wline)
 
-def fs_dependency_order(workflow_lines):#do we assume _id or timestamp order ?
-#TODO: Does it modify workflow_line or it creates a new collection
-    """
-    We assume:
-        - there are not operations over a fd that was not properly opened before
-    """
-    def fs_obj(clean_call):
-
-        if (clean_call.call == "mkdir") or (clean_call.call == "unlink") \
-           or (clean_call.call == "rmdir"):
-            filepath = clean_call.fullpath()
-            parent = parent_path(filepath)
-            return [filepath, parent]
-
-        elif clean_call.call == "stat":
-            return [clean_call.fullpath()]
-
-        elif clean_call.call == "open":
-            return  [(clean_call.pid, clean_call.fd()), clean_call.fullpath()]
-
-        elif (clean_call.call == "fstat") or (clean_call.call == "write") \
-              or (clean_call.call == "read") or (clean_call.call == "llseek") \
-              or (clean_call.call == "close"):
-            return [(clean_call.pid, clean_call.fd())]
-
-        else:
-            raise Exception("unsupported operation " + str(line_tokens))
-
-    """
-    we assume lines have been ordered by pidfid algorithm
-
-    op                structure              type
-    -----------------------------------------------
-    stat                obj                  read
-    fstat               obj                  read
-    rmdir               parent, [obj]        write
-    mkdir               parent               write
-    unlink              parent, [obj]        write
-    open
-    close
-    write               obj                  write
-    read                obj                  read
-    llseek              obj                  write
-    open/create         obj                  write
-    -----------------------------------------------
-    """
-    lines_by_fs_obj = {}
-    pid_fd2fs_obj = {}
-
-    #FIXME we can create a map_by_fsobt method and after that the order method
-    for w_line in workflow_lines:
-        clean_call = w_line.clean_call
-        _fs_objs = fs_obj(clean_call)
-        for obj in _fs_objs:
-            if not obj in lines_by_fs_obj:
-                lines_by_fs_obj[obj] = Operations()
-            lines_by_fs_obj[obj].append(w_line)
-
-    for (obj, operations) in lines_by_fs_obj.iteritems():
-        for i in reversed(range(len(operations))):
-            update_dependency(operations[i], operations[:i])#these list creation can hurt our performance
-
-    return workflow_lines
-
 def conservative_sort(w_lines):
     #I guess cleaned calls are timestamp sorted TODO: check
     #I assume order information (parents and children) are empty lists
@@ -351,11 +387,11 @@ def conservative_sort(w_lines):
         if parent_wline:
             join(parent_wline, current_wline)
 
-def sort_by_pidfid(wlines):
+def pidfidprocess(wline):
+    clean_call = wline.clean_call
+    return (clean_call.pid, clean_call.tid, clean_call.pname)
 
-    def pidfidprocess(wline):
-        clean_call = wline.clean_call
-        return (clean_call.pid, clean_call.tid, clean_call.pname)
+def sort_by_pidfid(wlines):
 
     wlines_by_fidpidprocess = {}
 
@@ -367,32 +403,3 @@ def sort_by_pidfid(wlines):
         if (len(wlines_by_fidpidprocess[pfp]) > 1):
             father, son = wlines_by_fidpidprocess[pfp][-2], wlines_by_fidpidprocess[pfp][-1]
             join(father, son)
-
-def order_by_pidfid(cleaned_calls):#FIXME: change to sort_by_pidfid
-    """ From a collection of CleanCalls to a collection of
-        workflow lines, ordered by pid-tid
-    """
-    def pidfidprocess(clean_call):
-        return (clean_call.pid, clean_call.tid, clean_call.pname)
-    def pairwise(iterable):
-        a, b = tee(iterable)
-        next(b, None)
-        return izip(a, b)
-
-    wlines_by_fidpidprocess = {}
-
-    for (_id, cleaned_call) in enumerate(cleaned_calls):
-        pfp = pidfidprocess(cleaned_call)
-        if not pfp in wlines_by_fidpidprocess:
-            wlines_by_fidpidprocess[pfp] = []
-        wlines_by_fidpidprocess[pfp].append(WorkflowLine(_id + 1, [], [], cleaned_call))
-
-    for lines in wlines_by_fidpidprocess.values():
-        for (father, son) in pairwise(lines):
-            join(father, son)
-
-    #stackoverflow says it is faster
-    #FIXME: unit should be broken after this change
-    result = []
-    map(result.extend, wlines_by_fidpidprocess.values())
-    return result

@@ -1,0 +1,89 @@
+#!/usr/bin/env stap
+/**
+* Copyright (C) 2008 Universidade Federal de Campina Grande
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+
+#TODO: we need a test, cache + device = total be invariant to trace sample
+#TODO: cache-hit-rate.stp does some additional checks
+
+global cache_read_bytes, cache_written_bytes
+global device_read_bytes, device_written_bytes
+
+function shouldlog() {
+    /* 1056 -> Id of tracer user.*/
+    return "stapio" != execname() && uid() != 1056
+}
+
+probe vfs.read.return {
+    if (shouldlog()) {
+        if ($return > 0) {
+            if (devname != "N/A") {
+	        device_read_bytes[pid(), tid(), execname()] += $return
+	    } else {
+	        cache_read_bytes[pid(), tid(), execname()] += $return
+	    }
+        }
+    }
+}
+
+probe vfs.write.return {
+    if (shouldlog()) {
+        if ( $return > 0 ) {
+            if (devname != "N/A") {
+	        device_written_bytes[pid(), tid(), execname()] += $return
+	    } else {
+	        cache_written_bytes[pid(), tid(), execname()] += $return
+	    }
+        }
+    }
+}
+
+/**
+#TODO: add this as a arg
+probe timer.ms(5000) {
+}
+*/
+
+probe end {
+    printf("%12s %8s %8s %8s %8s\n", "DEVICE_READ", "PID", "TID", "CMD", "BYTES")
+
+    foreach ([_pid, _tid, _process_name] in device_read_bytes)
+        printf("%8d %8d %25s %12d\n",
+               _pid, _tid, _process_name,
+	       device_read_bytes[_pid, _tid, _process_name])
+
+    printf("%12s %8s %8s %8s %8s\n", "CACHE_READ", "PID", "TID", "CMD", "BYTES")
+    foreach ([_pid, _tid, _process_name] in cache_read_bytes)
+        printf("%8d %8d %25s %12d\n",
+               _pid, _tid, _process_name,
+	       cache_read_bytes[_pid, _tid, _process_name])
+
+    printf("%12s %8s %8s %8s %8s\n", "DEVICE_WRITE", "PID", "TID", "CMD", "BYTES")
+    foreach ([_pid, _tid, _process_name] in device_written_bytes)
+        printf("%8d %8d %25s %12d\n",
+               _pid, _tid, _process_name,
+	       device_written_bytes[_pid, _tid, _process_name])
+
+    printf("%12s %8s %8s %8s %8s\n", "CACHE_WRITE", "PID", "TID", "CMD", "BYTES")
+    foreach ([_pid, _tid, _process_name] in cache_written_bytes)
+        printf("%8d %8d %25s %12d\n",
+               _pid, _tid, _process_name,
+	       cache_written_bytes[_pid, _tid, _process_name])
+
+    delete cache_read_bytes
+    delete cache_written_bytes
+    delete device_read_bytes
+    delete device_written_bytes
+}

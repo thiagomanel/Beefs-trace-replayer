@@ -12,3 +12,6 @@ systemtap.examples/process/syscalltimes - Combination shell/systemtap script to 
 
 http://sourceware.org/systemtap/wiki/WSCacheHitRate -
 http://sourceware.org/systemtap/wiki/WSthreadCPUshare - It is hard to tell how much time any given thread is spending in kernel vs. user space. Some statistics are available to user space, and some others only to the scheduler. But all in one place? Nope.
+
+IO staps
+http://www.sourceware.org/git/gitweb.cgi?p=systemtap.git;a=tree;f=testsuite/systemtap.examples/io;h=470789cd537dae663398ea92b4af44e5e0880697;hb=HEAD

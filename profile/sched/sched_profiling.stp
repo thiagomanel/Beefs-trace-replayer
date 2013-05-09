@@ -1,0 +1,74 @@
+#! /usr/bin/env stap
+/**
+* Copyright (C) 2009 Universidade Federal de Campina Grande
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*         http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*
+* @author thiagoepdc - thiagoepdc@lsd.ufcg.edu.br
+*/
+
+/** based on systemtap examples: sched_switch.stp */
+
+global target_pid
+
+function state_calc(state) {
+	if(state == 0)
+	status = "R"
+	if(state == 1)
+	status = "S"
+	if(state == 2)
+	status = "D"
+	if(state == 4)
+	status = "T"
+	if(state == 8)
+	status = "T"
+	if(state == 16)
+	status = "Z"
+	if(state == 32)
+	status = "EXIT_DEAD"
+	return status
+}
+
+/**
+* my deployment (2.6.32-41-generic #94-Ubuntu SMP i686
+* SystemTap translator/driver (version 1.0/0.143 Debian version 1.0-2)
+* is messing probes so I have to adapt the scheduler.ctxswitch probe
+*/
+probe kernel.trace("sched_wakeup") {
+
+    #kernel.trace("sched_wakeup") $rq:struct rq* $p:struct task_struct* $success:int
+    if (target_pid == $p->pid) {
+
+        printf("wakeup %d (%s:%d:%d):%s\n",
+               gettimeofday_ns(),
+               task_execname($p), task_pid($p), task_tid($p), state_calc($p->state))
+    }
+}
+
+probe kernel.trace("sched_switch") {
+
+    #kernel.trace("sched_switch") $rq:struct rq* $prev:struct task_struct* $next:struct task_struct*
+    prev_pid = $prev->pid
+    next_pid = $next->pid
+
+    if (target_pid == next_pid || target_pid == prev_pid) {
+        printf("%d-%d (%s:%d:%d):%s ==> (%s:%d:%d):%s\n",
+               task_cpu($prev), gettimeofday_ns(),
+               task_execname($prev), task_pid($prev), task_tid($prev), state_calc($prev->state),
+               task_execname($next), task_pid($next), task_tid($next), state_calc($next->state))
+    }
+}
+
+probe begin {
+    target_pid = strtol(@1, 10)
+}

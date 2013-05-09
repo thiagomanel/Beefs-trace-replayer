@@ -44,6 +44,9 @@ function state_calc(state) {
 * SystemTap translator/driver (version 1.0/0.143 Debian version 1.0-2)
 * is messing probes so I have to adapt the scheduler.ctxswitch probe
 */
+
+#TODO: log time spent in each one of thread states
+
 probe kernel.trace("sched_wakeup") {
 
     #kernel.trace("sched_wakeup") $rq:struct rq* $p:struct task_struct* $success:int
@@ -54,6 +57,8 @@ probe kernel.trace("sched_wakeup") {
                task_execname($p), task_pid($p), task_tid($p), state_calc($p->state))
     }
 }
+
+#TODO: adapt schedtimes.stp to plot tid stats
 
 probe kernel.trace("sched_switch") {
 
@@ -67,6 +72,11 @@ probe kernel.trace("sched_switch") {
                task_execname($prev), task_pid($prev), task_tid($prev), state_calc($prev->state),
                task_execname($next), task_pid($next), task_tid($next), state_calc($next->state))
     }
+
+    if (target_pid == prev_pid) {
+
+    }
+
 }
 
 probe begin {

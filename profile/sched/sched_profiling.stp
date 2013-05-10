@@ -18,8 +18,14 @@
 */
 
 /** based on systemtap examples: sched_switch.stp */
+#TODO: adapt schedtimes.stp to plot tid stats
+#TODO: log time spent in each one of thread states
 
 global target_pid
+global pid_state
+global previous_timestamp
+glonal runtime
+global queued_time
 
 function state_calc(state) {
 	if(state == 0)
@@ -39,13 +45,19 @@ function state_calc(state) {
 	return status
 }
 
+function target_sched_off(sched_off_pid) {
+    return target_pid == sched_off_pid
+}
+
+function target_sched_in(sched_in_pid) {
+    return target_pid == sched_in_pid
+}
+
 /**
 * my deployment (2.6.32-41-generic #94-Ubuntu SMP i686
 * SystemTap translator/driver (version 1.0/0.143 Debian version 1.0-2)
 * is messing probes so I have to adapt the scheduler.ctxswitch probe
 */
-
-#TODO: log time spent in each one of thread states
 
 probe kernel.trace("sched_wakeup") {
 
@@ -57,8 +69,6 @@ probe kernel.trace("sched_wakeup") {
                task_execname($p), task_pid($p), task_tid($p), state_calc($p->state))
     }
 }
-
-#TODO: adapt schedtimes.stp to plot tid stats
 
 probe kernel.trace("sched_switch") {
 
@@ -73,8 +83,60 @@ probe kernel.trace("sched_switch") {
                task_execname($next), task_pid($next), task_tid($next), state_calc($next->state))
     }
 
-    if (target_pid == prev_pid) {
+    if (target_sched_off(prev_pid)) {
+         if (!([prev_pid] in pid_state)) {/** target_pid first probe*/
+             previous_timestamp[prev_pid] = gettimeofday_us()
+	     //FIXME: maybe a bug a diff process can use an old pid
+	     pid_names[prev_pid] = task_execname($prev)
+	     if ($prev->state > 0) {//FIXME: why > 0 sleeping ?
+   	         pid_state[prev_pid] = SLEEPING
+	     } else if ($prev->state == 0) {
+   	         pid_state[prev_pid] = QUEUED
+             } else {
+  	         printf("unknown transition pid state: %d our state: %d\n",
+		         $prev->state, pid_state[prev_pid])
+	     }
+	 } else if (pid_state[prev_pid] == RUNNING) {/** target was seem before, and the last time it was running */
+   	     pid_names[prev_pid] = task_execname($prev)
 
+	     t = gettimeofday_us()
+	     run_time[prev_pid] += (t - previous_timestamp[prev_pid])
+	     previous_timestamp[prev_pid] = t
+
+	     if ($prev->state > 0) {/** target_pid was switched off and put to sleep */
+		  pid_state[prev_pid] = SLEEPING;
+	          if ((get_iowait($rq) - io_wait_count[prev_pid]) > 0) {
+		      io_wait_incremented[prev_pid] = 1
+		  }
+	     } else if ($prev->state == 0) {/** target_pid was switched off but it's still in the running queue */
+   	         pid_state[prev_pid] = QUEUED
+	     } else {
+  	         printf("unknown transition pid state: %d our state: %d\n",
+		         $prev->state, pid_state[prev_pid])
+	     }
+	 } else {/** it cannot we sched_off if it was not running */
+  	     printf("unknown transition %s pid state: %d our state: %d\n",
+	             pid_names[prev_pid], $prev->state, pid_state[prev_pid])
+	 }
+    } else if (target_sched_in(next_pid)) {
+        io_wait_count[next_pid] = get_iowait($rq)//FIXME why this ?
+	if (!([next_pid] in pid_state)) {/** target_pid first probe */
+            previous_timestamp[next_pid] =  gettimeofday_us()
+            pid_state[next_pid] = RUNNING
+	    pid_names[next_pid] = task_execname($next)
+	} else if (pid_state[next_pid] == QUEUED) {/** target_pid was seem before and it was queued*/
+  	    t = gettimeofday_us()
+	    queued_time[next_pid] += (t - previous_timestamp[next_pid])
+	    previous_timestamp[next_pid] = t
+	    pid_state[next_pid] = RUNNING
+            pid_names[next_pid] = task_execname($next)
+	} else {
+	    /** it cannot be sched in if it was not queued (the linux running queue),
+	        so a transition sleeping -> running is not possible, it has to be
+	        waken up before */
+            printf("unknown transition %s pid state: %d our state: %d\n",
+	            pid_names[next_pid], $next->state, pid_state[next_pid])
+	}
     }
 
 }

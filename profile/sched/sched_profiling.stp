@@ -79,8 +79,9 @@ function target_sched_on(sched_on_pid) {
 probe kernel.trace("sched_wakeup") {
     #kernel.trace("sched_wakeup") $rq:struct rq* $p:struct task_struct* $success:int
 
-    wakeup_pid = $p->pid
-    wakeup_tid = task_tid($p)
+    //sounds odd, eh ?
+    wakeup_pid = $p->tgit
+    wakeup_tid = $p->pid
 
     if (target_pid != wakeup_pid) next
     //FIXME: why this check below ?
@@ -121,10 +122,10 @@ probe kernel.trace("sched_wakeup") {
 probe kernel.trace("sched_switch") {
     #kernel.trace("sched_switch") $rq:struct rq* $prev:struct task_struct* $next:struct task_struct*
 
-    prev_pid = $prev->pid
-    prev_tid = task_tid($prev)
-    next_pid = $next->pid
-    next_tid = task_tid($next)
+    prev_pid = $prev->tgid
+    prev_tid = $prev->pid
+    next_pid = $next->tgid
+    next_tid = $next->pid
 
  /**   if (target_pid == next_pid || target_pid == prev_pid) {
         printf("%d-%d (%s:%d:%d):%s ==> (%s:%d:%d):%s\n",

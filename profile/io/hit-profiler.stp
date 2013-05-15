@@ -18,33 +18,38 @@
 #TODO: we need a test, cache + device = total be invariant to trace sample
 #TODO: cache-hit-rate.stp does some additional checks
 
+global target_pid
+
 global cache_read_bytes, cache_written_bytes
 global device_read_bytes, device_written_bytes
 
-function shouldlog() {
-    /* 1056 -> Id of tracer user.*/
-    return "stapio" != execname() && uid() != 1056
+function shouldlog(current_pid) {
+    return target_pid == current_pid
 }
 
 probe vfs.read.return {
-    if (shouldlog()) {
+    _pid = pid()
+    if (shouldlog(_pid)) {
+        _tid = tid()
         if ($return > 0) {
             if (devname != "N/A") {
-	        device_read_bytes[pid(), tid(), execname()] += $return
+	        device_read_bytes[_pid, _tid, execname()] += $return
 	    } else {
-	        cache_read_bytes[pid(), tid(), execname()] += $return
+	        cache_read_bytes[_pid, _tid, execname()] += $return
 	    }
         }
     }
 }
 
 probe vfs.write.return {
-    if (shouldlog()) {
+    _pid = pid()
+    if (shouldlog(_pid)) {
+        _tid = tid()
         if ( $return > 0 ) {
             if (devname != "N/A") {
-	        device_written_bytes[pid(), tid(), execname()] += $return
+	        device_written_bytes[_pid, _tid, execname()] += $return
 	    } else {
-	        cache_written_bytes[pid(), tid(), execname()] += $return
+	        cache_written_bytes[_pid, _tid, execname()] += $return
 	    }
         }
     }
@@ -55,6 +60,15 @@ probe vfs.write.return {
 probe timer.ms(5000) {
 }
 */
+
+probe begin {
+
+}
+
+probe begin {
+    target_pid = strtol(@1, 10)
+    printf("target_pid=%d\n", target_pid)
+}
 
 probe end {
     printf("%12s %8s %8s %8s %8s\n", "DEVICE_READ", "PID", "TID", "CMD", "BYTES")

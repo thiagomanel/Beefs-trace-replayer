@@ -55,16 +55,6 @@ probe vfs.write.return {
     }
 }
 
-/**
-#TODO: add this as a arg
-probe timer.ms(5000) {
-}
-*/
-
-probe begin {
-
-}
-
 probe begin {
     target_pid = strtol(@1, 10)
     printf("target_pid=%d\n", target_pid)

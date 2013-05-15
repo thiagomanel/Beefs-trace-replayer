@@ -28,8 +28,6 @@ Has two modes. When no arguments are given it profiles all
 threads. Alternatively, you can pass -c "program name"
 */
 
-#TODO: adapt schedtimes.stp to plot tid stats
-
 //constants
 global RUNNING=0, QUEUED=1, SLEEPING=2
 
@@ -75,7 +73,6 @@ function target_sched_on(sched_on_pid) {
 * SystemTap translator/driver (version 1.0/0.143 Debian version 1.0-2)
 * is messing probes so I have to adapt the scheduler.ctxswitch probe
 */
-
 probe kernel.trace("sched_wakeup") {
     #kernel.trace("sched_wakeup") $rq:struct rq* $p:struct task_struct* $success:int
 
@@ -103,14 +100,10 @@ probe kernel.trace("sched_wakeup") {
         state[wakeup_tid] = QUEUED
 	names[wakeup_tid] = task_execname($p)
     } else {
-        printf("Illegal. to be waken up one should be sleeping. pid state: %d our state: %d\n",
-	        $p->state, state[wakeup_tid])
+        printf("[ILLEGAL] to be waken up one should be sleeping. pid=%d tid=%d pid_state=%d our_state=%d\n",
+	        wakeup_pid, wakeup_tid, $p->state, state[wakeup_tid])
     }
 
-    /**
-    if (target_pid == $p->pid) {
-        printf("wakeup %d (%s:%d:%d):%s\n", gettimeofday_ns(), task_execname($p), task_pid($p), task_tid($p), state_calc($p->state))
-    }*/
 }
 
 
@@ -127,13 +120,6 @@ probe kernel.trace("sched_switch") {
     next_pid = $next->tgid
     next_tid = $next->pid
 
- /**   if (target_pid == next_pid || target_pid == prev_pid) {
-        printf("%d-%d (%s:%d:%d):%s ==> (%s:%d:%d):%s\n",
-               task_cpu($prev), gettimeofday_ns(),
-               task_execname($prev), task_pid($prev), task_tid($prev), state_calc($prev->state),
-               task_execname($next), task_pid($next), task_tid($next), state_calc($next->state))
-    }*/
-
     if (target_sched_off(prev_pid)) {
 
          if (!([prev_tid] in state)) {/** first probe*/
@@ -145,8 +131,8 @@ probe kernel.trace("sched_switch") {
 	     } else if ($prev->state == 0) {
    	         state[prev_tid] = QUEUED
              } else {
-  	         printf("unknown transition pid state: %d our state: %d\n",
-		         $prev->state, state[prev_tid])
+  	         printf("[ILLEGAL] unknown transition pid=%d tid=%d pid_state=%d our_state=%d\n",
+		         prev_pid, prev_tid, $prev->state, state[prev_tid])
 	     }
 	 } else if (state[prev_tid] == RUNNING) {
 
@@ -166,12 +152,12 @@ probe kernel.trace("sched_switch") {
 	     } else if ($prev->state == 0) {/* sched_off (RUNNING -> QUEUED) */
    	         state[prev_tid] = QUEUED
 	     } else {
-  	         printf("unknown transition pid state: %d our state: %d\n",
-		         $prev->state, state[prev_tid])
+  	         printf("[ILLEGAL] unknown transition pid=%d tid=%d pid_state=%d our_state=%d\n",
+		         prev_pid, prev_tid, $prev->state, state[prev_tid])
 	     }
 	 } else {
-  	     printf("Illegal. It cannot we sched_off if it was not running. %s pid state: %d our state: %d\n",
-	             names[prev_tid], $prev->state, state[prev_tid])
+  	     printf("[ILLEGAL] It cannot we sched_off if it was not running. pid=%d tid=%d pid_state=%d our_state=%d\n",
+	             prev_pid, prev_tid, $prev->state, state[prev_tid])
 	 }
     } else if (target_sched_on(next_pid)) {
 
@@ -194,8 +180,8 @@ probe kernel.trace("sched_switch") {
 	    /** it cannot be sched in if it was not queued (the linux running queue),
 	        so a transition sleeping -> running is not possible, it has to be
 	        waken up before */
-            printf("Illegal. It cannot be sched in if it was not queued %s pid state: %d our state: %d\n",
-	            names[next_tid], $next->state, state[next_tid])
+            printf("[ILLEGAL] It cannot be sched in if it was not queued pid=%d tid=%d pid_state=%d our_state=%d\n",
+	            next_pid, next_tid, $next->state, state[next_tid])
 	}
     }
 }

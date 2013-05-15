@@ -80,7 +80,7 @@ probe kernel.trace("sched_wakeup") {
     #kernel.trace("sched_wakeup") $rq:struct rq* $p:struct task_struct* $success:int
 
     //sounds odd, eh ?
-    wakeup_pid = $p->tgit
+    wakeup_pid = $p->tgid
     wakeup_tid = $p->pid
 
     if (target_pid != wakeup_pid) next
@@ -202,6 +202,7 @@ probe kernel.trace("sched_switch") {
 
 probe begin {
     target_pid = strtol(@1, 10)
+    printf ("target_pid=%d\n", target_pid)
 }
 
 probe end {

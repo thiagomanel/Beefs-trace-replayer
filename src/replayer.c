@@ -22,6 +22,8 @@
 #include <assert.h>
 #include <sys/time.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/syscall.h>
 
 #define PID_MAX 32768
 
@@ -347,6 +349,10 @@ void *consume (void *arg) {
 			//FIXME: We need to set expected rvalue
 			cmd_result->actual_rvalue = actual_rvalue;
 			gettimeofday (cmd_result->dispatch_end, NULL);
+
+			//FIXME: debugging purposes, remove soon to avoid the
+			//syscall overhead (or add a debug switch)
+			cmd_result->worker_id = syscall(SYS_gettid);
 
 			pthread_mutex_lock (&lock);
 

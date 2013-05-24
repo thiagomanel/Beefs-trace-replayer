@@ -82,14 +82,14 @@ loader.o : $(USER_DIR)/src/loader.c $(USER_DIR)/src/replayer.c $(USER_DIR)/inclu
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/src/loader.c
 
 dispatch.o : $(USER_DIR)/src/dispatch.c $(USER_DIR)/include/replayer.h
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/src/dispatch.c
+		$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/src/dispatch.c
 
 replayer.o : $(USER_DIR)/src/loader.c $(USER_DIR)/src/replayer.c $(USER_DIR)/include/replayer.h $(USER_DIR)/include/loader.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/src/replayer.c
 
 beefs_replayer.o : $(USER_DIR)/src/loader.c $(USER_DIR)/src/replayer.c $(USER_DIR)/src/beefs_replayer.c $(USER_DIR)/include/replayer.h $(USER_DIR)/include/loader.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/src/beefs_replayer.c
-	
+
 beefs_replayer : loader.o replayer.o beefs_replayer.o dispatch.o workflow.o conservative_timing.o faster_timing.o
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $^ -o $@ -ljansson -pthread
 

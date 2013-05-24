@@ -17,6 +17,7 @@
 #define _REPLAYER_H
 
 #include "list.h"
+#include <sys/types.h>
 
 #define MAX_ARGS 5
 #define PROC_NAME_LEN 256 //FIXME TOO BIG. search for exec name in task structs
@@ -125,6 +126,7 @@ typedef struct _command_replay_result {
 	//acessed number of bytes and for check returned errors codes.
 	int expected_rvalue;
 	int actual_rvalue;
+	pid_t worker_id;
 } command_replay_result ;
 
 typedef struct replay_workload {

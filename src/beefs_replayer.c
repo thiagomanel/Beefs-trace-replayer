@@ -28,10 +28,14 @@
 #include <stdio.h>
 #include <sys/time.h>
 #include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/syscall.h>
 
 int main (int argc, const char* argv[]) {
 
 	int i;
+	pid_t main_tid = syscall(SYS_gettid);
 	command_replay_result *results, *tmp;
 	char const *faster_police = "faster";
 	char const *conservative_police = "conservative";
@@ -64,6 +68,7 @@ int main (int argc, const char* argv[]) {
 		exit(1);
 	}
 
+	fprintf (stderr, "main_tid=%d\n", main_tid);
 	replay (repl);
 
 	Replay_result *result = repl->result;
@@ -71,13 +76,14 @@ int main (int argc, const char* argv[]) {
 
 	for (i = 0; i < result->replayed_commands; i++) {
 		tmp = &(results[i]);
-		printf ("%ld %ld %ld %ld %f %d %d\n",
+		printf ("%ld %ld %ld %ld %f %d %d %d\n",
 				tmp->dispatch_begin->tv_sec,
 				tmp->dispatch_begin->tv_usec,
 				tmp->dispatch_end->tv_sec,
 				tmp->dispatch_end->tv_usec,
 				tmp->delay,
 				tmp->expected_rvalue,
-				tmp->actual_rvalue);
+				tmp->actual_rvalue,
+				tmp->worker_id);
 	}
 }

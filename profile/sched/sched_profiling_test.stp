@@ -1,0 +1,82 @@
+#! /usr/bin/env stap
+/**
+* Copyright (C) 2009 Universidade Federal de Campina Grande
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*         http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*
+* @author thiagoepdc - thiagoepdc@lsd.ufcg.edu.br
+*/
+
+/**
+this script in based on sched_switch.stp see reference below. we added tid
+logging to it
+
+Author: Jason Baron <jbaron@redhat.com>
+profiles threads and displays their run times, queued times,
+wait times, including i/o wait times.
+Has two modes. When no arguments are given it profiles all
+threads. Alternatively, you can pass -c "program name"
+*/
+
+function state_calc(state) {
+	if(state == 0)
+	status = "R"
+	if(state == 1)
+	status = "S"
+	if(state == 2)
+	status = "D"
+	if(state == 4)
+	status = "T"
+	if(state == 8)
+	status = "T"
+	if(state == 16)
+	status = "Z"
+	if(state == 32)
+	status = "EXIT_DEAD"
+	return status
+}
+
+/**
+* my deployment (2.6.32-41-generic #94-Ubuntu SMP i686
+* SystemTap translator/driver (version 1.0/0.143 Debian version 1.0-2)
+* is messing probes so I have to adapt the scheduler.ctxswitch probe
+*/
+probe kernel.trace("sched_wakeup") {
+    #kernel.trace("sched_wakeup") $rq:struct rq* $p:struct task_struct* $success:int
+
+    wakeup_pid = $p->pid
+    wakeup_tgid = $p->tgid
+
+    printf("%d-%d\n", wakeup_pid, wakeup_tgid);
+}
+
+/**
+* sched_on (QUEUED -> RUNNING)
+* sched_off (RUNNING -> QUEUED), (RUNNING ->  SLEEPING)
+* wake_up (SLEEPING -> QUEUED)
+**/
+probe kernel.trace("sched_switch") {
+    #kernel.trace("sched_switch") $rq:struct rq* $prev:struct task_struct* $next:struct task_struct*
+
+    prev_pid = $prev->pid
+    prev_tgid = $prev->tgid
+
+    next_pid = $next->pid
+    next_tgid = $next->tgid
+
+    printf("%d-%d ==> %d:%d\n", prev_pid, prev_tgid, next_pid, next_tgid)
+}
+
+probe begin { }
+
+probe end { }

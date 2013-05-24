@@ -1,0 +1,37 @@
+#! /usr/bin/env stap
+
+global latency, sizeblock, target_pid
+
+probe ioblock.request {
+    latency[$bio] = gettimeofday_us()
+    sizeblock[$bio] = $bio->bi_size
+}
+
+probe kernel.trace("block_bio_frontmerge"),
+      kernel.trace("block_bio_backmerge") {
+    delete latency[$bio]
+    delete sizeblock[$bio]
+}
+
+probe ioblock.end {
+    _pid = pid()
+    _tid = tid()
+    _name = execname()
+
+    t = gettimeofday_us()
+    s = latency[$bio]
+    _size = sizeblock[$bio]
+
+    delete latency[$bio]
+    delete sizeblock[$bio]
+
+    if (_pid == target_pid) {
+        printf("pid=%d tid=%d execname=%s devname=%s size=%d latency=%d\n",
+                _pid, _tid, _name, devname, _size, (t - s))
+    }
+}
+
+probe begin {
+    target_pid = strtol(@1, 10)
+    printf("target_pid=%d\n", target_pid)
+}

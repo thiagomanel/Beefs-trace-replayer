@@ -354,8 +354,6 @@ void *consume (void *arg) {
 				shared_buff->consumed_queue[++shared_buff->last_consumed] = element;
 				mark_consumed (element);
 				++shared_buff->consumed_count;
-				fprintf (stderr, "replay_count=%d workfow_id=%d\n",
-						shared_buff->consumed_count, element->id);
 			} else {
 				fprintf (stderr,
 					"Err replaying command workflow_id=%d type=%d\n",

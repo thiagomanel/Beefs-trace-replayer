@@ -40,8 +40,8 @@ int main (int argc, const char* argv[]) {
 	char const *faster_police = "faster";
 	char const *conservative_police = "conservative";
 
-	if (argc != 3) {
-		perror("Wrong args. Usage: beefs_replayer $replay_input $timing_police\n");
+	if (argc < 3 || argc > 4) {
+		perror("Wrong args. Usage: beefs_replayer $replay_input $timing_police [debug] \n");
 		exit(1);
 	}
 
@@ -74,16 +74,20 @@ int main (int argc, const char* argv[]) {
 	Replay_result *result = repl->result;
 	results = result->cmds_replay_result;
 
-	for (i = 0; i < result->replayed_commands; i++) {
-		tmp = &(results[i]);
-		printf ("%ld %ld %ld %ld %f %d %d %d\n",
-				tmp->dispatch_begin->tv_sec,
-				tmp->dispatch_begin->tv_usec,
-				tmp->dispatch_end->tv_sec,
-				tmp->dispatch_end->tv_usec,
-				tmp->delay,
-				tmp->expected_rvalue,
-				tmp->actual_rvalue,
-				tmp->worker_id);
+	if (argc == 4) {
+		if (strncmp (argv[3], "debug", 5) == 0) {
+			for (i = 0; i < result->replayed_commands; i++) {
+				tmp = &(results[i]);
+				printf ("%ld %ld %ld %ld %f %d %d %d\n",
+						tmp->dispatch_begin->tv_sec,
+						tmp->dispatch_begin->tv_usec,
+						tmp->dispatch_end->tv_sec,
+						tmp->dispatch_end->tv_usec,
+						tmp->delay,
+						tmp->expected_rvalue,
+						tmp->actual_rvalue,
+						tmp->worker_id);
+			}
+		}
 	}
 }

@@ -28,6 +28,16 @@ Has two modes. When no arguments are given it profiles all
 threads. Alternatively, you can pass -c "program name"
 */
 
+//constants
+global RUNNING=0, QUEUED=1, SLEEPING=2
+
+global target_pid, target_name
+global state, names
+global previous_timestamp
+global run_time, sleep_time, queued_time, io_wait_time
+global io_wait_count
+global io_wait_incremented
+
 function state_calc(state) {
 	if(state == 0)
 	status = "R"
@@ -46,6 +56,18 @@ function state_calc(state) {
 	return status
 }
 
+function get_iowait:long(queue:long) {
+    return @cast(queue,"rq","kernel")->nr_iowait->counter
+}
+
+function target_sched_off(current_name) {
+    return target_name == current_name
+}
+
+function target_sched_on(current_name) {
+    return target_name == current_name
+}
+
 /**
 * my deployment (2.6.32-41-generic #94-Ubuntu SMP i686
 * SystemTap translator/driver (version 1.0/0.143 Debian version 1.0-2)
@@ -54,11 +76,36 @@ function state_calc(state) {
 probe kernel.trace("sched_wakeup") {
     #kernel.trace("sched_wakeup") $rq:struct rq* $p:struct task_struct* $success:int
 
-    wakeup_pid = $p->pid
-    wakeup_tgid = $p->tgid
+    //sounds odd, eh ?
+    wakeup_pid = $p->tgid
+    wakeup_tid = $p->pid
+    current_name = task_execname($p)
 
-    printf("%d-%d\n", wakeup_pid, wakeup_tgid);
+    //FIXME: why this check below ?
+    if ((!$success) && (state[wakeup_tid] != SLEEPING)) next
+    if (target_name == current_name) {
+	    if (!([wakeup_tid] in state)) { /** first probe */
+		/** wake-up removes a sleeping task and adds it to the running queue */
+	        previous_timestamp[wakeup_tid] = gettimeofday_us()
+		state[wakeup_tid] = QUEUED
+		names[wakeup_tid] = task_execname($p)
+	    } else if (state[wakeup_tid] == SLEEPING) {
+        	t = gettimeofday_us()
+		sleep_time[wakeup_tid] += (t - previous_timestamp[wakeup_tid])
+		if (io_wait_incremented[wakeup_tid] == 1) {
+	  	    io_wait_time[wakeup_tid] += (t - previous_timestamp[wakeup_tid])
+		    io_wait_incremented[wakeup_tid] = 0
+	    	}
+		previous_timestamp[wakeup_tid] = t
+	        state[wakeup_tid] = QUEUED
+		names[wakeup_tid] = task_execname($p)
+	    } else {
+        	printf("[ILLEGAL] to be waken up one should be sleeping. pid=%d tid=%d pid_state=%d our_state=%d\n",
+	        	wakeup_pid, wakeup_tid, $p->state, state[wakeup_tid])
+	    }
+    }
 }
+
 
 /**
 * sched_on (QUEUED -> RUNNING)
@@ -68,15 +115,102 @@ probe kernel.trace("sched_wakeup") {
 probe kernel.trace("sched_switch") {
     #kernel.trace("sched_switch") $rq:struct rq* $prev:struct task_struct* $next:struct task_struct*
 
-    prev_pid = $prev->pid
-    prev_tgid = $prev->tgid
+    prev_pid = $prev->tgid
+    prev_tid = $prev->pid
+    prev_name = task_execname($prev)
 
-    next_pid = $next->pid
-    next_tgid = $next->tgid
+    next_pid = $next->tgid
+    next_tid = $next->pid
+    next_name = task_execname($next)
 
-    printf("%d-%d ==> %d:%d\n", prev_pid, prev_tgid, next_pid, next_tgid)
+    if (prev_name == target_name) {
+
+         if (!([prev_tid] in state)) {/** first probe*/
+
+             previous_timestamp[prev_tid] = gettimeofday_us()
+	     names[prev_tid] = task_execname($prev)
+	     if ($prev->state > 0) {//FIXME: why > 0 sleeping ?
+   	         state[prev_tid] = SLEEPING
+	     } else if ($prev->state == 0) {
+   	         state[prev_tid] = QUEUED
+             } else {
+  	         printf("[ILLEGAL] unknown transition pid=%d tid=%d pid_state=%d our_state=%d\n",
+		         prev_pid, prev_tid, $prev->state, state[prev_tid])
+	     }
+	 } else if (state[prev_tid] == RUNNING) {
+
+   	     names[prev_tid] = task_execname($prev)
+
+	     t = gettimeofday_us()
+	     run_time[prev_tid] += (t - previous_timestamp[prev_tid])
+	     previous_timestamp[prev_tid] = t
+
+	     /* sched_off (RUNNING ->  SLEEPING) */
+	     if ($prev->state > 0) {
+		  state[prev_tid] = SLEEPING
+		  //iowait has increased (in comparison with the time when the task entered the cpu)
+	          if ((get_iowait($rq) - io_wait_count[prev_tid]) > 0) {
+		      io_wait_incremented[prev_tid] = 1
+		  }
+	     } else if ($prev->state == 0) {/* sched_off (RUNNING -> QUEUED) */
+   	         state[prev_tid] = QUEUED
+	     } else {
+  	         printf("[ILLEGAL] unknown transition pid=%d tid=%d pid_state=%d our_state=%d\n",
+		         prev_pid, prev_tid, $prev->state, state[prev_tid])
+	     }
+	 } else {
+  	     printf("[ILLEGAL] It cannot we sched_off if it was not running. pid=%d tid=%d pid_state=%d our_state=%d\n",
+	             prev_pid, prev_tid, $prev->state, state[prev_tid])
+	 }
+    } else if (next_name == target_name) {
+
+	//register the io_wait just before the task receives the cpu, so
+	//that we can check later (when the cpu is lost) if it is going to
+	//sleep due to IO
+        io_wait_count[next_tid] = get_iowait($rq)
+
+	if (!([next_tid] in state)) {/** first probe */
+            previous_timestamp[next_tid] =  gettimeofday_us()
+            state[next_tid] = RUNNING
+	    names[next_tid] = task_execname($next)
+	} else if (state[next_tid] == QUEUED) {/* sched_on (QUEUED -> RUNNING) */
+  	    t = gettimeofday_us()
+	    queued_time[next_tid] += (t - previous_timestamp[next_tid])
+	    previous_timestamp[next_tid] = t
+	    state[next_tid] = RUNNING
+            names[next_tid] = task_execname($next)
+	} else {
+	    /** it cannot be sched in if it was not queued (the linux running queue),
+	        so a transition sleeping -> running is not possible, it has to be
+	        waken up before */
+            printf("[ILLEGAL] It cannot be sched in if it was not queued pid=%d tid=%d pid_state=%d our_state=%d\n",
+	            next_pid, next_tid, $next->state, state[next_tid])
+	}
+    }
 }
 
-probe begin { }
+probe begin {
+    target_name = "beefs_replayer"
+}
 
-probe end { }
+probe end {
+    t = gettimeofday_us()
+    foreach (tid in state) {
+        if (state[tid] == SLEEPING) {
+            sleep_time[tid] += (t - previous_timestamp[tid])
+	}
+        if (state[tid] == QUEUED) {
+   	    queued_time[tid] += (t - previous_timestamp[tid])
+	}
+        if (state[tid] == RUNNING) {
+           run_time[tid] += (t - previous_timestamp[tid])
+	}
+    }
+    printf ("%16s: %6s %10s %10s %10s %10s %10s\n\n",
+            "execname", "tid", "run(us)", "sleep(us)", "io_wait(us)", "queued(us)", "total(us)")
+    foreach (tid+ in run_time) {
+       printf("%16s: %6d %10d %10d %10d %10d %10d\n",
+              names[tid], tid, run_time[tid], sleep_time[tid], io_wait_time[tid], queued_time[tid],
+	      (run_time[tid] + sleep_time[tid] + queued_time[tid]))
+    }
+}

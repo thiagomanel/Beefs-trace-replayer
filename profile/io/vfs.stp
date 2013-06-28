@@ -1,0 +1,72 @@
+#!/usr/bin/env stap
+/**
+* Copyright (C) 2008 Universidade Federal de Campina Grande
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+
+global target_pid, target_name
+
+probe vfs.read.return {
+    _pid = pid()
+    if (shouldlog(_pid)) {
+        _tid = tid()
+        if ($return > 0) {
+		printf("R pid=%d tid=%d execname=%s filename=%s device=%d ino=%d count=%d\n",
+			  _pid, _tid, execname(), __file_filename(file), dev, ino, $return)
+        }
+    }
+}
+
+probe vfs.write.return {
+    _pid = pid()
+    if (shouldlog(_pid)) {
+        _tid = tid()
+        if ( $return > 0 ) {
+		printf("W pid=%d tid=%d execname=%s filename=%s device=%d ino=%d count=%d\n",
+			  _pid, _tid, execname(), __file_filename(file), dev, ino, $return)
+        }
+    }
+}
+
+function shouldlog(current_pid) {
+    if (target_name != "") {
+        return target_name == execname()
+    }
+    return target_pid == current_pid
+}
+
+probe end {
+     printf("#end\n")
+}
+
+probe begin {
+    target_pid = 0
+    target_name = ""
+
+    %( $# == 1 || $# > 2 %?
+        log("Wrong number of arguments, use none, 'pid nr' or 'name proc'")
+	exit()
+    %)
+
+    %( $# == 2 %?
+	if(@1 == "pid") {
+	    target_pid = strtol(@2, 10)
+            printf("#target_pid=%d\n", target_pid)
+	}
+	if(@1 == "name") {
+	    target_name = @2
+            printf("#target_name=%s\n", target_name)
+	}
+    %)
+}

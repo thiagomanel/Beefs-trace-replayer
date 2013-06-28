@@ -3,7 +3,11 @@ import json
 from workflow import *
 
 def actual_rvalue(out_line):
-    return out_line.split()[-1].strip()
+    tokens = out_line.split()
+    if len(tokens) == 8:#this format we also log tids
+        return tokens[-2].strip()
+    elif len(tokens) == 7:#old log format
+        return tokens[-1].strip()
 
 if __name__ == "__main__":
     """
@@ -18,10 +22,9 @@ if __name__ == "__main__":
         r_output.readline()#it skips fake root line
         with open(r_input_expected_path) as r_input_expected:
             for expected_line in r_input_expected:
-                expected = expected_line.split()[1].strip() 
+                expected = expected_line.split()[1].strip()
                 actual = actual_rvalue(r_output.readline())
                 if not expected == "#":
-                    sys.stdout.write(" ".join([str(expected == actual),
-                                               expected, actual]) + "\n")
+                    sys.stdout.write(" ".join([str(expected == actual), expected, actual]) + "\n")
                 else:
                     sys.stdout.write("#\n")

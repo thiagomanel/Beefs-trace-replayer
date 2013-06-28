@@ -1,0 +1,33 @@
+#! /usr/bin/env stap
+
+global target_pid, target_name
+
+probe ioblock.request {
+    printf("execname=%s pid=%d tid=%d\n", execname(), pid(), tid())
+    print_backtrace()
+}
+
+probe end {
+    printf("#end\n")
+}
+
+probe begin {
+    target_pid = 0
+    target_name = ""
+
+    %( $# == 1 || $# > 2 %?
+        log("Wrong number of arguments, use none, 'pid nr' or 'name proc'")
+	exit()
+    %)
+
+    %( $# == 2 %?
+	if(@1 == "pid") {
+	    target_pid = strtol(@2, 10)
+            printf("#target_pid=%d\n", target_pid)
+	}
+	if(@1 == "name") {
+	    target_name = @2
+            printf("#target_name=%s\n", target_name)
+	}
+    %)
+}

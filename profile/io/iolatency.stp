@@ -1,37 +1,149 @@
 #! /usr/bin/env stap
 
-global latency, sizeblock, target_pid
+/**
+* TODO: r or w request  bio_rw_str(rw)
+* code elswhere http://hg.mozilla.org/users/tglek_mozilla.com/startup/file/782c42e1d6a4/kernelio.stp
+*/
+
+global latency[50000], sizeblock[50000]
+global target_pid, target_name
+
+/* returns block device major number */
+function bio_major:long(bio:long)
+%{
+    struct bio *bio;
+    struct block_device *bi_bdev;
+
+    bio = (struct bio *)(long)THIS->bio;
+    bi_bdev = (struct block_device *)deref(sizeof(bio->bi_bdev),  &(bio->bi_bdev));
+    if (bi_bdev == NULL) {
+        THIS->__retvalue = -1;
+        goto end;
+    }
+
+    THIS->__retvalue = MAJOR(bi_bdev->bd_dev);
+
+    if (0) {
+        deref_fault:
+        CONTEXT->last_error = "pointer dereference fault";
+    }
+    end: ;
+%}
+
+/* returns block device minor number */
+function bio_minor:long(bio:long)
+%{
+    struct bio *bio;
+    struct block_device *bi_bdev;
+
+    bio = (struct bio *)(long)THIS->bio;
+    bi_bdev = (struct block_device *)deref(sizeof(bio->bi_bdev), &(bio->bi_bdev));
+    if (bi_bdev == NULL) {
+        THIS->__retvalue = -1;
+        goto end;
+    }
+
+    THIS->__retvalue = MINOR(bi_bdev->bd_dev);
+
+    if (0) {
+        deref_fault:
+        CONTEXT->last_error = "pointer dereference fault";
+    }
+end: ;
+%}
 
 probe ioblock.request {
-    latency[$bio] = gettimeofday_us()
-    sizeblock[$bio] = $bio->bi_size
+
+    _pid = pid()
+
+    t = gettimeofday_us()
+    latency[$bio] = t
+    _size = $bio->bi_size
+    sizeblock[$bio] = _size
+    sector = $bio->bi_sector
+
+    if (shouldlog(_pid)) {
+	_ma = bio_major($bio)
+	_min = bio_minor($bio)
+	_stack = backtrace()
+    	printf("type=request pid=%d tid=%d execname=%s devname=%s rw=%s size=%d sector=%d stamp=%d major=%d minor=%d stack=%s\n",
+                        _pid, tid(), execname(), devname, bio_rw_str($bio->bi_rw), _size, sector, t, _ma, _min, _stack)
+    }
 }
 
 probe kernel.trace("block_bio_frontmerge"),
       kernel.trace("block_bio_backmerge") {
+
+    /** FIXME:
+    * not sure what to log here, from whom should i get information when
+    * blocks are merged ? the new one, the old one ?
+    */
+    _pid = pid()
+
+    if (shouldlog(_pid)) {
+    	_size = sizeblock[$bio]
+        t = gettimeofday_us()
+    	sector = $bio->bi_sector
+	_devname = __bio_devname($bio)
+	_ma = bio_major($bio)
+	_min = bio_minor($bio)
+	_stack = backtrace()
+	printf("type=merge pid=%d tid=%d execname=%s devname=%s rw=%s size=%d sector=%d stamp=%d major=%d minor=%d stack=%s\n",
+                      _pid, tid(), execname(), _devname, bio_rw_str($bio->bi_rw), _size, sector, t, _ma, _min, _stack)
+    }
     delete latency[$bio]
     delete sizeblock[$bio]
 }
 
 probe ioblock.end {
-    _pid = pid()
-    _tid = tid()
-    _name = execname()
 
-    t = gettimeofday_us()
-    s = latency[$bio]
-    _size = sizeblock[$bio]
+    _pid = pid()
+
+    if (shouldlog(_pid)) {
+    	t = gettimeofday_us()
+    	s = latency[$bio]
+    	_size = sizeblock[$bio]
+    	sector = $bio->bi_sector
+	_ma = bio_major($bio)
+	_min = bio_minor($bio)
+	_stack = backtrace()
+        printf("type=complete pid=%d tid=%d execname=%s devname=%s rw=%s size=%d sector=%d latency=%d stamp=%d major=%d minor=%d stack=%s\n",
+                         _pid, tid(), execname(), devname, bio_rw_str($bio->bi_rw), _size, sector, (t - s), t, _ma, _min, _stack)
+    }
 
     delete latency[$bio]
     delete sizeblock[$bio]
+}
 
-    if (_pid == target_pid) {
-        printf("pid=%d tid=%d execname=%s devname=%s size=%d latency=%d\n",
-                _pid, _tid, _name, devname, _size, (t - s))
-    }
+function shouldlog(current_pid) {
+    return "stapio" != execname()
+    #if (target_name != "") {
+    #    return target_name == execname()
+    #}
+    #return target_pid == current_pid
+}
+
+probe end {
+    printf("#end\n")
 }
 
 probe begin {
-    target_pid = strtol(@1, 10)
-    printf("target_pid=%d\n", target_pid)
+    target_pid = 0
+    target_name = ""
+
+    %( $# == 1 || $# > 2 %?
+        log("Wrong number of arguments, use none, 'pid nr' or 'name proc'")
+	exit()
+    %)
+
+    %( $# == 2 %?
+	if(@1 == "pid") {
+	    target_pid = strtol(@2, 10)
+            printf("#target_pid=%d\n", target_pid)
+	}
+	if(@1 == "name") {
+	    target_name = @2
+            printf("#target_name=%s\n", target_name)
+	}
+    %)
 }

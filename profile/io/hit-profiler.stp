@@ -18,14 +18,10 @@
 #TODO: we need a test, cache + device = total be invariant to trace sample
 #TODO: cache-hit-rate.stp does some additional checks
 
-global target_pid
+global target_pid, target_name
 
 global cache_read_bytes, cache_written_bytes
 global device_read_bytes, device_written_bytes
-
-function shouldlog(current_pid) {
-    return target_pid == current_pid
-}
 
 probe vfs.read.return {
     _pid = pid()
@@ -53,11 +49,6 @@ probe vfs.write.return {
 	    }
         }
     }
-}
-
-probe begin {
-    target_pid = strtol(@1, 10)
-    printf("target_pid=%d\n", target_pid)
 }
 
 probe end {
@@ -90,4 +81,32 @@ probe end {
     delete cache_written_bytes
     delete device_read_bytes
     delete device_written_bytes
+}
+
+function shouldlog(current_pid) {
+    if (target_name != "") {
+        return target_name == execname()
+    }
+    return target_pid == current_pid
+}
+
+probe begin {
+    target_pid = 0
+    target_name = ""
+
+    %( $# == 1 || $# > 2 %?
+        log("Wrong number of arguments, use none, 'pid nr' or 'name proc'")
+	exit()
+    %)
+
+    %( $# == 2 %?
+	if(@1 == "pid") {
+	    target_pid = strtol(@2, 10)
+            printf("target_pid=%d\n", target_pid)
+	}
+	if(@1 == "name") {
+	    target_name = @2
+            printf("target_name=%s\n", target_name)
+	}
+    %)
 }

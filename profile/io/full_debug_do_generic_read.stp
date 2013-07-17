@@ -1,0 +1,82 @@
+#!/usr/bin/env stap
+/**
+* Copyright (C) 2008 Universidade Federal de Campina Grande
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+
+global target_pid, target_name
+
+global tmp_times, elapsed
+//global tmp_page_probe, elapsed_page_probe
+
+probe kernel.function("do_generic_file_read") {
+    if (shouldlog()) {
+	p = tid()
+	tmp_times[p] = gettimeofday_us()
+    }
+}
+
+probe kernel.function("do_generic_file_read").return {
+    if (shouldlog()) {
+	now = gettimeofday_us()
+	p = tid()
+	begin = tmp_times[p]
+	if (begin) {
+	    e = now - begin
+	    elapsed[p] <<< e
+	    printf("probe=%s tid=%d stamp=%d elapsed=%d\n", probefunc(), p, now, e)
+	}
+	delete tmp_times[p]
+    }
+}
+
+probe kernel.statement("do_generic_file_read@*:*") {
+    if (shouldlog()) {
+	now = gettimeofday_us()
+	printf("statement=%s tid=%d stamp=%d\n", pp(), tid(), now)
+    }
+}
+
+function shouldlog() {
+    return execname() == "beefs_replayer"
+}
+
+probe end {
+    printf("#end\n")
+    foreach ([p+] in elapsed) {
+	printf("func=do_generic_file_read tid=%d avg=%d max=%d sum=%d\n", p, @avg(elapsed[p]), @max(elapsed[p]), @sum(elapsed[p]))
+	print(@hist_log(elapsed[p]))
+    }
+}
+
+probe begin {
+    target_pid = 0
+    target_name = ""
+
+    %( $# == 1 || $# > 2 %?
+        log("Wrong number of arguments, use none, 'pid nr' or 'name proc'")
+	exit()
+    %)
+
+    %( $# == 2 %?
+	if(@1 == "pid") {
+	    target_pid = strtol(@2, 10)
+            printf("#target_pid=%d\n", target_pid)
+	}
+	if(@1 == "name") {
+	    target_name = @2
+            printf("#target_name=%s\n", target_name)
+	}
+    %)
+}

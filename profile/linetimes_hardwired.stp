@@ -1,0 +1,91 @@
+#! /usr/bin/env stap
+#
+# Copyright (C) 2010 Red Hat, Inc.
+# Written by William Cohen <wcohen@redhat.com>
+#
+# The linetimes.stp script takes two arguments: where to find the function
+# and the function name. linetimes.stp will instrument each line in the
+# function. It will print out the number of times that the function is
+# called, a table with the average and maximum time each line takes,
+# and control flow information when the script exits.
+#
+# For example all the lines of the do_unlinkat function:
+#
+# stap linetimes.stp kernel do_unlinkat
+
+global calls, times, region, last_pp_by_tid
+global target_name, target_pid
+
+#do_generic_file_read
+#generic_file_aio_read
+
+probe kernel.function("do_generic_file_read").call {
+    if (shouldlog()) {
+    	calls <<< 1
+    }
+}
+
+probe kernel.function("do_generic_file_read").return {
+    if (shouldlog()) {
+        t = gettimeofday_us()
+    	p = tid()
+    	s = times[p]
+    	if (s) {
+	    e = t - s
+	    last_pp = last_pp_by_tid[p]
+	    region[p, last_pp] <<< e
+   	}
+	delete last_pp_by_tid[p]
+    	delete times[p]
+    }
+}
+
+probe kernel.statement("do_generic_file_read@*:*") {
+    if (shouldlog()) {
+	t = gettimeofday_us()
+  	p = tid()
+  	s = times[p]
+  	if (s) {
+	    e = t - s
+	    last_pp = last_pp_by_tid[p]
+	    region[p, last_pp] <<< e
+  	}
+	times[p] = t
+	last_pp_by_tid[p] = pp()
+#printf("STAT exec=%s tid=%d func=%s stamp=%d\n", execname(), p, pp(), t)
+    }
+}
+
+probe end {
+    printf("\n%s called %d", "do_generic_file_read", @count(calls));
+    printf("\n%-58s %10s %10s\n", "region", "avg(us)", "max(us)");
+    foreach ([t+, prob] in region) {
+        printf("tid=%d %-58s avg=%d max=%d sum=%d\n", t, prob, @avg(region[t, prob]), @max(region[t, prob]), @sum(region[t, prob]));
+	print(@hist_log(region[t, prob]))
+    }
+}
+
+function shouldlog() {
+    return execname() == "beefs_replayer"
+}
+
+probe begin {
+    target_pid = 0
+    target_name = ""
+
+    %( $# == 1 || $# > 2 %?
+        log("Wrong number of arguments, use none, 'pid nr' or 'name proc'")
+	exit()
+    %)
+
+    %( $# == 2 %?
+	if(@1 == "pid") {
+	    target_pid = strtol(@2, 10)
+            printf("#target_pid=%d\n", target_pid)
+	}
+	if(@1 == "name") {
+	    target_name = @2
+            printf("#target_name=%s\n", target_name)
+	}
+    %)
+}

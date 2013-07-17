@@ -1,0 +1,106 @@
+#!/usr/bin/env stap
+/**
+* Copyright (C) 2008 Universidade Federal de Campina Grande
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+
+global target_pid, target_name
+
+global touch, generic_read, mnt_drop, mark_inode
+
+probe kernel.function("__mark_inode_dirty") {
+    if (shouldlog()) {
+	p = tid()
+	mark_inode[p] = gettimeofday_us()
+    }
+}
+probe kernel.function("__mark_inode_dirty").return {
+    if (shouldlog()) {
+	now = gettimeofday_us()
+	p = tid()
+	begin = mark_inode[p]
+	if (begin) {
+	    e = now - begin
+	    printf("probe=%s tid=%d begin=%d stamp=%d elapsed=%d\n", probefunc(), p, begin, now, e)
+	}
+	delete mark_inode[p]
+    }
+}
+
+probe kernel.function("touch_atime") {
+    if (shouldlog()) {
+	p = tid()
+	touch[p] = gettimeofday_us()
+    }
+}
+probe kernel.function("touch_atime").return {
+    if (shouldlog()) {
+	now = gettimeofday_us()
+	p = tid()
+	begin = touch[p]
+	if (begin) {
+	    e = now - begin
+	    printf("probe=%s tid=%d begin=%d stamp=%d elapsed=%d\n", probefunc(), p, begin, now, e)
+	}
+	delete touch[p]
+    }
+}
+
+probe kernel.function("do_generic_file_read") {
+    if (shouldlog()) {
+	p = tid()
+	generic_read[p] = gettimeofday_us()
+    }
+}
+probe kernel.function("do_generic_file_read").return {
+    if (shouldlog()) {
+	now = gettimeofday_us()
+	p = tid()
+	begin = generic_read[p]
+	if (begin) {
+	    e = now - begin
+	    printf("probe=%s tid=%d begin=%d stamp=%d elapsed=%d\n", probefunc(), p, begin, now, e)
+	}
+	delete generic_read[p]
+    }
+}
+
+function shouldlog() {
+    return execname() == "beefs_replayer"
+}
+
+probe end {
+    printf("#end\n")
+}
+
+probe begin {
+    target_pid = 0
+    target_name = ""
+
+    %( $# == 1 || $# > 2 %?
+        log("Wrong number of arguments, use none, 'pid nr' or 'name proc'")
+	exit()
+    %)
+
+    %( $# == 2 %?
+	if(@1 == "pid") {
+	    target_pid = strtol(@2, 10)
+            printf("#target_pid=%d\n", target_pid)
+	}
+	if(@1 == "name") {
+	    target_name = @2
+            printf("#target_name=%s\n", target_name)
+	}
+    %)
+}

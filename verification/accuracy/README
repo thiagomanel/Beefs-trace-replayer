@@ -1,0 +1,3 @@
+Replayer verification.
+	- It analyses timing accuracy. That's is, whether the events are dispatched at the right time or not.
+

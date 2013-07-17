@@ -1,1 +1,0 @@
-../beefs_bootstrap/beefs_bootstrapper.py

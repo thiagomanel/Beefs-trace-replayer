@@ -83,6 +83,8 @@ int main (int argc, const char* argv[]) {
 						tmp->dispatch_begin->tv_usec,
 						tmp->dispatch_end->tv_sec,
 						tmp->dispatch_end->tv_usec,
+						tmp->schedule_stamp->tv_sec,
+						tmp->schedule_stamp->tv_usec,
 						tmp->delay,
 						tmp->expected_rvalue,
 						tmp->actual_rvalue,

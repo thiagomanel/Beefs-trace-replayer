@@ -25,30 +25,19 @@ const struct timing_police conservative_police_ops = {
 	conservative_delay,
 };
 
-static double elapsed_to_now (struct timeval *timestamp) {
-	assert (timestamp != NULL);
+static double elapsed (struct timeval *later, struct timeval *earlier) {
+	assert (later != NULL);
+	assert (earlier != NULL);
 
-	struct timeval now;
-	gettimeofday (&now, NULL);
-	double us_elapsed = (now.tv_sec - timestamp->tv_sec) * 1000000
-		+ (now.tv_usec - timestamp->tv_usec);
+	double us_elapsed = (later->tv_sec - earlier->tv_sec) * 1000000
+		+ (later->tv_usec - earlier->tv_usec);
 
 	assert (us_elapsed >= 0);
 	return us_elapsed;
 }
 
-/**
- * Returns the amount of microseconds since the replay of replay_command from
- * Workflow_element identified by w_element_id
- */
-static long elapsed_since_replay (command_replay_result* cmd_replay_result) {
-//FIXME: exceptional conditions ? such as command was not replayed yet ... at
-//least it needs docs
-        assert (cmd_replay_result != NULL);
-        return elapsed_to_now (cmd_replay_result->dispatch_end);
-}
-
-static double delay_on_trace (struct replay_command* earlier, struct replay_command* later) {
+static double delay_on_trace (struct replay_command* earlier, 
+				struct replay_command* later) {
 
 	double delay = (double) (later->traced_begin - earlier->traced_begin);
 	if (delay < 0) {
@@ -80,7 +69,15 @@ double conservative_delay (struct replay* rep, Workflow_element* to_replay) {
 		exit (1);
 	}
 
-	command_replay_result* parent_cmd_result = RESULT (rep, _parent->id);
-	double elapsed = elapsed_since_replay (parent_cmd_result);
-	return dlay_trace - elapsed;
+	command_replay_result* cmd_result = RESULT (rep, to_replay->id);
+        assert (cmd_result != NULL);
+	command_replay_result* parent_result = RESULT (rep, _parent->id);
+        assert (parent_result != NULL);
+
+ 	//microseconds since the replay of parent
+	gettimeofday (cmd_result->schedule_stamp, NULL);
+	double elaps = elapsed (cmd_result->schedule_stamp, 
+					parent_result->dispatch_end);
+	//double elapsed = elapsed_since_replay (parent_cmd_result);
+	return dlay_trace - elaps;
 }

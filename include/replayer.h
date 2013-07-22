@@ -118,6 +118,7 @@ typedef struct workflow_element {
 } Workflow_element;
 
 typedef struct _command_replay_result {
+	struct timeval *schedule_stamp;//when we scheduled the command
 	struct timeval *dispatch_begin;
 	struct timeval *dispatch_end;
 	double delay;

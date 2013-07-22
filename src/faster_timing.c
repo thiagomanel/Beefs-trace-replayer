@@ -16,6 +16,7 @@
 #include "faster_timing.h"
 #include <assert.h>
 #include <stdlib.h>
+#include <sys/time.h>
 
 static double faster_delay (struct replay* rep, Workflow_element* to_replay);
 
@@ -28,5 +29,8 @@ double faster_delay (struct replay* rep, Workflow_element* to_replay) {
 	assert (rep != NULL);
 	assert (to_replay != NULL);
 
+	command_replay_result* cmd_result = RESULT (rep, to_replay->id);
+	assert (cmd_result != NULL);
+	gettimeofday (cmd_result->schedule_stamp, NULL); 
 	return 0.0;
 }

@@ -191,6 +191,7 @@ static void do_produce(Workflow_element* el_to_produce) {
 static void fill_command_replay_result (command_replay_result *result) {
 	result->dispatch_begin = (struct timeval*) malloc (sizeof (struct timeval));
 	result->dispatch_end = (struct timeval*) malloc (sizeof (struct timeval));
+	result->schedule_stamp = (struct timeval*) malloc (sizeof (struct timeval));
 }
 
 static int produce_buffer_full() {
@@ -406,6 +407,7 @@ static void fill_shared_buffer (Replay_workload* workload, sbuffs_t* shared) {
 	fill_command_replay_result (root_result);
 	gettimeofday (root_result->dispatch_begin, NULL);
 	gettimeofday (root_result->dispatch_end, NULL);
+	gettimeofday (root_result->schedule_stamp, NULL);
 }
 
 static void assign_expected_rvalue (command_replay_result *results, Replay_workload *wld) {

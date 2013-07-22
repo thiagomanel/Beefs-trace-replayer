@@ -1,7 +1,6 @@
 from itertools import tee
 from itertools import izip
 from itertools import chain
-from clean_trace import *
 import sys
 import json
 
@@ -403,3 +402,89 @@ def sort_by_pidfid(wlines):
         if (len(wlines_by_fidpidprocess[pfp]) > 1):
             father, son = wlines_by_fidpidprocess[pfp][-2], wlines_by_fidpidprocess[pfp][-1]
             join(father, son)
+
+class CleanCall():
+
+    def __init__(self, uid, pid, tid, pname, call, stamp, callargs, rvalue):
+        self.uid = uid
+        self.pid = pid
+        self.tid = tid
+        self.pname = pname
+        self.call = call
+        tokens = stamp.split("-")
+        self.__stamp_begin = long(tokens[0])
+        self.__stamp_elapsed = long(tokens[1])
+        self.args = callargs
+        self.rvalue = rvalue
+
+    @classmethod
+    def from_str(cls, _str):
+        uid = _str.split("<uid=")[1].split("\>")[0]
+        pid = _str.split("<pid=")[1].split("\>")[0]
+        tid = _str.split("<tid=")[1].split("\>")[0]
+        pname = _str.split("<pname=")[1].split("\>")[0]
+        call = _str.split("<call=")[1].split("\>")[0]
+        stamp = _str.split("<stamp=")[1].split("\>")[0]
+
+        args = []
+        arg_tokens = _str.split("<arg=")[1:]
+        for arg_token in arg_tokens:
+            args.append(arg_token.split("\>")[0])
+
+        rvalue = _str.split("<rvalue=")[1].split("\>")[0]
+        return CleanCall(uid, pid, tid, pname, call, stamp, args, rvalue)
+
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __str__(self):
+        return " ".join(["<uid="+self.uid+"\>",
+                         "<pid="+self.pid+"\>",
+                         "<tid="+self.tid+"\>",
+                         "<pname="+self.pname+"\>",
+                         "<call="+self.call+"\>",
+                         "<stamp="+self.__stamp_str__()+"\>"] +
+                         ["<arg="+arg+"\>" for arg in self.args] +
+                         ["<rvalue="+self.rvalue+"\>"])
+
+    def fullpath(self):
+        if self.call == "mkdir" or self.call == "stat" or \
+            self.call == "open" or self.call == "rmdir" \
+            or self.call == "unlink" or self.call == "read" \
+            or self.call == "write" or self.call == "llseek":
+            return self.args[0]
+        raise Exception("unsupported operation " + str(self))
+
+    def stamp(self):
+        return (self.__stamp_begin, self.__stamp_elapsed)
+
+    def fd(self):
+        if self.call == "open":
+            return self.rvalue
+        elif self.call == "fstat":
+            return self.args[-1]
+        elif (self.call == "read" or self.call == "write"):
+            return self.args[1]
+        elif self.call == "llseek":
+            return self.args[1]
+        elif self.call == "close":
+            return self.args[0]
+        raise Exception("unsupported operation " + str(self))
+
+    def fd_based(self):
+        return (self.call == "open") or (self.call == "fstat") or \
+               (self.call == "read") or (self.call == "write") or \
+               (self.call == "llseek") or (self.call == "close")
+
+    def __stamp_str__(self):
+        return "-".join(map(str, self.stamp()))
+
+    def raw_str(self):
+        return " ".join([self.uid, self.pid, self.tid, self.pname,
+                         self.call, self.__stamp_str__()] +
+                         self.args +
+                         [self.rvalue])
+

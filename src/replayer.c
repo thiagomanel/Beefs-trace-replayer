@@ -333,13 +333,13 @@ void *consume (void *arg) {
 			Workflow_element* element = take ();
 			pthread_mutex_unlock (&lock);
 
+			command_replay_result *cmd_result = RESULT (__replay, element->id);
+			fill_command_replay_result (cmd_result);
 			double dlay = __replay->timing_ops.delay (__replay, element);
 			if (dlay > 0) {
 				usleep (dlay);
 			}
 
-			command_replay_result *cmd_result = RESULT (__replay, element->id);
-			fill_command_replay_result (cmd_result);
 			gettimeofday (cmd_result->dispatch_begin, NULL);
 			int result = exec (element->command, &actual_rvalue, __replay);
 

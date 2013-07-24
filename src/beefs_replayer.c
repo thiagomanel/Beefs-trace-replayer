@@ -78,7 +78,7 @@ int main (int argc, const char* argv[]) {
 		if (strncmp (argv[3], "debug", 5) == 0) {
 			for (i = 0; i < result->replayed_commands; i++) {
 				tmp = &(results[i]);
-				printf ("%ld %ld %ld %ld %f %d %d %d\n",
+				printf ("%ld %ld %ld %ld %ld %ld %f %d %d %d\n",
 						tmp->dispatch_begin->tv_sec,
 						tmp->dispatch_begin->tv_usec,
 						tmp->dispatch_end->tv_sec,

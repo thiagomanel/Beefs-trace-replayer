@@ -36,7 +36,7 @@ static double elapsed (struct timeval *later, struct timeval *earlier) {
 	return us_elapsed;
 }
 
-static double delay_on_trace (struct replay_command* earlier, 
+static double delay_on_trace (struct replay_command* earlier,
 				struct replay_command* later) {
 
 	double delay = (double) (later->traced_begin - earlier->traced_begin);
@@ -76,7 +76,7 @@ double conservative_delay (struct replay* rep, Workflow_element* to_replay) {
 
  	//microseconds since the replay of parent
 	gettimeofday (cmd_result->schedule_stamp, NULL);
-	double elaps = elapsed (cmd_result->schedule_stamp, 
+	double elaps = elapsed (cmd_result->schedule_stamp,
 					parent_result->dispatch_end);
 	//double elapsed = elapsed_since_replay (parent_cmd_result);
 	return dlay_trace - elaps;

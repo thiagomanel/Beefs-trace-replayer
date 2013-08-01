@@ -23,4 +23,4 @@ if __name__ == "__main__":
 
         issue_error = begin_stamp - (schedule_stamp + delay)
 
-        print "\t".join([str(begin_stamp), str(delay), str(issue_error)])
+        print "\t".join([str(begin_stamp), str(end_stamp), str(schedule_stamp), str(delay), str(issue_error)])

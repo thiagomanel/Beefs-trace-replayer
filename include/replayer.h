@@ -199,6 +199,10 @@ int exec (struct replay_command* to_exec, int *exec_rvalue, struct replay* rep);
 
 void replay (struct replay* rpl);
 
+//it seems a bit less ugly to pass this control parameters via a metadata struct
+//instead of having two replay functions
+void control_replay (struct replay* rpl, int num_workers, int additional_delay_usec);
+
 #define IS_CONSUMED(element) ((element)->consumed)
 #define IS_PRODUCED(element) ((element)->produced)
 

@@ -31,18 +31,23 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/syscall.h>
+#include <sched.h>
 
 int main (int argc, const char* argv[]) {
 
-	int i;
-	pid_t main_tid = syscall(SYS_gettid);
+	int i, try_sched_rr, additional_delay_usec;
+
+	struct sched_param param;
+	param.sched_priority = 99;
+
+	pid_t main_tid = syscall (SYS_gettid);
 	command_replay_result *results, *tmp;
 	char const *faster_police = "faster";
 	char const *conservative_police = "conservative";
 
-	if (argc < 3 || argc > 4) {
-		perror("Wrong args. Usage: beefs_replayer $replay_input $timing_police [debug] \n");
-		exit(1);
+	if (argc < 5 || argc > 6) {
+		perror ("Wrong args. Usage: beefs_replayer $replay_input $timing_police $num_workers $add_delay_us [debug] \n");
+		exit (1);
 	}
 
 	Replay_workload* workload = (Replay_workload*) malloc (sizeof (Replay_workload));
@@ -53,29 +58,35 @@ int main (int argc, const char* argv[]) {
 	FILE* fp = fopen (argv[1], "r");
 	int ret = load (workload, fp);
 	if (ret < 0) {
-		perror("Error loading trace\n");
-		exit(1);
+		perror ("Error loading trace\n");
+		exit (1);
 	}
 
 	struct replay* repl = create_replay (workload);
 
-	if (strcmp(argv[2], faster_police) == 0) {
+	if (strcmp (argv[2], faster_police) == 0) {
 		repl->timing_ops = faster_police_ops;
 	} else if (strcmp(argv[2], conservative_police) == 0) {
 		repl->timing_ops = conservative_police_ops;
 	} else {
-		perror("Error on timing police allowed: [faster, conservative])\n");
-		exit(1);
+		perror ("Error on timing police allowed: [faster, conservative])\n");
+		exit (1);
 	}
 
-	fprintf (stderr, "main_tid=%d\n", main_tid);
-	replay (repl);
+	int num_workers = atoi (argv[3]);
+	try_sched_rr = sched_setscheduler (0, SCHED_FIFO, &param);
+	additional_delay_usec = atoi (argv[4]);
+
+	fprintf (stderr, "main_tid=%d num_workers=%d sched_err=%d add_delay=%d\n",
+			main_tid, num_workers, try_sched_rr, additional_delay_usec);
+
+	control_replay (repl, num_workers, additional_delay_usec);
 
 	Replay_result *result = repl->result;
 	results = result->cmds_replay_result;
 
-	if (argc == 4) {
-		if (strncmp (argv[3], "debug", 5) == 0) {
+	if (argc == 6) {
+		if (strncmp (argv[5], "debug", 5) == 0) {
 			for (i = 0; i < result->replayed_commands; i++) {
 				tmp = &(results[i]);
 				printf ("%ld %ld %ld %ld %ld %ld %f %d %d %d\n",

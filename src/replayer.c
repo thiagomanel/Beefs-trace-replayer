@@ -35,6 +35,7 @@ static pthread_cond_t cmds_were_consumed_cond = PTHREAD_COND_INITIALIZER;
 
 static pthread_mutex_t lock;
 static struct replay* __replay;
+static int add_delay_usec = 0;
 
 void workflow_element_init (Workflow_element* element) {
 
@@ -337,7 +338,16 @@ void *consume (void *arg) {
 			fill_command_replay_result (cmd_result);
 			double dlay = __replay->timing_ops.delay (__replay, element);
 			if (dlay > 0) {
-				usleep (dlay);
+				if (dlay > 1000) {
+					usleep (dlay + add_delay_usec);
+				} else {
+					//one more hack it to sleep (dlay - sleep_delay)
+					//FIXME: pass the rem field if case of receiving a interrupt
+					nanosleep ( (struct timespec[]) {{
+							0,
+							((dlay * 1000) + (add_delay_usec * 1000))}},
+								NULL);
+				}
 			}
 
 			gettimeofday (cmd_result->dispatch_begin, NULL);
@@ -456,6 +466,10 @@ struct replay* create_replay (Replay_workload* workload) {
 }
 
 void replay (struct replay* rpl) {
+	control_replay (rpl, 10, 0);
+}
+
+void control_replay (struct replay* rpl, int num_workers, int additional_delay_usec) {
 
 	int i;
 	assert (rpl != NULL);
@@ -463,6 +477,7 @@ void replay (struct replay* rpl) {
 	assert (rpl->result != NULL);
 
 	__replay = rpl;
+	add_delay_usec = additional_delay_usec;
 
         shared_buff = (sbuffs_t*) malloc( sizeof(sbuffs_t));
 	fill_shared_buffer (__replay->workload, shared_buff);
@@ -472,7 +487,7 @@ void replay (struct replay* rpl) {
 	pthread_t producer;
 	pthread_create (&producer, NULL, produce, 0);
 
-	int max_consumers = 10;
+	int max_consumers = num_workers;
 	int num_consumers = (__replay->workload->num_cmds >= max_consumers)
 				? max_consumers : __replay->workload->num_cmds;
 

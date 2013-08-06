@@ -1,7 +1,6 @@
 import sys
 import json
 from workflow import *
-from clean_trace import *
 
 def clean_order(workflow_line):
     workflow_line.parents = []
@@ -26,7 +25,7 @@ if __name__ == "__main__":
         new_lines = sorted(weak_fs_dependency_sort(w_lines),
                                key=lambda line: line._id)#sort by _id
     elif police == "c":
-        new_lines = sorted(conservative_sort(w_lines), 
+        new_lines = sorted(conservative_sort(w_lines),
                              key=lambda line: line._id)#sort by _id
 
 

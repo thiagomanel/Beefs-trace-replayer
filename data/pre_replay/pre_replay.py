@@ -56,11 +56,15 @@ if __name__ == "__main__":
         that are used in workflow data but are not present in replay_dir_path. It outputs file or
         directories names and its type, "f" or "d", separated by \t
 
-        replay_dir is a path to mount point where remote file system was mounted.
-        For example a remote directory, e.g /local/nfs_to_export is exported in
-        the server machine and mounted at client side at /tmp/home, so replay_dir
-        is /tmp. A directory within the exported directory, e.g
-        /local/nfs_to_export/thiagoepdc, will be seen as /tmp/home/manel
+        We assume the workflow file is using path beyond the original collected
+        export dir. For example, imagine the remote file system is mount in the
+        /home at client side, so that traced data is /home/user/file.example,
+        we expect the workflow file is using path=/user/file.example. Note we
+        can keep a separated workflow file to generate this pre-replay data
+
+        replay_dir is the point where the workflow will be replay, for example,
+        /local/dir1/dir2 so that the paths from the workflow that actually is going
+        to be replayed is /local/dir1/dir2/user/file.example from above example
     """
     #FIXME use opt
     usage_msg = "Usage: python pre_replay.py replay_dir < workflow_path\n"

@@ -36,7 +36,7 @@ if __name__ == "__main__":
 
     """
         It finds save file sizes to pre_replay data
-        Usage: python solve_pre_replay_fsize.py pre_replay_data pre_replay_leading_path replay_input > checked_pre_replay 2> checking_log
+        Usage: python pre_replay_fsize.py pre_replay_data pre_replay_leading_path replay_input > checked_pre_replay 2> checking_log
         replay_input is original workflow data, for example:
             /home/patrickjem/.cache/google-chrome/Default/Cache/f_0038dd
         pre_replay_data might have a diferente pathname, for example:
@@ -87,7 +87,7 @@ if __name__ == "__main__":
                     del open_files[pid_fd]
 
     for filename, size in file2safe_size.iteritems():
-	print filename, size
+	#print filename, size
         if not size == -1:
             #adding the leading path back
             #from /home/patrickjem/.cache/google-chrome/Default/Cache/f_0038dd

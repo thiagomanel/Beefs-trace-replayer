@@ -20,20 +20,18 @@ if __name__ == "__main__":
     w_lines = [clean_order(wline) for wline in \
                 [WorkflowLine.from_json(json.loads(line)) for line in sys.stdin]]
 
-    police = sys.argv[1]
-    if police == "wfs":
-        new_lines = sorted(weak_fs_dependency_sort(w_lines),
-                               key=lambda line: line._id)#sort by _id
-    elif police == "c":
-        new_lines = sorted(conservative_sort(w_lines),
-                             key=lambda line: line._id)#sort by _id
-
+    policy = sys.argv[1]
+    if policy == "wfs":
+        weak_fs_dependency_sort(w_lines)
+    elif policy == "c":
+        conservative_sort(w_lines)
+    elif policy == "sfs":
+        sfs(w_lines)
 
     #we need a conservative check. i'm afraid of a single chaing
-
     #json dumps cannot handle our data
-    sys.stdout.write(str(len(new_lines)))
-    for w_line in new_lines:
+    sys.stdout.write(str(len(w_lines)))
+    for w_line in w_lines:
         #this json layout is different from default workflow  __str__
         #no \n lines
         json_str = json.dumps(w_line.json())

@@ -1,5 +1,6 @@
 import sys
 import json
+sys.path.append("../")
 from workflow import *
 
 if __name__ == "__main__":

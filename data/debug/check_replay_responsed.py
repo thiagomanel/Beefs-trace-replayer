@@ -1,5 +1,6 @@
 import sys
 import json
+sys.path.append("../")
 from workflow import *
 
 def actual_rvalue(out_line):

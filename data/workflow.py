@@ -192,6 +192,9 @@ def weak_fs_dependency_sort(workflow_lines):
 
 def generic_fs_dependency_sort(workflow_lines, sort_by_pidtid):
 
+    def same_thread(w1, w2):
+        return pidfidprocess(w1) == pidfidprocess(w2)
+
     def fs_obj(clean_call, pid_fid_to_path):
 
         if (clean_call.call == "mkdir") or (clean_call.call == "unlink") \
@@ -249,7 +252,11 @@ def generic_fs_dependency_sort(workflow_lines, sort_by_pidtid):
         for operation in operations:
             clean_call = operation.clean_call
             if last_update_op:
-                join(last_update_op, operation)
+                if sort_by_pidtid:
+                    if not same_thread(operation, last_update_op):
+                        join(last_update_op, operation)
+                else:
+                    join(last_update_op, operation)
             if write_semantics(clean_call.call):
                 last_update_op = operation
 

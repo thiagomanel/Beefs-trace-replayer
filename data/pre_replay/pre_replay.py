@@ -75,9 +75,14 @@ if __name__ == "__main__":
 
     replay_dir = sys.argv[1]
     sys.stdin.readline()#excluding header
-    w_lines = [WorkflowLine.from_json(json.loads(line)) for line in sys.stdin]
+    try:
+        w_lines = [WorkflowLine.from_json(json.loads(line)) for line in sys.stdin]
+    except UnicodeEncodeError:
+        sys.stderr.write(line)
+        sys.exit(1)
 
     created_dirs, created_files = build_namespace(replay_dir, w_lines)
+
     for _dir in created_dirs:
         sys.stdout.write("\t".join([format_path(_dir), "<ftype=d/>", "\n"]))
     for _file in created_files:

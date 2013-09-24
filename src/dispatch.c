@@ -146,7 +146,9 @@ int exec (struct replay_command* to_exec, int *exec_rvalue, struct replay* rpl) 
 						session_fd (current_session_id, rpl) :
 						replayed_fd (to_exec->caller->pid, traced_fd, rpl->pids_to_fd_pairs);
 
-			off_t offset = (off_t) args[2].argm->l_val;
+			long high = (long) args[2].argm->l_val;
+			long low = (long) args[3].argm->l_val;
+			off_t offset = (off_t) (high << 32) | low;
 			int whence = args[3].argm->i_val;
 			*exec_rvalue = lseek (repl_fd, offset, whence);
 			//fprintf (stderr, "<llseek trace_begin=%f replayed_fd=%d traced_fd=%d traced_pid=%d>\n", to_exec->traced_begin, repl_fd, traced_fd, to_exec->caller->pid);

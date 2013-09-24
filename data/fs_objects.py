@@ -155,7 +155,12 @@ def fs_tree(workflow_lines):
 
         if (node_clean_call.call == "open") and open_to_create(node_clean_call):
             if node_clean_call.fullpath() in false_positive_ocreat:
-                c_files.remove(node_clean_call.fullpath())
+                try:
+                    if node_clean_call.fullpath() in c_files:
+                        c_files.remove(node_clean_call.fullpath())
+                except ValueError:
+                    sys.stderr.write(node_clean_call.fullpath())
+                    sys.exit(1)
                 ac_files.append(node_clean_call.fullpath())
 
         for _dir in ac_dirs:

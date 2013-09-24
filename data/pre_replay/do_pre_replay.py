@@ -14,9 +14,10 @@ if __name__ == "__main__":
         os.makedirs(path)
 
     def create_file(path, size):
-        with open(path, 'w') as _file:
-            #input gives -1 when size is not available
-            _file.truncate(max([size, 0]))
+        if not os.path.isdir(path):
+            with open(path, 'w') as _file:
+                #input gives -1 when size is not available
+                _file.truncate(max([size, 0]))
 
     def parse(line):
         def parse_path(line):#FIXME this code is duplicated in a number of files

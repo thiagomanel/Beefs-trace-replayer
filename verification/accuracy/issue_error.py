@@ -19,8 +19,8 @@ if __name__ == "__main__":
         begin_stamp = parse(tokens[0], tokens[1])
         end_stamp = parse(tokens[2], tokens[3])
         schedule_stamp = parse(tokens[4], tokens[5])
-        delay = max(0, float(tokens[6]))
+        delay = float(tokens[6])
 
-        issue_error = begin_stamp - (schedule_stamp + delay)
+        issue_error = begin_stamp - (schedule_stamp + max(0, delay))
 
         print "\t".join([str(begin_stamp), str(end_stamp), str(schedule_stamp), str(delay), str(issue_error)])

@@ -30,5 +30,9 @@ if __name__ == "__main__":
     sys.stdout.write(str(len(w_lines)))
     for w_line in w_lines:
          #this json is different from default workflow  __str__ no \n lines
-         json_str = json.dumps(w_line.json())
-         sys.stdout.write("\n" + json_str.strip())
+        try:
+            json_str = json.dumps(w_line.json())
+            sys.stdout.write("\n" + json_str.strip())
+        except ValueError:
+            sys.stderr.write(str(w_line.clean_call.stamp()))
+            sys.exit(1)

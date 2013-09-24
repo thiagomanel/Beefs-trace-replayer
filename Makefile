@@ -78,6 +78,12 @@ conservative_timing.o : $(USER_DIR)/src/conservative_timing.c $(USER_DIR)/includ
 faster_timing.o : $(USER_DIR)/src/faster_timing.c $(USER_DIR)/include/replayer.h $(USER_DIR)/include/faster_timing.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/src/faster_timing.c
 
+teka_timing.o : $(USER_DIR)/src/teka_timing.c $(USER_DIR)/include/replayer.h $(USER_DIR)/include/teka_timing.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/src/teka_timing.c
+
+tbbtcon_timing.o : $(USER_DIR)/src/tbbtcon_timing.c $(USER_DIR)/include/replayer.h $(USER_DIR)/include/tbbtcon_timing.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/src/tbbtcon_timing.c
+
 loader.o : $(USER_DIR)/src/loader.c $(USER_DIR)/src/replayer.c $(USER_DIR)/include/replayer.h $(USER_DIR)/include/loader.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/src/loader.c
 
@@ -90,12 +96,12 @@ replayer.o : $(USER_DIR)/src/loader.c $(USER_DIR)/src/replayer.c $(USER_DIR)/inc
 beefs_replayer.o : $(USER_DIR)/src/loader.c $(USER_DIR)/src/replayer.c $(USER_DIR)/src/beefs_replayer.c $(USER_DIR)/include/replayer.h $(USER_DIR)/include/loader.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/src/beefs_replayer.c
 
-beefs_replayer : loader.o replayer.o beefs_replayer.o dispatch.o workflow.o conservative_timing.o faster_timing.o
+beefs_replayer : loader.o replayer.o beefs_replayer.o dispatch.o workflow.o conservative_timing.o faster_timing.o teka_timing.o tbbtcon_timing.o
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $^ -o $@ -ljansson -pthread
 
 loader_unittest.o : $(USER_DIR)/tests/loader_unittest.cc \
                      $(GTEST_HEADERS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/tests/loader_unittest.cc
 
-loader_unittest : loader.o replayer.o dispatch.o workflow.o conservative_timing.o faster_timing.o loader_unittest.o gtest_main.a
+loader_unittest : loader.o replayer.o dispatch.o workflow.o conservative_timing.o faster_timing.o teka_timing.o tbbtcon_timing.o loader_unittest.o gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $^ -o $@ -ljansson -pthread

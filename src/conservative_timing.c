@@ -21,7 +21,7 @@
 
 static double conservative_delay (struct replay* rep, Workflow_element* to_replay);
 
-const struct timing_police conservative_police_ops = {
+const struct timing_policy conservative_policy_ops = {
 	conservative_delay,
 };
 

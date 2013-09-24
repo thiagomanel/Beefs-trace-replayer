@@ -18,6 +18,6 @@
 
 #include "replayer.h"
 
-extern const struct timing_police faster_police_ops;
+extern const struct timing_policy faster_policy_ops;
 
 #endif /* _FASTER_TIMING_H */

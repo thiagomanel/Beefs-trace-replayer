@@ -18,6 +18,6 @@
 
 #include "replayer.h"
 
-extern const struct timing_police conservative_police_ops;
+extern const struct timing_policy conservative_policy_ops;
 
 #endif /* _CONSERVATIVE_TIMING_H */

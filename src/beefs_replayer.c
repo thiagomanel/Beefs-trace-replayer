@@ -22,7 +22,9 @@
  */
 #include "replayer.h"
 #include "conservative_timing.h"
+#include "tbbtcon_timing.h"
 #include "faster_timing.h"
+#include "teka_timing.h"
 #include "loader.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -42,11 +44,13 @@ int main (int argc, const char* argv[]) {
 
 	pid_t main_tid = syscall (SYS_gettid);
 	command_replay_result *results, *tmp;
-	char const *faster_police = "faster";
-	char const *conservative_police = "conservative";
+	char const *faster_policy = "faster";
+	char const *conservative_policy = "conservative";
+	char const *teka_policy = "teka";
+	char const *tbbtcon_policy = "tbbtcon";
 
 	if (argc < 5 || argc > 6) {
-		perror ("Wrong args. Usage: beefs_replayer $replay_input $timing_police $num_workers $add_delay_us [debug] \n");
+		perror ("Wrong args. Usage: beefs_replayer $replay_input $timing_policy $num_workers $add_delay_us [debug] \n");
 		exit (1);
 	}
 
@@ -64,12 +68,16 @@ int main (int argc, const char* argv[]) {
 
 	struct replay* repl = create_replay (workload);
 
-	if (strcmp (argv[2], faster_police) == 0) {
-		repl->timing_ops = faster_police_ops;
-	} else if (strcmp(argv[2], conservative_police) == 0) {
-		repl->timing_ops = conservative_police_ops;
+	if (strcmp (argv[2], faster_policy) == 0) {
+		repl->timing_ops = faster_policy_ops;
+	} else if (strcmp(argv[2], conservative_policy) == 0) {
+		repl->timing_ops = conservative_policy_ops;
+	} else if (strcmp(argv[2], teka_policy) == 0) {
+		repl->timing_ops = teka_policy_ops;
+	} else if (strcmp(argv[2], tbbtcon_policy) == 0) {
+		repl->timing_ops = tbbtcon_policy_ops;
 	} else {
-		perror ("Error on timing police allowed: [faster, conservative])\n");
+		perror ("Error on timing policy allowed: [faster, conservative, teka])\n");
 		exit (1);
 	}
 
@@ -77,8 +85,8 @@ int main (int argc, const char* argv[]) {
 	try_sched_rr = sched_setscheduler (0, SCHED_FIFO, &param);
 	additional_delay_usec = atoi (argv[4]);
 
-	fprintf (stderr, "main_tid=%d num_workers=%d sched_err=%d add_delay=%d\n",
-			main_tid, num_workers, try_sched_rr, additional_delay_usec);
+	fprintf (stderr, "main_tid=%d num_workers=%d sched_err=%d add_delay=%d policy=%s\n",
+			main_tid, num_workers, try_sched_rr, additional_delay_usec, argv[2]);
 
 	control_replay (repl, num_workers, additional_delay_usec);
 

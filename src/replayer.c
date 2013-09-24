@@ -27,7 +27,7 @@
 
 #define PID_MAX 32768
 
-#define BUFF_SIZE   200
+#define BUFF_SIZE   50000
 #define DEBUG 1
 
 static pthread_cond_t cmds_were_produced_cond = PTHREAD_COND_INITIALIZER;

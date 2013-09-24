@@ -525,7 +525,7 @@ TEST(ReplayTest, SingleOperationReplay) {
 	load (workload, input_f);
 
 	struct replay* repl = create_replay (workload);
-	repl->timing_ops = conservative_police_ops;
+	repl->timing_ops = conservative_policy_ops;
 	replay (repl);
 
 	EXPECT_EQ (2, repl->result->replayed_commands);//boostrap + 1
@@ -545,7 +545,7 @@ TEST(ReplayTest, SingleOpenOperationReplay) {
 
 	load (workload, input_f);
 	struct replay* repl = create_replay (workload);
-	repl->timing_ops = conservative_police_ops;
+	repl->timing_ops = conservative_policy_ops;
 	replay (repl);
 
 	EXPECT_EQ (2, repl->result->replayed_commands);//boostrap + 1
@@ -675,7 +675,7 @@ TEST(ReplayTest, 2_sequencial_command_mkdir_parsing_skipped) {
 	element_two->parents_ids[0] = 1;
 
 	struct replay* repl = create_replay (rep_wld);
-	repl->timing_ops = conservative_police_ops;
+	repl->timing_ops = conservative_policy_ops;
 	replay (repl);
 
 	EXPECT_EQ (3, repl->result->replayed_commands);//boostrap + 2
@@ -691,7 +691,7 @@ TEST(ReplayTest, 2_sequencial_command_mkdir) {
 	load(workload, input_f);
 
 	struct replay* repl = create_replay (workload);
-	repl->timing_ops = conservative_police_ops;
+	repl->timing_ops = conservative_policy_ops;
 	replay (repl);
 
 	EXPECT_EQ (3, repl->result->replayed_commands);//boostrap + 2
@@ -712,7 +712,7 @@ TEST(ReplayTest, sequencial_open_read_close_same_file) {
 	load(workload, input_f);
 
 	struct replay* repl = create_replay (workload);
-	repl->timing_ops = conservative_police_ops;
+	repl->timing_ops = conservative_policy_ops;
 	replay (repl);
 
 	Replay_result* actual_result = repl->result;
@@ -732,7 +732,7 @@ TEST(ReplayTest, open_seek_close) {
 	load(workload, input_f);
 
 	struct replay* repl = create_replay (workload);
-	repl->timing_ops = conservative_police_ops;
+	repl->timing_ops = conservative_policy_ops;
 	replay (repl);
 
 	Replay_result* actual_result = repl->result;

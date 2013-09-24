@@ -142,7 +142,7 @@ typedef struct replay_result {
 	command_replay_result* cmds_replay_result;
 } Replay_result;
 
-struct timing_police {
+struct timing_policy {
 	double (*delay) (struct replay*, Workflow_element*);
 };
 
@@ -173,7 +173,7 @@ struct replay {
 	Replay_workload* workload;
 	Replay_result* result;
 
-	struct timing_police timing_ops;
+	struct timing_policy timing_ops;
 };
 
 void workflow_element_init (Workflow_element* element);

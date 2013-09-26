@@ -1,6 +1,0 @@
-# 1. to resolve pre-replay
-# 	python pre_replay.py replay_dir < workflow.order > pre_replay.out
-# 2. to define file sizes
-# 	python pre_replay_fsize.py pre_replay.out replay_leading_path workflow.order > replay_fsize.out
-# 3. merge pre-replay and file size definition
-#	python merge_pre_replay_and_fsize.py replay_fsize pre_replay.out > merged.out

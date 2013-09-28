@@ -62,6 +62,7 @@ static struct lookuptab {
 	{"fsetxattr",	FSETXATTR_OP},
 	{"flistxattr",	FLISTXATTR_OP},
 	{"lsetxattr",	LSETXATTR_OP},
+	{"pread",	PREAD_OP},
 
 };
 
@@ -159,6 +160,26 @@ static Parms* alloc_and_parse_parms (op_t cmd_type,  json_t *replay_object) {
 			const char *count = json_string_value (json_array_get (args, 2));
 			parm[2].argm = (arg*) malloc (sizeof (arg));
 			parm[2].argm->i_val = atoi(count);
+		}
+		break;
+		case PREAD_OP: {
+			parm = (Parms*) malloc(4 * sizeof(Parms));
+			const char *fullpath = json_string_value (json_array_get (args, 0));
+			parm[0].argm = (arg*) malloc (sizeof (arg));
+			parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
+			strcpy(parm[0].argm->cprt_val, fullpath);
+
+			const char *fd = json_string_value (json_array_get (args, 1));
+			parm[1].argm = (arg*) malloc (sizeof (arg));
+			parm[1].argm->i_val = atoi(fd);
+
+			const char *count = json_string_value (json_array_get (args, 2));
+			parm[2].argm = (arg*) malloc (sizeof (arg));
+			parm[2].argm->i_val = atoi(count);
+
+			const char *offset = json_string_value (json_array_get (args, 3));
+			parm[3].argm = (arg*) malloc (sizeof (arg));
+			parm[3].argm->i_val = atoi(offset);
 		}
 		break;
 		case LLSEEK_OP: {//TODO: write and read have the same token sequence than open

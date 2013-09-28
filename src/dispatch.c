@@ -78,7 +78,6 @@ int exec (struct replay_command* to_exec, int *exec_rvalue, struct replay* rpl) 
 				set_session_fd (current_session_id, replayed_fd, rpl);
 			} else {
 				int traced_fd = to_exec->expected_retval;
-				//fprintf (stderr, "<open traced_begin=%f replayed_fd=%d traced_fd=%d traced_pid=%d>\n", to_exec->traced_begin, replayed_fd, traced_fd, to_exec->caller->pid);
 				if (traced_fd > 0) {
 					map_fd (to_exec->caller->pid, traced_fd, replayed_fd, rpl->pids_to_fd_pairs);
 				}
@@ -86,7 +85,6 @@ int exec (struct replay_command* to_exec, int *exec_rvalue, struct replay* rpl) 
 		}
 		break;
 		case READ_OP: {
-
 			int traced_fd = args[1].argm->i_val;
 			int repl_fd =  (rpl->session_enabled) ?
 						session_fd (current_session_id, rpl) :
@@ -96,8 +94,21 @@ int exec (struct replay_command* to_exec, int *exec_rvalue, struct replay* rpl) 
 			int read_count = args[2].argm->i_val;
 			char* buf = (char*) malloc (sizeof (char) * read_count);
 			*exec_rvalue = read (repl_fd, buf, read_count);
+		}
+		break;
+		case PREAD_OP: {
+			//args": ["/local2/bigdata.dat", "22857", "4096", "902141250"]
+			//ssize_t pread(int fd, void *buf, size_t count, off_t offset);
+			int traced_fd = args[1].argm->i_val;
+			int repl_fd =  (rpl->session_enabled) ?
+						session_fd (current_session_id, rpl) :
+						replayed_fd (to_exec->caller->pid, traced_fd, rpl->pids_to_fd_pairs);
 
-			//fprintf (stderr, "<read traced_begin=%f replayed_fd=%d traced_fd=%d traced_pid=%d rpl_rvalue=%d>\n", to_exec->traced_begin, repl_fd, traced_fd, to_exec->caller->pid, *exec_rvalue);
+			//FIXME should share a big bufer to avoid malloc'ing time wasting ?
+			int read_count = args[2].argm->i_val;
+			char* buf = (char*) malloc (sizeof (char) * read_count);
+			int offset = args[3].argm->i_val;
+			*exec_rvalue = pread (repl_fd, buf, read_count, offset);
 		}
 		break;
 		case WRITE_OP: {
@@ -110,7 +121,6 @@ int exec (struct replay_command* to_exec, int *exec_rvalue, struct replay* rpl) 
 			int write_count = args[2].argm->i_val;
 			char* buf = (char*) malloc (sizeof (char) * write_count);
 			*exec_rvalue = write (repl_fd, buf, write_count);
-			//fprintf (stderr, "<read traced_begin=%f write replayed_fd=%d traced_fd=%d traced_pid=%d rpl_rvalue=%d>\n", to_exec->traced_begin, repl_fd, traced_fd, to_exec->caller->pid, *exec_rvalue);
 		}
 		break;
 		case CLOSE_OP: {
@@ -120,7 +130,6 @@ int exec (struct replay_command* to_exec, int *exec_rvalue, struct replay* rpl) 
 						replayed_fd (to_exec->caller->pid, traced_fd, rpl->pids_to_fd_pairs);
 
 			*exec_rvalue = close (repl_fd);
-			//fprintf (stderr, "<close traced_begin=%f replayed_fd=%d traced_fd=%d traced_pid=%d>\n", to_exec->traced_begin, repl_fd, traced_fd, to_exec->caller->pid);
 			//FIXME should we set the fd mapping to something impossible as -1
 			//i think i this way we do not mask programming errors
 		}
@@ -133,7 +142,6 @@ int exec (struct replay_command* to_exec, int *exec_rvalue, struct replay* rpl) 
 						replayed_fd (to_exec->caller->pid, traced_fd, rpl->pids_to_fd_pairs);
 
 			*exec_rvalue = fstat(repl_fd, &sb);
-			//fprintf (stderr, "<fstat traced_begin=%f replayed_fd=%d traced_fd=%d traced_pid=%d>\n", to_exec->traced_begin, repl_fd, traced_fd, to_exec->caller->pid);
 		}
 		break;
 		case RMDIR_OP: {
@@ -151,7 +159,6 @@ int exec (struct replay_command* to_exec, int *exec_rvalue, struct replay* rpl) 
 			off_t offset = (off_t) (high << 32) | low;
 			int whence = args[3].argm->i_val;
 			*exec_rvalue = lseek (repl_fd, offset, whence);
-			//fprintf (stderr, "<llseek trace_begin=%f replayed_fd=%d traced_fd=%d traced_pid=%d>\n", to_exec->traced_begin, repl_fd, traced_fd, to_exec->caller->pid);
 		}
 		break;
 		default:

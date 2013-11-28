@@ -471,16 +471,11 @@ static Parms* alloc_and_parse_parms (op_t cmd_type,  json_t *replay_object) {
 		}
 		break;
 		case NFSD_PROC_MKDIR_OP: {
-			parm = (Parms*) malloc(2 * sizeof(Parms));
+			parm = (Parms*) malloc(sizeof(Parms));
 			const char *fullpath_parent = json_string_value (json_array_get (args, 0));
 			parm[0].argm = (arg*) malloc (sizeof (arg));
 			parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
 			strcpy(parm[0].argm->cprt_val, fullpath_parent);
-
-			const char *dir_to_create = json_string_value (json_array_get (args, 1));
-			parm[1].argm = (arg*) malloc (sizeof (arg));
-			parm[1].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
-			strcpy(parm[1].argm->cprt_val, dir_to_create);
 		}
 		break;
 		case NFSD_PROC_SETATTR_OP: {

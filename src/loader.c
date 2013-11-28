@@ -63,6 +63,11 @@ static struct lookuptab {
 	{"flistxattr",	FLISTXATTR_OP},
 	{"lsetxattr",	LSETXATTR_OP},
 
+	{"nfsd_proc_access",	NFSD_PROC_ACCESS_OP},
+	{"nfsd_proc_rmdir",	NFSD_PROC_RMDIR_OP},
+	{"nfsd_proc_fsstat",	NFSD_PROC_FSSTAT_OP},
+	{"nfsd_proc_getattr",	NFSD_PROC_GETATTR_OP},
+
 };
 
 static struct lookupwhence {
@@ -247,6 +252,42 @@ static Parms* alloc_and_parse_parms (op_t cmd_type,  json_t *replay_object) {
 			const char *fd = json_string_value (json_array_get (args, 1));
 			parm[1].argm = (arg*) malloc (sizeof (arg));
 			parm[1].argm->i_val = atoi(fd);
+		}
+		break;
+		case NFSD_PROC_ACCESS_OP: {
+			parm = (Parms*) malloc(2 * sizeof(Parms));
+			const char *fullpath = json_string_value (json_array_get (args, 0));
+			parm[0].argm = (arg*) malloc (sizeof (arg));
+			parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
+			strcpy(parm[0].argm->cprt_val, fullpath);
+
+			const char *access = json_string_value (json_array_get (args, 1));
+			parm[1].argm = (arg*) malloc (sizeof (arg));
+			parm[1].argm->i_val = atoi(access);
+		}
+		break;
+		case NFSD_PROC_RMDIR_OP: {
+			parm = (Parms*) malloc(2 * sizeof(Parms));
+			const char *fullpath = json_string_value (json_array_get (args, 0));
+			parm[0].argm = (arg*) malloc (sizeof (arg));
+			parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
+			strcpy(parm[0].argm->cprt_val, fullpath);
+		}
+		break;
+		case NFSD_PROC_FSSTAT_OP: {
+			parm = (Parms*) malloc(2 * sizeof(Parms));
+			const char *fullpath = json_string_value (json_array_get (args, 0));
+			parm[0].argm = (arg*) malloc (sizeof (arg));
+			parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
+			strcpy(parm[0].argm->cprt_val, fullpath);
+		}
+		break;
+		case NFSD_PROC_GETATTR_OP: {
+			parm = (Parms*) malloc(2 * sizeof(Parms));
+			const char *fullpath = json_string_value (json_array_get (args, 0));
+			parm[0].argm = (arg*) malloc (sizeof (arg));
+			parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
+			strcpy(parm[0].argm->cprt_val, fullpath);
 		}
 		break;
 		default: {//FIXME we need a case to NONE_OP, test it

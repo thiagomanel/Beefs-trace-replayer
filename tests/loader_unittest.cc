@@ -67,6 +67,134 @@ Workflow_element* load_and_basic_test (const char *path) {
 	return w_element;
 }
 
+/** NFS TESTS */
+
+TEST(NFSLoaderTest, LoadAccessCall) {
+//1
+//{
+//"args": ["/dir/file_to_acess", "0"],
+//"parents": [],
+//"stamp": {"begin": 1319217010218103.0, "elapsed": 382},
+//"call": "nfsd_proc_access",
+//"rvalue": 0,
+//"caller": {"tid": "11710", "pid": "11700", "uid": "1064", "exec": "(nfsd)"},
+//"id": 1,
+//"session_id": 1,
+//"children": []
+//}
+    Workflow_element* w_element = load_and_basic_test("tests/input_data/nfs/access0.workflow");
+    struct replay_command* loaded_cmd = w_element->command;
+
+    EXPECT_EQ(NFSD_PROC_ACCESS_OP, loaded_cmd->command);
+    EXPECT_EQ(0, loaded_cmd->expected_retval);
+
+    EXPECT_EQ(382, loaded_cmd->traced_elapsed_time);
+    EXPECT_EQ(1319217010218103.0, loaded_cmd->traced_begin);
+
+    Caller* caller_id = loaded_cmd->caller;
+    EXPECT_EQ(1064, caller_id->uid);
+    EXPECT_EQ(11700, caller_id->pid);
+    EXPECT_EQ(11710, caller_id->tid);
+
+    EXPECT_TRUE(strcmp("/dir/file_to_acess",
+			loaded_cmd->params[0].argm->cprt_val) == 0);
+    EXPECT_EQ(0, loaded_cmd->params[1].argm->i_val);
+}
+
+TEST(NFSLoaderTest, LoadRmdirCall) {
+//1
+//{
+//"args": ["/dir/dir_to_remove],
+//"parents": [],
+//"stamp": {"begin": 1319217010218103.0, "elapsed": 382},
+//"call": "nfsd_proc_access",
+//"rvalue": 0,
+//"caller": {"tid": "11710", "pid": "11700", "uid": "1064", "exec": "(nfsd)"},
+//"id": 1,
+//"session_id": 1,
+//"children": []
+//}
+    Workflow_element* w_element = load_and_basic_test("tests/input_data/nfs/rmdir0.workflow");
+    struct replay_command* loaded_cmd = w_element->command;
+
+    EXPECT_EQ(NFSD_PROC_RMDIR_OP, loaded_cmd->command);
+    EXPECT_EQ(0, loaded_cmd->expected_retval);
+
+    EXPECT_EQ(382, loaded_cmd->traced_elapsed_time);
+    EXPECT_EQ(1319217010218103.0, loaded_cmd->traced_begin);
+
+    Caller* caller_id = loaded_cmd->caller;
+    EXPECT_EQ(1064, caller_id->uid);
+    EXPECT_EQ(11700, caller_id->pid);
+    EXPECT_EQ(11710, caller_id->tid);
+
+    EXPECT_TRUE(strcmp("/dir/dir_to_remove",
+			loaded_cmd->params[0].argm->cprt_val) == 0);
+}
+
+TEST(NFSLoaderTest, LoadFsstatCall) {
+//1
+//{
+//"args": ["/dir/path_to_fsstat"],
+//"parents": [],
+//"stamp": {"begin": 1319217010218103.0, "elapsed": 382},
+//"call": "nfsd_proc_fsstat",
+//"rvalue": 0,
+//"caller": {"tid": "11710", "pid": "11700", "uid": "1064", "exec": "(nfsd)"},
+//"id": 1,
+//"session_id": 1,
+//"children": []
+//}
+    Workflow_element* w_element = load_and_basic_test("tests/input_data/nfs/fsstat0.workflow");
+    struct replay_command* loaded_cmd = w_element->command;
+
+    EXPECT_EQ(NFSD_PROC_FSSTAT_OP, loaded_cmd->command);
+    EXPECT_EQ(0, loaded_cmd->expected_retval);
+
+    EXPECT_EQ(382, loaded_cmd->traced_elapsed_time);
+    EXPECT_EQ(1319217010218103.0, loaded_cmd->traced_begin);
+
+    Caller* caller_id = loaded_cmd->caller;
+    EXPECT_EQ(1064, caller_id->uid);
+    EXPECT_EQ(11700, caller_id->pid);
+    EXPECT_EQ(11710, caller_id->tid);
+
+    EXPECT_TRUE(strcmp("/dir/path_to_fsstat",
+			loaded_cmd->params[0].argm->cprt_val) == 0);
+}
+
+TEST(NFSLoaderTest, LoadGetAttrCall) {
+//1
+//{
+//"args": ["/dir/path_to_getattr"],
+//"parents": [],
+//"stamp": {"begin": 1319217010218103.0, "elapsed": 382},
+//"call": "nfsd_proc_getattr",
+//"rvalue": 0,
+//"caller": {"tid": "11710", "pid": "11700", "uid": "1064", "exec": "(nfsd)"},
+//"id": 1,
+//"session_id": 1,
+//"children": []
+//}
+    Workflow_element* w_element = load_and_basic_test("tests/input_data/nfs/getattr0.workflow");
+    struct replay_command* loaded_cmd = w_element->command;
+
+    EXPECT_EQ(NFSD_PROC_GETATTR_OP, loaded_cmd->command);
+    EXPECT_EQ(0, loaded_cmd->expected_retval);
+
+    EXPECT_EQ(382, loaded_cmd->traced_elapsed_time);
+    EXPECT_EQ(1319217010218103.0, loaded_cmd->traced_begin);
+
+    Caller* caller_id = loaded_cmd->caller;
+    EXPECT_EQ(1064, caller_id->uid);
+    EXPECT_EQ(11700, caller_id->pid);
+    EXPECT_EQ(11710, caller_id->tid);
+
+    EXPECT_TRUE(strcmp("/dir/path_to_getattr",
+			loaded_cmd->params[0].argm->cprt_val) == 0);
+}
+/** SYSCALL TESTS */
+
 TEST(LoaderTest, LoadCloseCall) {
 //1 0 - 1 2 0 2097 2097 (udisks-daemon) close 1318539063006403-37 7 0
     Workflow_element* w_element = load_and_basic_test("tests/input_data/close0.workflow");

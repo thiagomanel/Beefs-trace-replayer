@@ -82,7 +82,8 @@ TEST(NFSLoaderTest, LoadAccessCall) {
 //"session_id": 1,
 //"children": []
 //}
-    Workflow_element* w_element = load_and_basic_test("tests/input_data/nfs/access0.workflow");
+    Workflow_element* w_element =
+	    load_and_basic_test("tests/input_data/nfs/access0.workflow");
     struct replay_command* loaded_cmd = w_element->command;
 
     EXPECT_EQ(NFSD_PROC_ACCESS_OP, loaded_cmd->command);
@@ -114,7 +115,8 @@ TEST(NFSLoaderTest, LoadRmdirCall) {
 //"session_id": 1,
 //"children": []
 //}
-    Workflow_element* w_element = load_and_basic_test("tests/input_data/nfs/rmdir0.workflow");
+    Workflow_element* w_element =
+	    load_and_basic_test("tests/input_data/nfs/rmdir0.workflow");
     struct replay_command* loaded_cmd = w_element->command;
 
     EXPECT_EQ(NFSD_PROC_RMDIR_OP, loaded_cmd->command);
@@ -145,7 +147,8 @@ TEST(NFSLoaderTest, LoadFsstatCall) {
 //"session_id": 1,
 //"children": []
 //}
-    Workflow_element* w_element = load_and_basic_test("tests/input_data/nfs/fsstat0.workflow");
+    Workflow_element* w_element =
+	    load_and_basic_test("tests/input_data/nfs/fsstat0.workflow");
     struct replay_command* loaded_cmd = w_element->command;
 
     EXPECT_EQ(NFSD_PROC_FSSTAT_OP, loaded_cmd->command);
@@ -176,7 +179,8 @@ TEST(NFSLoaderTest, LoadGetAttrCall) {
 //"session_id": 1,
 //"children": []
 //}
-    Workflow_element* w_element = load_and_basic_test("tests/input_data/nfs/getattr0.workflow");
+    Workflow_element* w_element =
+	    load_and_basic_test("tests/input_data/nfs/getattr0.workflow");
     struct replay_command* loaded_cmd = w_element->command;
 
     EXPECT_EQ(NFSD_PROC_GETATTR_OP, loaded_cmd->command);
@@ -193,6 +197,109 @@ TEST(NFSLoaderTest, LoadGetAttrCall) {
     EXPECT_TRUE(strcmp("/dir/path_to_getattr",
 			loaded_cmd->params[0].argm->cprt_val) == 0);
 }
+
+TEST(NFSLoaderTest, LoadRenameCall) {
+//1
+//{
+//"args": ["/dir/oldname", "/dir/newname"],
+//"parents": [],
+//"stamp": {"begin": 1319217010218103.0, "elapsed": 382},
+//"call": "nfsd_proc_rename",
+//"rvalue": 0,
+//"caller": {"tid": "11710", "pid": "11700", "uid": "1064", "exec": "(nfsd)"},
+//"id": 1,
+//"session_id": 1,
+//"children": []
+//}
+    Workflow_element* w_element =
+	    load_and_basic_test("tests/input_data/nfs/rename0.workflow");
+    struct replay_command* loaded_cmd = w_element->command;
+
+    EXPECT_EQ(NFSD_PROC_RENAME_OP, loaded_cmd->command);
+    EXPECT_EQ(0, loaded_cmd->expected_retval);
+
+    EXPECT_EQ(382, loaded_cmd->traced_elapsed_time);
+    EXPECT_EQ(1319217010218103.0, loaded_cmd->traced_begin);
+
+    Caller* caller_id = loaded_cmd->caller;
+    EXPECT_EQ(1064, caller_id->uid);
+    EXPECT_EQ(11700, caller_id->pid);
+    EXPECT_EQ(11710, caller_id->tid);
+
+    EXPECT_TRUE(strcmp("/dir/oldname",
+			loaded_cmd->params[0].argm->cprt_val) == 0);
+    EXPECT_TRUE(strcmp("/dir/newname",
+			loaded_cmd->params[1].argm->cprt_val) == 0);
+}
+
+TEST(NFSLoaderTest, LoadLinkCall) {
+//1
+//{
+//"args": ["/dir/target", "/dir/link"],
+//"parents": [],
+//"stamp": {"begin": 1319217010218103.0, "elapsed": 382},
+//"call": "nfsd_proc_link",
+//"rvalue": 0,
+//"caller": {"tid": "11710", "pid": "11700", "uid": "1064", "exec": "(nfsd)"},
+//"id": 1,
+//"session_id": 1,
+//"children": []
+//}
+    Workflow_element* w_element =
+	    load_and_basic_test("tests/input_data/nfs/link0.workflow");
+    struct replay_command* loaded_cmd = w_element->command;
+
+    EXPECT_EQ(NFSD_PROC_LINK_OP, loaded_cmd->command);
+    EXPECT_EQ(0, loaded_cmd->expected_retval);
+
+    EXPECT_EQ(382, loaded_cmd->traced_elapsed_time);
+    EXPECT_EQ(1319217010218103.0, loaded_cmd->traced_begin);
+
+    Caller* caller_id = loaded_cmd->caller;
+    EXPECT_EQ(1064, caller_id->uid);
+    EXPECT_EQ(11700, caller_id->pid);
+    EXPECT_EQ(11710, caller_id->tid);
+
+    EXPECT_TRUE(strcmp("/dir/target",
+			loaded_cmd->params[0].argm->cprt_val) == 0);
+    EXPECT_TRUE(strcmp("/dir/link",
+			loaded_cmd->params[1].argm->cprt_val) == 0);
+}
+
+TEST(NFSLoaderTest, LoadSymlinkCall) {
+//1
+//{
+//"args": ["/dir/target", "/dir/symlink"],
+//"parents": [],
+//"stamp": {"begin": 1319217010218103.0, "elapsed": 382},
+//"call": "nfsd_proc_symlink",
+//"rvalue": 0,
+//"caller": {"tid": "11710", "pid": "11700", "uid": "1064", "exec": "(nfsd)"},
+//"id": 1,
+//"session_id": 1,
+//"children": []
+//}
+    Workflow_element* w_element =
+	    load_and_basic_test("tests/input_data/nfs/symlink0.workflow");
+    struct replay_command* loaded_cmd = w_element->command;
+
+    EXPECT_EQ(NFSD_PROC_SYMLINK_OP, loaded_cmd->command);
+    EXPECT_EQ(0, loaded_cmd->expected_retval);
+
+    EXPECT_EQ(382, loaded_cmd->traced_elapsed_time);
+    EXPECT_EQ(1319217010218103.0, loaded_cmd->traced_begin);
+
+    Caller* caller_id = loaded_cmd->caller;
+    EXPECT_EQ(1064, caller_id->uid);
+    EXPECT_EQ(11700, caller_id->pid);
+    EXPECT_EQ(11710, caller_id->tid);
+
+    EXPECT_TRUE(strcmp("/dir/target",
+			loaded_cmd->params[0].argm->cprt_val) == 0);
+    EXPECT_TRUE(strcmp("/dir/symlink",
+			loaded_cmd->params[1].argm->cprt_val) == 0);
+}
+
 /** SYSCALL TESTS */
 
 TEST(LoaderTest, LoadCloseCall) {

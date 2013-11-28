@@ -67,6 +67,9 @@ static struct lookuptab {
 	{"nfsd_proc_rmdir",	NFSD_PROC_RMDIR_OP},
 	{"nfsd_proc_fsstat",	NFSD_PROC_FSSTAT_OP},
 	{"nfsd_proc_getattr",	NFSD_PROC_GETATTR_OP},
+	{"nfsd_proc_rename",	NFSD_PROC_RENAME_OP},
+	{"nfsd_proc_link",	NFSD_PROC_LINK_OP},
+	{"nfsd_proc_symlink",	NFSD_PROC_SYMLINK_OP},
 
 };
 
@@ -288,6 +291,45 @@ static Parms* alloc_and_parse_parms (op_t cmd_type,  json_t *replay_object) {
 			parm[0].argm = (arg*) malloc (sizeof (arg));
 			parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
 			strcpy(parm[0].argm->cprt_val, fullpath);
+		}
+		break;
+		case NFSD_PROC_RENAME_OP: {
+			parm = (Parms*) malloc(2 * sizeof(Parms));
+			const char *fullpath_oldname = json_string_value (json_array_get (args, 0));
+			parm[0].argm = (arg*) malloc (sizeof (arg));
+			parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
+			strcpy(parm[0].argm->cprt_val, fullpath_oldname);
+
+			const char *fullpath_newname = json_string_value (json_array_get (args, 1));
+			parm[1].argm = (arg*) malloc (sizeof (arg));
+			parm[1].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
+			strcpy(parm[1].argm->cprt_val, fullpath_newname);
+		}
+		break;
+		case NFSD_PROC_LINK_OP: {
+			parm = (Parms*) malloc(2 * sizeof(Parms));
+			const char *fullpath_target = json_string_value (json_array_get (args, 0));
+			parm[0].argm = (arg*) malloc (sizeof (arg));
+			parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
+			strcpy(parm[0].argm->cprt_val, fullpath_target);
+
+			const char *fullpath_link = json_string_value (json_array_get (args, 1));
+			parm[1].argm = (arg*) malloc (sizeof (arg));
+			parm[1].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
+			strcpy(parm[1].argm->cprt_val, fullpath_link);
+		}
+		break;
+		case NFSD_PROC_SYMLINK_OP: {
+			parm = (Parms*) malloc(2 * sizeof(Parms));
+			const char *fullpath_target = json_string_value (json_array_get (args, 0));
+			parm[0].argm = (arg*) malloc (sizeof (arg));
+			parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
+			strcpy(parm[0].argm->cprt_val, fullpath_target);
+
+			const char *fullpath_symlink = json_string_value (json_array_get (args, 1));
+			parm[1].argm = (arg*) malloc (sizeof (arg));
+			parm[1].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
+			strcpy(parm[1].argm->cprt_val, fullpath_symlink);
 		}
 		break;
 		default: {//FIXME we need a case to NONE_OP, test it

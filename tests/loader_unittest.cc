@@ -569,13 +569,13 @@ TEST(NFSLoaderTest, LoadReadLinkCall) {
     EXPECT_EQ(4096, loaded_cmd->params[1].argm->i_val);
 }
 
-TEST(NFSLoaderTest, LoadCreateCall) {
+TEST(NFSLoaderTest, LoadCreatCall) {
 //1
 //{
-//"args": ["/dir/parentdir", "path_to_create", "552"],
+//"args": ["/dir/parentdir", "path_to_creat", "552"],
 //"parents": [],
 //"stamp": {"begin": 1319217010218103.0, "elapsed": 382},
-//"call": "nfsd_proc_create",
+//"call": "nfsd_proc_creat",
 //"rvalue": 0,
 //"caller": {"tid": "11710", "pid": "11700", "uid": "1064", "exec": "(nfsd)"},
 //"id": 1,
@@ -583,10 +583,10 @@ TEST(NFSLoaderTest, LoadCreateCall) {
 //"children": []
 //}
     Workflow_element* w_element =
-	    load_and_basic_test("tests/input_data/nfs/create0.workflow");
+	    load_and_basic_test("tests/input_data/nfs/creat0.workflow");
     struct replay_command* loaded_cmd = w_element->command;
 
-    EXPECT_EQ(NFSD_PROC_CREATE_OP, loaded_cmd->command);
+    EXPECT_EQ(NFSD_PROC_CREAT_OP, loaded_cmd->command);
     EXPECT_EQ(0, loaded_cmd->expected_retval);
 
     EXPECT_EQ(382, loaded_cmd->traced_elapsed_time);
@@ -599,7 +599,7 @@ TEST(NFSLoaderTest, LoadCreateCall) {
 
     EXPECT_TRUE(strcmp("/dir/parentdir",
 			loaded_cmd->params[0].argm->cprt_val) == 0);
-    EXPECT_TRUE(strcmp("path_to_create",
+    EXPECT_TRUE(strcmp("path_to_creat",
 			loaded_cmd->params[1].argm->cprt_val) == 0);
     EXPECT_EQ(552, loaded_cmd->params[2].argm->i_val);
 }

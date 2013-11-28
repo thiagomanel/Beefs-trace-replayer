@@ -77,8 +77,8 @@ typedef unsigned short op_t;
 #define NFSD_PROC_ACCESS_OP (NFSD_PROC_READDIRPLUS_OP + 1)
 #define NFSD_PROC_MKNOD_OP (NFSD_PROC_ACCESS_OP + 1)
 #define NFSD_PROC_MKDIR_OP (NFSD_PROC_MKNOD_OP + 1)
-#define NFSD_PROC_CREATE_OP (NFSD_PROC_MKDIR_OP + 1)
-#define NFSD_PROC_COMMIT_OP (NFSD_PROC_CREATE_OP + 1)
+#define NFSD_PROC_CREAT_OP (NFSD_PROC_MKDIR_OP + 1)
+#define NFSD_PROC_COMMIT_OP (NFSD_PROC_CREAT_OP + 1)
 
 //FIXME: it's ugly, it'd be better to have each replayer mode, syscall or nfsd,
 //sṕecifying their own flags. Also, not there is no need to #define them.

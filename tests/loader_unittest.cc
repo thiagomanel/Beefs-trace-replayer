@@ -432,6 +432,111 @@ TEST(NFSLoaderTest, LoadCommitCall) {
     EXPECT_EQ(0, loaded_cmd->params[2].argm->i_val);
 }
 
+TEST(NFSLoaderTest, LoadLookupCall) {
+//1
+//{
+//"args": ["/dir/parentdir", "path_to_lookup"],
+//"parents": [],
+//"stamp": {"begin": 1319217010218103.0, "elapsed": 382},
+//"call": "nfsd_proc_lookup",
+//"rvalue": 0,
+//"caller": {"tid": "11710", "pid": "11700", "uid": "1064", "exec": "(nfsd)"},
+//"id": 1,
+//"session_id": 1,
+//"children": []
+//}
+    Workflow_element* w_element =
+	    load_and_basic_test("tests/input_data/nfs/lookup0.workflow");
+    struct replay_command* loaded_cmd = w_element->command;
+
+    EXPECT_EQ(NFSD_PROC_LOOKUP_OP, loaded_cmd->command);
+    EXPECT_EQ(0, loaded_cmd->expected_retval);
+
+    EXPECT_EQ(382, loaded_cmd->traced_elapsed_time);
+    EXPECT_EQ(1319217010218103.0, loaded_cmd->traced_begin);
+
+    Caller* caller_id = loaded_cmd->caller;
+    EXPECT_EQ(1064, caller_id->uid);
+    EXPECT_EQ(11700, caller_id->pid);
+    EXPECT_EQ(11710, caller_id->tid);
+
+    EXPECT_TRUE(strcmp("/dir/parentdir",
+			loaded_cmd->params[0].argm->cprt_val) == 0);
+    EXPECT_TRUE(strcmp("path_to_lookup",
+			loaded_cmd->params[1].argm->cprt_val) == 0);
+}
+
+TEST(NFSLoaderTest, LoadReadCall) {
+//1
+//{
+//"args": ["/dir/path_to_read", "4096", "0", "0"],
+//"parents": [],
+//"stamp": {"begin": 1319217010218103.0, "elapsed": 382},
+//"call": "nfsd_proc_read",
+//"rvalue": 0,
+//"caller": {"tid": "11710", "pid": "11700", "uid": "1064", "exec": "(nfsd)"},
+//"id": 1,
+//"session_id": 1,
+//"children": []
+//}
+    Workflow_element* w_element =
+	    load_and_basic_test("tests/input_data/nfs/read0.workflow");
+    struct replay_command* loaded_cmd = w_element->command;
+
+    EXPECT_EQ(NFSD_PROC_READ_OP, loaded_cmd->command);
+    EXPECT_EQ(0, loaded_cmd->expected_retval);
+
+    EXPECT_EQ(382, loaded_cmd->traced_elapsed_time);
+    EXPECT_EQ(1319217010218103.0, loaded_cmd->traced_begin);
+
+    Caller* caller_id = loaded_cmd->caller;
+    EXPECT_EQ(1064, caller_id->uid);
+    EXPECT_EQ(11700, caller_id->pid);
+    EXPECT_EQ(11710, caller_id->tid);
+
+    EXPECT_TRUE(strcmp("/dir/path_to_read",
+			loaded_cmd->params[0].argm->cprt_val) == 0);
+    EXPECT_EQ(4096, loaded_cmd->params[1].argm->i_val);
+    EXPECT_EQ(0, loaded_cmd->params[2].argm->i_val);
+    EXPECT_EQ(0, loaded_cmd->params[3].argm->i_val);
+}
+
+
+TEST(NFSLoaderTest, LoadWriteCall) {
+//1
+//{
+//"args": ["/dir/path_to_write", "4096", "0", "0"],
+//"parents": [],
+//"stamp": {"begin": 1319217010218103.0, "elapsed": 382},
+//"call": "nfsd_proc_write",
+//"rvalue": 0,
+//"caller": {"tid": "11710", "pid": "11700", "uid": "1064", "exec": "(nfsd)"},
+//"id": 1,
+//"session_id": 1,
+//"children": []
+//}
+    Workflow_element* w_element =
+	    load_and_basic_test("tests/input_data/nfs/write0.workflow");
+    struct replay_command* loaded_cmd = w_element->command;
+
+    EXPECT_EQ(NFSD_PROC_WRITE_OP, loaded_cmd->command);
+    EXPECT_EQ(0, loaded_cmd->expected_retval);
+
+    EXPECT_EQ(382, loaded_cmd->traced_elapsed_time);
+    EXPECT_EQ(1319217010218103.0, loaded_cmd->traced_begin);
+
+    Caller* caller_id = loaded_cmd->caller;
+    EXPECT_EQ(1064, caller_id->uid);
+    EXPECT_EQ(11700, caller_id->pid);
+    EXPECT_EQ(11710, caller_id->tid);
+
+    EXPECT_TRUE(strcmp("/dir/path_to_write",
+			loaded_cmd->params[0].argm->cprt_val) == 0);
+    EXPECT_EQ(4096, loaded_cmd->params[1].argm->i_val);
+    EXPECT_EQ(0, loaded_cmd->params[2].argm->i_val);
+    EXPECT_EQ(0, loaded_cmd->params[3].argm->i_val);
+}
+
 /** SYSCALL TESTS */
 
 TEST(LoaderTest, LoadCloseCall) {

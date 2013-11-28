@@ -604,6 +604,40 @@ TEST(NFSLoaderTest, LoadCreateCall) {
     EXPECT_EQ(552, loaded_cmd->params[2].argm->i_val);
 }
 
+TEST(NFSLoaderTest, LoadMKdirCall) {
+//1
+//{
+//"args": ["/dir/parentdir", "dir_to_create"],
+//"parents": [],
+//"stamp": {"begin": 1319217010218103.0, "elapsed": 382},
+//"call": "nfsd_proc_mkdir",
+//"rvalue": 0,
+//"caller": {"tid": "11710", "pid": "11700", "uid": "1064", "exec": "(nfsd)"},
+//"id": 1,
+//"session_id": 1,
+//"children": []
+//}
+    Workflow_element* w_element =
+	    load_and_basic_test("tests/input_data/nfs/mkdir0.workflow");
+    struct replay_command* loaded_cmd = w_element->command;
+
+    EXPECT_EQ(NFSD_PROC_MKDIR_OP, loaded_cmd->command);
+    EXPECT_EQ(0, loaded_cmd->expected_retval);
+
+    EXPECT_EQ(382, loaded_cmd->traced_elapsed_time);
+    EXPECT_EQ(1319217010218103.0, loaded_cmd->traced_begin);
+
+    Caller* caller_id = loaded_cmd->caller;
+    EXPECT_EQ(1064, caller_id->uid);
+    EXPECT_EQ(11700, caller_id->pid);
+    EXPECT_EQ(11710, caller_id->tid);
+
+    EXPECT_TRUE(strcmp("/dir/parentdir",
+			loaded_cmd->params[0].argm->cprt_val) == 0);
+    EXPECT_TRUE(strcmp("dir_to_create",
+			loaded_cmd->params[1].argm->cprt_val) == 0);
+}
+
 TEST(NFSLoaderTest, LoadSetAttrCall) {
 //1
 //{

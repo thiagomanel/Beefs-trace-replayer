@@ -60,6 +60,30 @@ typedef unsigned short op_t;
 #define FLISTXATTR_OP (FSETXATTR_OP + 1)
 #define LSETXATTR_OP (FLISTXATTR_OP + 1)
 
+#define NFSD3_PROC_FSSTAT (LSETXATTR_OP + 1)
+#define NFSD3_PROC_SETATTR (NFSD3_PROC_FSSTAT + 1)
+#define NFSD3_PROC_GETATTR (NFSD3_PROC_SETATTR + 1)
+#define NFSD3_PROC_LOOKUP (NFSD3_PROC_GETATTR + 1)
+#define NFSD3_PROC_WRITE (NFSD3_PROC_LOOKUP + 1)
+#define NFSD3_PROC_READ (NFSD3_PROC_WRITE + 1)
+#define NFSD3_PROC_RENANE (NFSD3_PROC_READ + 1)
+#define NFSD3_PROC_REMOVE (NFSD3_PROC_RENANE + 1)
+#define NFSD3_PROC_RMDIR (NFSD3_PROC_REMOVE + 1)
+#define NFSD3_PROC_LINK (NFSD3_PROC_RMDIR + 1)
+#define NFSD3_PROC_SYMLINK (NFSD3_PROC_LINK + 1)
+#define NFSD3_PROC_READLINK (NFSD3_PROC_SYMLINK + 1)
+#define NFSD3_PROC_READDIR (NFSD3_PROC_READLINK + 1)
+#define NFSD3_PROC_READDIRPLUS (NFSD3_PROC_READDIR + 1)
+#define NFSD3_PROC_ACCESS (NFSD3_PROC_READDIRPLUS + 1)
+#define NFSD3_PROC_MKNOD (NFSD3_PROC_ACCESS + 1)
+#define NFSD3_PROC_MKDIR (NFSD3_PROC_MKNOD + 1)
+#define NFSD3_PROC_CREAT (NFSD3_PROC_MKDIR + 1)
+#define NFSD3_PROC_COMMIT (NFSD3_PROC_CREAT + 1)
+
+//FIXME: it's ugly, it'd be better to have each replayer mode, syscall or nfsd,
+//sṕecifying their own flags. Also, not there is no need to #define them.
+//Anyway, I'll wait a refactor
+
 #define ROOT_ID 0
 
 #define PID_MAX 32768
@@ -210,3 +234,4 @@ void control_replay (struct replay* rpl, int num_workers, int additional_delay_u
 #define RESULT(_replay, el_id) &(_replay->result->cmds_replay_result[el_id])
 
 #endif /* _REPLAYER_H */
+

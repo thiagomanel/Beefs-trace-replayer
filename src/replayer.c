@@ -318,6 +318,7 @@ static Workflow_element* take () {
 void *consume (void *arg) {
 
 	int actual_rvalue = 0;
+	struct timespec sleep_t;
 
 	while (1) {
 
@@ -341,12 +342,12 @@ void *consume (void *arg) {
 				if (dlay > 1000) {
 					usleep (dlay + add_delay_usec);
 				} else {
+					sleep_t.tv_sec = 0;
+					sleep_t.tv_nsec = (dlay * 1000) +
+						(add_delay_usec * 1000);
 					//one more hack it to sleep (dlay - sleep_delay)
 					//FIXME: pass the rem field if case of receiving a interrupt
-					nanosleep ( (struct timespec[]) {{
-							0,
-							((dlay * 1000) + (add_delay_usec * 1000))}},
-								NULL);
+					nanosleep (&sleep_t, NULL);
 				}
 			}
 

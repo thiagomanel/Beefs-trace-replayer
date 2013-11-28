@@ -70,6 +70,10 @@ static struct lookuptab {
 	{"nfsd_proc_rename",	NFSD_PROC_RENAME_OP},
 	{"nfsd_proc_link",	NFSD_PROC_LINK_OP},
 	{"nfsd_proc_symlink",	NFSD_PROC_SYMLINK_OP},
+	{"nfsd_proc_readdir",	NFSD_PROC_READDIR_OP},
+	{"nfsd_proc_readdirplus",	NFSD_PROC_READDIRPLUS_OP},
+	{"nfsd_proc_remove",	NFSD_PROC_REMOVE_OP},
+	{"nfsd_proc_commit",	NFSD_PROC_COMMIT_OP},
 
 };
 
@@ -330,6 +334,51 @@ static Parms* alloc_and_parse_parms (op_t cmd_type,  json_t *replay_object) {
 			parm[1].argm = (arg*) malloc (sizeof (arg));
 			parm[1].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
 			strcpy(parm[1].argm->cprt_val, fullpath_symlink);
+		}
+		break;
+		case NFSD_PROC_READDIR_OP: {
+			parm = (Parms*) malloc(sizeof(Parms));
+			const char *fullpath = json_string_value (json_array_get (args, 0));
+			parm[0].argm = (arg*) malloc (sizeof (arg));
+			parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
+			strcpy(parm[0].argm->cprt_val, fullpath);
+		}
+		break;
+		case NFSD_PROC_READDIRPLUS_OP: {
+			parm = (Parms*) malloc(sizeof(Parms));
+			const char *fullpath = json_string_value (json_array_get (args, 0));
+			parm[0].argm = (arg*) malloc (sizeof (arg));
+			parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
+			strcpy(parm[0].argm->cprt_val, fullpath);
+		}
+		break;
+		case NFSD_PROC_REMOVE_OP: {
+			parm = (Parms*) malloc(2 * sizeof(Parms));
+			const char *fullpath_parent = json_string_value (json_array_get (args, 0));
+			parm[0].argm = (arg*) malloc (sizeof (arg));
+			parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
+			strcpy(parm[0].argm->cprt_val, fullpath_parent);
+
+			const char *path_to_remove = json_string_value (json_array_get (args, 1));
+			parm[1].argm = (arg*) malloc (sizeof (arg));
+			parm[1].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
+			strcpy(parm[1].argm->cprt_val, path_to_remove);
+		}
+		break;
+		case NFSD_PROC_COMMIT_OP: {
+			parm = (Parms*) malloc(2 * sizeof(Parms));
+			const char *fullpath_parent = json_string_value (json_array_get (args, 0));
+			parm[0].argm = (arg*) malloc (sizeof (arg));
+			parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
+			strcpy(parm[0].argm->cprt_val, fullpath_parent);
+
+			const char *count = json_string_value (json_array_get (args, 1));
+			parm[1].argm = (arg*) malloc (sizeof (arg));
+			parm[1].argm->i_val = atoi(count);
+
+			const char *offset = json_string_value (json_array_get (args, 2));
+			parm[2].argm = (arg*) malloc (sizeof (arg));
+			parm[2].argm->i_val = atoi(offset);
 		}
 		break;
 		default: {//FIXME we need a case to NONE_OP, test it

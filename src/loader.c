@@ -454,20 +454,15 @@ static Parms* alloc_and_parse_parms (op_t cmd_type,  json_t *replay_object) {
 		}
 		break;
 		case NFSD_PROC_CREAT_OP: {
-			parm = (Parms*) malloc(3 * sizeof(Parms));
-			const char *fullpath_parent = json_string_value (json_array_get (args, 0));
+			parm = (Parms*) malloc(2 * sizeof(Parms));
+			const char *fullpath = json_string_value (json_array_get (args, 0));
 			parm[0].argm = (arg*) malloc (sizeof (arg));
 			parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
-			strcpy(parm[0].argm->cprt_val, fullpath_parent);
+			strcpy(parm[0].argm->cprt_val, fullpath);
 
-			const char *path_to_creat = json_string_value (json_array_get (args, 1));
+			const char *mode = json_string_value (json_array_get (args, 1));
 			parm[1].argm = (arg*) malloc (sizeof (arg));
-			parm[1].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
-			strcpy(parm[1].argm->cprt_val, path_to_creat);
-
-			const char *mode = json_string_value (json_array_get (args, 2));
-			parm[2].argm = (arg*) malloc (sizeof (arg));
-			parm[2].argm->i_val = atoi(mode);
+			parm[1].argm->i_val = atoi(mode);
 		}
 		break;
 		case NFSD_PROC_MKDIR_OP: {

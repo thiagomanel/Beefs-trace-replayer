@@ -1,0 +1,7 @@
+6
+{"args": ["/dir_to_mk"], "parents": [], "stamp": {"begin": 10.0, "elapsed": 1}, "call": "nfsd_proc_mkdir", "rvalue": 0, "caller": {"tid": "0", "pid": "0", "uid": "0", "exec": "(nfsd)"}, "id": 1, "session_id": 1, "children": [2]}
+{"args": ["/dir_to_mk"], "parents": [1], "stamp": {"begin": 20.0, "elapsed": 1}, "call": "nfsd_proc_readdir", "rvalue": 0, "caller": {"tid": "0", "pid": "0", "uid": "0", "exec": "(nfsd)"}, "id": 2, "session_id": 1, "children": [3]}
+{"args": ["/dir_to_readdirplus"], "parents": [2], "stamp": {"begin": 30.0, "elapsed": 1}, "call": "nfsd_proc_mkdir", "rvalue": 0, "caller": {"tid": "0", "pid": "0", "uid": "0", "exec": "(nfsd)"}, "id": 3, "session_id": 1, "children": [4]}
+{"args": ["/dir_to_readdirplus"], "parents": [3], "stamp": {"begin": 40.0, "elapsed": 1}, "call": "nfsd_proc_readdirplus", "rvalue": 0, "caller": {"tid": "0", "pid": "0", "uid": "0", "exec": "(nfsd)"}, "id": 4, "session_id": 1, "children": [5]}
+{"args": ["/dir_to_readdirplus"], "parents": [4], "stamp": {"begin": 50.0, "elapsed": 1}, "call": "nfsd_proc_rmdir", "rvalue": 0, "caller": {"tid": "0", "pid": "0", "uid": "0", "exec": "(nfsd)"}, "id": 5, "session_id": 1, "children": [6]}
+{"args": ["/dir_to_mk/path_to_creat", "552"], "parents": [5], "stamp": {"begin": 60.0, "elapsed": 1}, "call": "nfsd_proc_creat", "rvalue": 0, "caller": {"tid": "0", "pid": "0", "uid": "0", "exec": "(nfsd)"}, "id": 6, "session_id": 1, "children": [0]}

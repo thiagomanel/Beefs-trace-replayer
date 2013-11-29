@@ -572,7 +572,7 @@ TEST(NFSLoaderTest, LoadReadLinkCall) {
 TEST(NFSLoaderTest, LoadCreatCall) {
 //1
 //{
-//"args": ["/dir/parentdir", "path_to_creat", "552"],
+//"args": ["/dir/parentdir/path_to_creat", "552"],
 //"parents": [],
 //"stamp": {"begin": 1319217010218103.0, "elapsed": 382},
 //"call": "nfsd_proc_creat",
@@ -597,11 +597,9 @@ TEST(NFSLoaderTest, LoadCreatCall) {
     EXPECT_EQ(11700, caller_id->pid);
     EXPECT_EQ(11710, caller_id->tid);
 
-    EXPECT_TRUE(strcmp("/dir/parentdir",
+    EXPECT_TRUE(strcmp("/dir/parentdir/path_to_creat",
 			loaded_cmd->params[0].argm->cprt_val) == 0);
-    EXPECT_TRUE(strcmp("path_to_creat",
-			loaded_cmd->params[1].argm->cprt_val) == 0);
-    EXPECT_EQ(552, loaded_cmd->params[2].argm->i_val);
+    EXPECT_EQ(552, loaded_cmd->params[1].argm->i_val);
 }
 
 TEST(NFSLoaderTest, LoadMKdirCall) {

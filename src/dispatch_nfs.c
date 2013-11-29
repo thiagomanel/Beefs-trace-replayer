@@ -23,7 +23,6 @@
 #include <nfsc/libnfs-raw-nfs.h>
 #include <nfsc/libnfs-raw-nlm.h>
 
-
 #include "replayer.h"
 
 //FIXME: refactor later to be polimorfic with syscall_dispatch
@@ -31,6 +30,8 @@ int exec_nfs (struct replay_command* to_exec, int *exec_rvalue,
 		struct replay* rpl, struct nfs_context *nfs) {
 
     assert (to_exec != NULL);
+    assert (rpl != NULL);
+    assert (nfs != NULL);
     Parms* args = to_exec->params;
 
     switch (to_exec->command) {
@@ -52,18 +53,19 @@ int exec_nfs (struct replay_command* to_exec, int *exec_rvalue,
 	break;
 	case NFSD_PROC_WRITE_OP: {
 
-	    int offset, count;
+	    int offset, count, open_ret;
 	    struct nfsfh* wfh = NULL;
 
-	    if (nfs_open (nfs, args[0].argm->cprt_val, O_RDWR, &wfh) < 0) {
-		return -1;
+	    if ( (open_ret = nfs_open (nfs, args[0].argm->cprt_val, O_RDWR,
+					&wfh)) < 0) {
+		return open_ret;
 	    }
 
 	    count = args[1].argm->i_val;
 	    char * buf = (char*) malloc (count * sizeof(char));
 	    offset = args[2].argm->i_val;
 
-            *exec_rvalue = nfs_pread (nfs, wfh, offset, count, buf);
+            *exec_rvalue = nfs_pwrite (nfs, wfh, offset, count, buf);
 	}
 	break;
 	case NFSD_PROC_READ_OP: {
@@ -119,11 +121,17 @@ int exec_nfs (struct replay_command* to_exec, int *exec_rvalue,
 	break;
 	case NFSD_PROC_READDIR_OP: {
 
+	    struct nfsdirent* rdirent = NULL;
  	    struct nfsdir* dirp = NULL;
 	    if (nfs_opendir (nfs, args[0].argm->cprt_val, &dirp) < 0) {
 		return -1;
 	    }
-	    *exec_rvalue = nfs_readdir (nfs, dirp);
+	    rdirent = nfs_readdir (nfs, dirp);
+	    if (rdirent) {
+	        *exec_rvalue = 0;
+	    } else {
+	        return -1;
+	    }
 	}
 	break;
 	case NFSD_PROC_READDIRPLUS_OP: {
@@ -150,7 +158,7 @@ int exec_nfs (struct replay_command* to_exec, int *exec_rvalue,
 
 	    struct nfsfh* fh = NULL;
             *exec_rvalue = nfs_creat (nfs, args[0].argm->cprt_val,
-			       args[1].argm->i_val, &fh);
+			       		args[1].argm->i_val, &fh);
 	}
 	break;
 	case NFSD_PROC_COMMIT_OP: {

@@ -25,6 +25,8 @@
 #include <sys/types.h>
 #include <sys/syscall.h>
 
+#include <nfsc/libnfs.h>
+
 #define PID_MAX 32768
 
 #define BUFF_SIZE   50000
@@ -36,6 +38,8 @@ static pthread_cond_t cmds_were_consumed_cond = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t lock;
 static struct replay* __replay;
 static int add_delay_usec = 0;
+
+static struct nfs_context *nfs;
 
 void workflow_element_init (Workflow_element* element) {
 
@@ -352,11 +356,11 @@ void *consume (void *arg) {
 			}
 
 			gettimeofday (cmd_result->dispatch_begin, NULL);
-			int result = exec (element->command, &actual_rvalue, __replay);
-
-			//assigning actual syscall returning value. We do not check
-			//REPLAY_SUCCESS because it will lead to program termination if it
-			//does not succeded properly anyway
+			//FIXME we should make it polimorfic right here.
+			int result = exec_nfs (element->command,
+						&actual_rvalue,
+						__replay,
+						nfs);
 
 			//FIXME: We need to set expected rvalue
 			cmd_result->actual_rvalue = actual_rvalue;
@@ -470,6 +474,29 @@ void replay (struct replay* rpl) {
 	control_replay (rpl, 10, 0);
 }
 
+struct nfs_context *do_nfsio_connect (const char *server, const char *export) {
+
+	struct nfs_context *nfs_ctx;
+
+	if (export == NULL) {
+  	    fprintf (stderr, "NULL export\n");
+	    return NULL;
+	}
+
+	nfs_ctx = nfs_init_context ();
+	if (nfs_ctx == NULL) {
+	    fprintf (stderr, "Failed to init_context\n");
+	    return NULL;
+	}
+	if (nfs_mount (nfs_ctx, server, export) != 0) {
+	    fprintf (stderr, "Failed to mount server=%s export=%s. Error:%s\n",
+		     server, export, nfs_get_error (nfs_ctx));
+	    return NULL;
+	}
+
+	return nfs_ctx;
+}
+
 void control_replay (struct replay* rpl, int num_workers, int additional_delay_usec) {
 
 	int i;
@@ -479,6 +506,7 @@ void control_replay (struct replay* rpl, int num_workers, int additional_delay_u
 
 	__replay = rpl;
 	add_delay_usec = additional_delay_usec;
+	nfs = do_nfsio_connect ("150.165.85.56", "/local/nfs_server");
 
         shared_buff = (sbuffs_t*) malloc( sizeof(sbuffs_t));
 	fill_shared_buffer (__replay->workload, shared_buff);

@@ -145,8 +145,13 @@ int exec_nfs (struct replay_command* to_exec, int *exec_rvalue,
 	}
 	break;
 	case NFSD_PROC_MKNOD_OP: {
-	    //TODO
-	    //nfs_mknod(struct nfs_context *nfs, const char *path, int mode, int dev);
+	    //FIXME: it's not working; was returning an error code
+	    int mode, dev;
+	    mode = args[1].argm->i_val;
+	    dev = args[2].argm->i_val;
+
+	    printf ("path=%s mode=%d dev=%d\n", args[0].argm->cprt_val, mode, dev);
+            *exec_rvalue = nfs_mknod (nfs, args[0].argm->cprt_val, mode, dev);
 	}
 	break;
 	case NFSD_PROC_MKDIR_OP: {

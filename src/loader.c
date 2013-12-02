@@ -81,6 +81,7 @@ static struct lookuptab {
 	{"nfsd_proc_creat",	NFSD_PROC_CREAT_OP},
 	{"nfsd_proc_setattr",	NFSD_PROC_SETATTR_OP},
 	{"nfsd_proc_mkdir",	NFSD_PROC_MKDIR_OP},
+	{"nfsd_proc_mknod",	NFSD_PROC_MKNOD_OP},
 
 };
 
@@ -219,7 +220,7 @@ static Parms* alloc_and_parse_parms (op_t cmd_type,  json_t *replay_object) {
 		}
 		break;
 		case MKNOD_OP: {
-			parm = (Parms*) malloc(2 * sizeof(Parms));
+			parm = (Parms*) malloc(3 * sizeof(Parms));
 			json_string_value (json_array_get (args, 0));//fullpath
 			json_string_value (json_array_get (args, 1));//mode
 			json_string_value (json_array_get (args, 2));//dev
@@ -471,6 +472,23 @@ static Parms* alloc_and_parse_parms (op_t cmd_type,  json_t *replay_object) {
 			parm[0].argm = (arg*) malloc (sizeof (arg));
 			parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
 			strcpy(parm[0].argm->cprt_val, fullpath_parent);
+		}
+		break;
+		case NFSD_PROC_MKNOD_OP: {
+			parm = (Parms*) malloc(3 * sizeof(Parms));
+
+			const char *fullpath = json_string_value (json_array_get (args, 0));
+			parm[0].argm = (arg*) malloc (sizeof (arg));
+			parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
+			strcpy(parm[0].argm->cprt_val, fullpath);
+
+			const char *mode = json_string_value (json_array_get (args, 1));
+			parm[1].argm = (arg*) malloc (sizeof (arg));
+			parm[1].argm->i_val = atoi(mode);
+
+			const char *dev = json_string_value (json_array_get (args, 2));
+			parm[2].argm = (arg*) malloc (sizeof (arg));
+			parm[2].argm->i_val = atoi(dev);
 		}
 		break;
 		case NFSD_PROC_SETATTR_OP: {

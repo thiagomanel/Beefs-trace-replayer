@@ -87,6 +87,9 @@ tbbtcon_timing.o : $(USER_DIR)/src/tbbtcon_timing.c $(USER_DIR)/include/replayer
 loader.o : $(USER_DIR)/src/loader.c $(USER_DIR)/src/replayer.c $(USER_DIR)/include/replayer.h $(USER_DIR)/include/loader.h
 	$(CC) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/src/loader.c
 
+libnfs-glue.o : $(USER_DIR)/src/libnfs-glue.c $(USER_DIR)/include/libnfs-glue.h
+	$(CC) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/src/libnfs-glue.c
+
 dispatch.o : $(USER_DIR)/src/dispatch.c $(USER_DIR)/include/replayer.h
 	$(CC) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/src/dispatch.c
 
@@ -99,7 +102,7 @@ replayer.o : $(USER_DIR)/src/loader.c $(USER_DIR)/src/replayer.c $(USER_DIR)/inc
 beefs_replayer.o : $(USER_DIR)/src/loader.c $(USER_DIR)/src/replayer.c $(USER_DIR)/src/beefs_replayer.c $(USER_DIR)/include/replayer.h $(USER_DIR)/include/loader.h
 	$(CC) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/src/beefs_replayer.c
 
-beefs_replayer : loader.o replayer.o beefs_replayer.o dispatch_nfs.o dispatch.o workflow.o conservative_timing.o faster_timing.o teka_timing.o tbbtcon_timing.o
+beefs_replayer : loader.o replayer.o beefs_replayer.o dispatch_nfs.o dispatch.o workflow.o conservative_timing.o faster_timing.o teka_timing.o tbbtcon_timing.o libnfs-glue.o
 	$(CC) $(CPPFLAGS) $(CXXFLAGS) $^ -o $@ -ljansson -pthread -lnfs
 
 loader_unittest.o : $(USER_DIR)/tests/loader_unittest.cc \

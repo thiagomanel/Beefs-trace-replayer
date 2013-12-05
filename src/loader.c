@@ -291,10 +291,6 @@ static Parms* alloc_and_parse_parms (op_t cmd_type,  json_t *replay_object) {
 		break;
 		case NFSD_PROC_FSSTAT_OP: {
 			parm = (Parms*) malloc(sizeof(Parms));
-			const char *fullpath = json_string_value (json_array_get (args, 0));
-			parm[0].argm = (arg*) malloc (sizeof (arg));
-			parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
-			strcpy(parm[0].argm->cprt_val, fullpath);
 		}
 		break;
 		case NFSD_PROC_GETATTR_OP: {
@@ -361,45 +357,27 @@ static Parms* alloc_and_parse_parms (op_t cmd_type,  json_t *replay_object) {
 		}
 		break;
 		case NFSD_PROC_REMOVE_OP: {
-			parm = (Parms*) malloc(2 * sizeof(Parms));
-			const char *fullpath_parent = json_string_value (json_array_get (args, 0));
+			parm = (Parms*) malloc(sizeof(Parms));
+			const char *fullpath = json_string_value (json_array_get (args, 0));
 			parm[0].argm = (arg*) malloc (sizeof (arg));
 			parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
-			strcpy(parm[0].argm->cprt_val, fullpath_parent);
-
-			const char *path_to_remove = json_string_value (json_array_get (args, 1));
-			parm[1].argm = (arg*) malloc (sizeof (arg));
-			parm[1].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
-			strcpy(parm[1].argm->cprt_val, path_to_remove);
+			strcpy(parm[0].argm->cprt_val, fullpath);
 		}
 		break;
 		case NFSD_PROC_COMMIT_OP: {
-			parm = (Parms*) malloc(3 * sizeof(Parms));
-			const char *fullpath_parent = json_string_value (json_array_get (args, 0));
+			parm = (Parms*) malloc(sizeof(Parms));
+			const char *fullpath = json_string_value (json_array_get (args, 0));
 			parm[0].argm = (arg*) malloc (sizeof (arg));
 			parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
-			strcpy(parm[0].argm->cprt_val, fullpath_parent);
-
-			const char *count = json_string_value (json_array_get (args, 1));
-			parm[1].argm = (arg*) malloc (sizeof (arg));
-			parm[1].argm->i_val = atoi(count);
-
-			const char *offset = json_string_value (json_array_get (args, 2));
-			parm[2].argm = (arg*) malloc (sizeof (arg));
-			parm[2].argm->i_val = atoi(offset);
+			strcpy(parm[0].argm->cprt_val, fullpath);
 		}
 		break;
 		case NFSD_PROC_LOOKUP_OP: {
-			parm = (Parms*) malloc(2 * sizeof(Parms));
+			parm = (Parms*) malloc(sizeof(Parms));
 			const char *fullpath_parent = json_string_value (json_array_get (args, 0));
 			parm[0].argm = (arg*) malloc (sizeof (arg));
 			parm[0].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
 			strcpy(parm[0].argm->cprt_val, fullpath_parent);
-
-			const char *path_to_lookup = json_string_value (json_array_get (args, 1));
-			parm[1].argm = (arg*) malloc (sizeof (arg));
-			parm[1].argm->cprt_val = (char*) malloc(MAX_FILE_NAME * sizeof(char));
-			strcpy(parm[1].argm->cprt_val, path_to_lookup);
 		}
 		break;
 		case NFSD_PROC_READ_OP: {

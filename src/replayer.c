@@ -40,6 +40,7 @@ static struct replay* __replay;
 static int add_delay_usec = 0;
 
 static struct nfs_context *nfs;
+static struct nfsio *dbench_nfsio;
 
 void workflow_element_init (Workflow_element* element) {
 
@@ -360,7 +361,8 @@ void *consume (void *arg) {
 			int result = exec_nfs (element->command,
 						&actual_rvalue,
 						__replay,
-						nfs);
+						nfs,
+						dbench_nfsio);
 
 			//FIXME: We need to set expected rvalue
 			cmd_result->actual_rvalue = actual_rvalue;
@@ -507,6 +509,11 @@ void control_replay (struct replay* rpl, int num_workers, int additional_delay_u
 	__replay = rpl;
 	add_delay_usec = additional_delay_usec;
 	nfs = do_nfsio_connect ("150.165.85.56", "/local/nfs_server");
+	dbench_nfsio = nfsio_connect ("nfs://150.165.85.56//local/nfs_server",
+				      0,
+				      1,//random
+				      1,
+				      0);
 
         shared_buff = (sbuffs_t*) malloc( sizeof(sbuffs_t));
 	fill_shared_buffer (__replay->workload, shared_buff);

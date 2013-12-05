@@ -17,6 +17,9 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <fcntl.h>
+#include <errno.h>
+
+#include <poll.h>
 
 #include <nfsc/libnfs.h>
 #include <nfsc/libnfs-raw.h>
@@ -24,10 +27,13 @@
 #include <nfsc/libnfs-raw-nlm.h>
 
 #include "replayer.h"
+#include "libnfs-glue.h"
 
 //FIXME: refactor later to be polimorfic with syscall_dispatch
+//FIXME: check which call is return a negative number
 int exec_nfs (struct replay_command* to_exec, int *exec_rvalue,
-		struct replay* rpl, struct nfs_context *nfs) {
+		struct replay* rpl, struct nfs_context *nfs,
+		struct nfsio * dbench_nfs) {
 
     assert (to_exec != NULL);
     assert (rpl != NULL);
@@ -36,19 +42,53 @@ int exec_nfs (struct replay_command* to_exec, int *exec_rvalue,
 
     switch (to_exec->command) {
         case NFSD_PROC_FSSTAT_OP: {
-	    //TODO maybe only with async
+
+	    *exec_rvalue = nfsio_fsstat (dbench_nfs);
 	}
 	break;
 	case NFSD_PROC_SETATTR_OP: {
-	    //TODO maybe only with async
+
+/**
+#define ATTR_MODE       (1 << 0)
+#define ATTR_UID        (1 << 1)
+#define ATTR_GID        (1 << 2)
+#define ATTR_SIZE       (1 << 3)
+#define ATTR_ATIME      (1 << 4)
+#define ATTR_MTIME      (1 << 5)
+#define ATTR_CTIME      (1 << 6)
+#define ATTR_ATIME_SET  (1 << 7)
+#define ATTR_MTIME_SET  (1 << 8)
+#define ATTR_FORCE      (1 << 9) // Not a change, but a change it
+#define ATTR_ATTR_FLAG  (1 << 10)
+#define ATTR_KILL_SUID  (1 << 11)
+#define ATTR_KILL_SGID  (1 << 12)
+#define ATTR_FILE       (1 << 13)
+#define ATTR_KILL_PRIV  (1 << 14)
+#define ATTR_OPEN       (1 << 15) //Truncating from open(O_TRUNC)
+#define ATTR_TIMES_SET  (1 << 16)*/
+
+
+	    fattr3 *attr;
+	    attr = (fattr3*) malloc (sizeof (fattr3));
+	    attr->size = 8192;
+	    *exec_rvalue = nfsio_setattr (dbench_nfs, args[0].argm->cprt_val,
+			    		 attr);
 	}
 	break;
 	case NFSD_PROC_GETATTR_OP: {
-	    //TODO maybe only with async
+
+	    fattr3 *attr;
+	    attr = NULL;
+	    *exec_rvalue = nfsio_getattr (dbench_nfs, args[0].argm->cprt_val,
+			    		  attr);
 	}
 	break;
 	case NFSD_PROC_LOOKUP_OP: {
-	    //FIXME: maybe only with async
+
+	    fattr3 *attr;
+	    attr = NULL;
+	    *exec_rvalue = nfsio_lookup (dbench_nfs, args[0].argm->cprt_val,
+			    		attr);
 	}
 	break;
 	case NFSD_PROC_WRITE_OP: {
@@ -91,7 +131,8 @@ int exec_nfs (struct replay_command* to_exec, int *exec_rvalue,
 	}
 	break;
 	case NFSD_PROC_REMOVE_OP: {
-	    //TODO: maybe only using async calls
+
+	    *exec_rvalue = nfsio_remove (dbench_nfs, args[0].argm->cprt_val);
 	}
         break;
 	case NFSD_PROC_RMDIR_OP: {
@@ -135,7 +176,10 @@ int exec_nfs (struct replay_command* to_exec, int *exec_rvalue,
 	}
 	break;
 	case NFSD_PROC_READDIRPLUS_OP: {
-	    //TODO maybe only in async calls
+
+            *exec_rvalue = nfsio_readdirplus (dbench_nfs,
+			    		      args[0].argm->cprt_val,
+					      NULL, NULL);
 	}
 	break;
 	case NFSD_PROC_ACCESS_OP: {
@@ -167,7 +211,8 @@ int exec_nfs (struct replay_command* to_exec, int *exec_rvalue,
 	}
 	break;
 	case NFSD_PROC_COMMIT_OP: {
-	    //TODO maybe only using async calls
+
+	    *exec_rvalue = nfsio_commit (dbench_nfs, args[0].argm->cprt_val);
 	}
 	break;
 	default: {

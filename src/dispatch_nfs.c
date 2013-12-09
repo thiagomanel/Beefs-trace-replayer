@@ -29,6 +29,59 @@
 #include "replayer.h"
 #include "libnfs-glue.h"
 
+//Below definitions are copied from linux/fs.h
+//It seems this header, in my machines, does not define them
+//so, to avoid an error (not sure the machine I will this code will
+//define them or not) I will define instead of including linux/fs.h
+#define ATTR_MODE       (1 << 0) //nfs_proc
+#define ATTR_UID        (1 << 1) //nfs_proc
+#define ATTR_GID        (1 << 2) //nfs_proc
+#define ATTR_SIZE       (1 << 3) //nfs_proc
+#define ATTR_ATIME      (1 << 4)
+#define ATTR_MTIME      (1 << 5)
+#define ATTR_CTIME      (1 << 6)
+#define ATTR_ATIME_SET  (1 << 7) //nfs_proc
+#define ATTR_MTIME_SET  (1 << 8) //nfs_proc
+#define ATTR_FORCE      (1 << 9) // Not a change, but a change it
+#define ATTR_ATTR_FLAG  (1 << 10)
+#define ATTR_KILL_SUID  (1 << 11)
+#define ATTR_KILL_SGID  (1 << 12)
+#define ATTR_FILE       (1 << 13)
+#define ATTR_KILL_PRIV  (1 << 14)
+#define ATTR_OPEN       (1 << 15) //Truncating from open(O_TRUNC)
+#define ATTR_TIMES_SET  (1 << 16)
+
+/** from fs.h
+struct iattr {
+        unsigned int    ia_valid;
+	umode_t         ia_mode;
+	uid_t           ia_uid;
+	gid_t           ia_gid;
+	loff_t          ia_size;
+	struct timespec ia_atime;
+	struct timespec ia_mtime;
+	struct timespec ia_ctime;
+	struct file     *ia_file;
+};*/
+
+/** from libnfs-raw-nfs.h
+
+struct SETATTR3args {
+	nfs_fh3 object;
+	sattr3 new_attributes;
+	sattrguard3 guard;
+}
+
+struct sattr3 {
+	set_mode3 mode;
+	set_uid3 uid;
+	set_gid3 gid;
+	set_size3 size;
+	set_atime atime;
+	set_mtime mtime;
+}*/
+
+
 //FIXME: refactor later to be polimorfic with syscall_dispatch
 //FIXME: check which call is return a negative number
 int exec_nfs (struct replay_command* to_exec, int *exec_rvalue,
@@ -48,31 +101,55 @@ int exec_nfs (struct replay_command* to_exec, int *exec_rvalue,
 	break;
 	case NFSD_PROC_SETATTR_OP: {
 
-/**
-#define ATTR_MODE       (1 << 0)
-#define ATTR_UID        (1 << 1)
-#define ATTR_GID        (1 << 2)
-#define ATTR_SIZE       (1 << 3)
-#define ATTR_ATIME      (1 << 4)
-#define ATTR_MTIME      (1 << 5)
-#define ATTR_CTIME      (1 << 6)
-#define ATTR_ATIME_SET  (1 << 7)
-#define ATTR_MTIME_SET  (1 << 8)
-#define ATTR_FORCE      (1 << 9) // Not a change, but a change it
-#define ATTR_ATTR_FLAG  (1 << 10)
-#define ATTR_KILL_SUID  (1 << 11)
-#define ATTR_KILL_SGID  (1 << 12)
-#define ATTR_FILE       (1 << 13)
-#define ATTR_KILL_PRIV  (1 << 14)
-#define ATTR_OPEN       (1 << 15) //Truncating from open(O_TRUNC)
-#define ATTR_TIMES_SET  (1 << 16)*/
+	    //TODO: check i_valid flag by calling chmod, chown in an mount point
+	    int ia_valid;
+	    int size;
+	    ia_valid = args[1].argm->i_val;
+	    size = args[2].argm->i_val;//FIXME: shouldn't be an offset_t ?
 
+	    printf ("%d %d\n", ia_valid, size);
+
+	    struct SETATTR3args sargs;
+	    memset (&sargs, 0, sizeof (sargs));
+
+	    //ligblue does not give much freedom to set mtime atime .. .
+	    //and I think that an error when changing time is not so bad
+	    //(it will load the server anyway). So I will keep this
+	    //mtime.set_it at I saw in libglue.
+	    sargs.new_attributes.mtime.set_it = SET_TO_SERVER_TIME;
+
+	    //size
+	    if (ia_valid & ATTR_SIZE) {
+	    	sargs.new_attributes.size.set_it = TRUE;
+	    	sargs.new_attributes.size.set_size3_u.size = size;
+	    } else {
+	    	sargs.new_attributes.size.set_it = FALSE;
+	    }
+
+	    //mode
+	    if (ia_valid & ATTR_MODE) {
+	        sargs.new_attributes.mode.set_it = TRUE;
+	    } else {
+	        sargs.new_attributes.mode.set_it = FALSE;
+	    }
+
+	    //uid, gid
+	    if (ia_valid & ATTR_UID) {
+	        sargs.new_attributes.uid.set_it = TRUE;
+	    } else {
+	        sargs.new_attributes.uid.set_it = FALSE;
+	    }
+
+	    if (ia_valid & ATTR_GID) {
+	        sargs.new_attributes.gid.set_it = TRUE;
+	    } else {
+	        sargs.new_attributes.gid.set_it = FALSE;
+	    }
 
 	    fattr3 *attr;
 	    attr = (fattr3*) malloc (sizeof (fattr3));
-	    attr->size = 8192;
-	    *exec_rvalue = nfsio_setattr (dbench_nfs, args[0].argm->cprt_val,
-			    		 attr);
+	    *exec_rvalue = nfsio_setattr2 (dbench_nfs, args[0].argm->cprt_val,
+			    		 attr, &sargs);
 	}
 	break;
 	case NFSD_PROC_GETATTR_OP: {

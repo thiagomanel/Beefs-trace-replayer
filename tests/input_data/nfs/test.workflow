@@ -1,4 +1,4 @@
-28
+29
 {"args": ["/dir_to_mk"], "parents": [], "stamp": {"begin": 10.0, "elapsed": 1}, "call": "nfsd_proc_mkdir", "rvalue": 0, "caller": {"tid": "0", "pid": "0", "uid": "0", "exec": "(nfsd)"}, "id": 1, "session_id": 1, "children": [2]}
 {"args": ["/dir_to_mk"], "parents": [1], "stamp": {"begin": 20.0, "elapsed": 1}, "call": "nfsd_proc_readdir", "rvalue": 0, "caller": {"tid": "0", "pid": "0", "uid": "0", "exec": "(nfsd)"}, "id": 2, "session_id": 1, "children": [3]}
 {"args": ["/dir_to_readdirplus"], "parents": [2], "stamp": {"begin": 30.0, "elapsed": 1}, "call": "nfsd_proc_mkdir", "rvalue": 0, "caller": {"tid": "0", "pid": "0", "uid": "0", "exec": "(nfsd)"}, "id": 3, "session_id": 1, "children": [4]}
@@ -26,4 +26,5 @@
 {"args": ["/path_to_commit", "511"], "parents": [24], "stamp": {"begin": 240.0, "elapsed": 1}, "call": "nfsd_proc_creat", "rvalue": 0, "caller": {"tid": "0", "pid": "0", "uid": "0", "exec": "(nfsd)"}, "id": 25, "session_id": 1, "children": [26]}
 {"args": ["/path_to_commit", "4096", "0", "0"], "parents": [25], "stamp": {"begin": 250.0, "elapsed": 1}, "call": "nfsd_proc_write", "rvalue": 0, "caller": {"tid": "0", "pid": "0", "uid": "0", "exec": "(nfsd)"}, "id": 26, "session_id": 1, "children": [27]}
 {"args": ["/path_to_commit"], "parents": [26], "stamp": {"begin": 260.0, "elapsed": 1}, "call": "nfsd_proc_commit", "rvalue": 0, "caller": {"tid": "0", "pid": "0", "uid": "0", "exec": "(nfsd)"}, "id": 27, "session_id": 1, "children": [28]}
-{"args": ["/path_to_commit"], "parents": [27], "stamp": {"begin": 270.0, "elapsed": 1}, "call": "nfsd_proc_setattr", "rvalue": 0, "caller": {"tid": "0", "pid": "0", "uid": "0", "exec": "(nfsd)"}, "id": 28, "session_id": 1, "children": []}
+{"args": ["/path_to_commit", "40", "666"], "parents": [27], "stamp": {"begin": 270.0, "elapsed": 1}, "call": "nfsd_proc_setattr", "rvalue": 0, "caller": {"tid": "0", "pid": "0", "uid": "0", "exec": "(nfsd)"}, "id": 28, "session_id": 1, "children": [29]}
+{"args": ["/path_to_commit", "32", "500"], "parents": [28], "stamp": {"begin": 280.0, "elapsed": 1}, "call": "nfsd_proc_setattr", "rvalue": 0, "caller": {"tid": "0", "pid": "0", "uid": "0", "exec": "(nfsd)"}, "id": 29, "session_id": 1, "children": []}

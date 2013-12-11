@@ -10,7 +10,6 @@ if __name__ == "__main__":
        Usage: python $0 "fs"|"c" < worfklow.data > workflow.new.data
          fs and c are Zhu's fs dependency and conservative polices
     """
-    sys.stdin.readline()#excluding head
     w_lines = [WorkflowLine.from_json(json.loads(line)) for line in sys.stdin]
 
     policy = sys.argv[1]

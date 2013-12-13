@@ -1,0 +1,11 @@
+10
+{"rvalue": 0, "parents": [], "caller": {"tid": "0", "pid": "0", "uid": "0", "exec": "(nfsd)"}, "stamp": {"begin": 10.0, "elapsed": 1}, "call": "nfsd_proc_mkdir", "args": ["/dir_to_mk1"], "id": 1, "session_id": 1, "children": []}
+{"rvalue": 0, "parents": [], "caller": {"tid": "0", "pid": "0", "uid": "0", "exec": "(nfsd)"}, "stamp": {"begin": 10.0, "elapsed": 1}, "call": "nfsd_proc_mkdir", "args": ["/dir_to_mk2"], "id": 2, "session_id": 1, "children": []}
+{"rvalue": 0, "parents": [], "caller": {"tid": "0", "pid": "0", "uid": "0", "exec": "(nfsd)"}, "stamp": {"begin": 10.0, "elapsed": 1}, "call": "nfsd_proc_mkdir", "args": ["/dir_to_mk3"], "id": 3, "session_id": 1, "children": []}
+{"rvalue": 0, "parents": [], "caller": {"tid": "0", "pid": "0", "uid": "0", "exec": "(nfsd)"}, "stamp": {"begin": 10.0, "elapsed": 1}, "call": "nfsd_proc_mkdir", "args": ["/dir_to_mk4"], "id": 4, "session_id": 1, "children": []}
+{"rvalue": 0, "parents": [], "caller": {"tid": "0", "pid": "0", "uid": "0", "exec": "(nfsd)"}, "stamp": {"begin": 10.0, "elapsed": 1}, "call": "nfsd_proc_mkdir", "args": ["/dir_to_mk5"], "id": 5, "session_id": 1, "children": []}
+{"rvalue": 0, "parents": [], "caller": {"tid": "0", "pid": "0", "uid": "0", "exec": "(nfsd)"}, "stamp": {"begin": 10.0, "elapsed": 1}, "call": "nfsd_proc_mkdir", "args": ["/dir_to_mk6"], "id": 6, "session_id": 1, "children": []}
+{"rvalue": 0, "parents": [], "caller": {"tid": "0", "pid": "0", "uid": "0", "exec": "(nfsd)"}, "stamp": {"begin": 10.0, "elapsed": 1}, "call": "nfsd_proc_mkdir", "args": ["/dir_to_mk7"], "id": 7, "session_id": 1, "children": []}
+{"rvalue": 0, "parents": [], "caller": {"tid": "0", "pid": "0", "uid": "0", "exec": "(nfsd)"}, "stamp": {"begin": 10.0, "elapsed": 1}, "call": "nfsd_proc_mkdir", "args": ["/dir_to_mk8"], "id": 8, "session_id": 1, "children": []}
+{"rvalue": 0, "parents": [], "caller": {"tid": "0", "pid": "0", "uid": "0", "exec": "(nfsd)"}, "stamp": {"begin": 10.0, "elapsed": 1}, "call": "nfsd_proc_mkdir", "args": ["/dir_to_mk9"], "id": 9, "session_id": 1, "children": []}
+{"rvalue": 0, "parents": [], "caller": {"tid": "0", "pid": "0", "uid": "0", "exec": "(nfsd)"}, "stamp": {"begin": 10.0, "elapsed": 1}, "call": "nfsd_proc_mkdir", "args": ["/dir_to_mk10"], "id": 10, "session_id": 1, "children": []}

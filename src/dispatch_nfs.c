@@ -60,13 +60,11 @@ struct iattr {
 };*/
 
 /** from libnfs-raw-nfs.h
-
 struct SETATTR3args {
 	nfs_fh3 object;
 	sattr3 new_attributes;
 	sattrguard3 guard;
 }
-
 struct sattr3 {
 	set_mode3 mode;
 	set_uid3 uid;
@@ -77,7 +75,6 @@ struct sattr3 {
 }*/
 
 //FIXME: refactor later to be polimorfic with syscall_dispatch
-//FIXME: check which call is return a negative number
 int exec_nfs (struct replay_command* to_exec, int *exec_rvalue,
 		struct replay* rpl, struct nfsio * dbench_nfs) {
 
@@ -88,7 +85,6 @@ int exec_nfs (struct replay_command* to_exec, int *exec_rvalue,
     switch (to_exec->command) {
         case NFSD_PROC_FSSTAT_OP: {
 	    *exec_rvalue = nfsio_fsstat (dbench_nfs);
-	    //*exec_rvalue = -1;
 	}
 	break;
 	case NFSD_PROC_SETATTR_OP: {
@@ -142,21 +138,18 @@ int exec_nfs (struct replay_command* to_exec, int *exec_rvalue,
 	    attr = (fattr3*) malloc (sizeof (fattr3));
 	    *exec_rvalue = nfsio_setattr2 (dbench_nfs, args[0].argm->cprt_val,
 			    		   attr, &sargs);
-	    //*exec_rvalue = -1;
 	}
 	break;
 	case NFSD_PROC_GETATTR_OP: {
 
 	    *exec_rvalue = nfsio_getattr (dbench_nfs, args[0].argm->cprt_val,
 			    		  NULL);
-	    //*exec_rvalue = -1;
 	}
 	break;
 	case NFSD_PROC_LOOKUP_OP: {
 
 	    *exec_rvalue = nfsio_lookup (dbench_nfs, args[0].argm->cprt_val,
 			    		 NULL);
-	    //*exec_rvalue = -1;
 	}
 	break;
 	case NFSD_PROC_WRITE_OP: {
@@ -170,7 +163,6 @@ int exec_nfs (struct replay_command* to_exec, int *exec_rvalue,
 
             *exec_rvalue = nfsio_write (dbench_nfs, args[0].argm->cprt_val, buf,
 			    		offset, count, stable);
-	    //*exec_rvalue = -1;
 	}
 	break;
 	case NFSD_PROC_READ_OP: {
@@ -183,43 +175,38 @@ int exec_nfs (struct replay_command* to_exec, int *exec_rvalue,
 
 	    *exec_rvalue = nfsio_read (dbench_nfs, args[0].argm->cprt_val, buf,
 			               offset, count);
-	    //*exec_rvalue = -1;
 	}
 	break;
 	case NFSD_PROC_RENAME_OP: {
 	    *exec_rvalue = nfsio_rename (dbench_nfs, args[0].argm->cprt_val,
 					 args[1].argm->cprt_val);
-	    //*exec_rvalue = -1;
 	}
 	break;
 	case NFSD_PROC_REMOVE_OP: {
 	    *exec_rvalue = nfsio_remove (dbench_nfs, args[0].argm->cprt_val);
-	    //*exec_rvalue = -1;
 	}
         break;
 	case NFSD_PROC_RMDIR_OP: {
 	    *exec_rvalue = nfsio_rmdir (dbench_nfs, args[0].argm->cprt_val);
-	    //*exec_rvalue = -1;
 	}
 	break;
 	case NFSD_PROC_LINK_OP: {
-	    //*exec_rvalue = nfsio_link (dbench_nfs, args[0].argm->cprt_val,
-			   	       //args[1].argm->cprt_val);
-	    *exec_rvalue = -1;
+	    *exec_rvalue = nfsio_link (dbench_nfs, args[0].argm->cprt_val,
+			   	       args[1].argm->cprt_val);
 	}
 	break;
 	case NFSD_PROC_SYMLINK_OP: {
-	    //*exec_rvalue = nfsio_symlink (dbench_nfs, args[0].argm->cprt_val,
-				   	  //args[1].argm->cprt_val);
-	    *exec_rvalue = -1;
+	    *exec_rvalue = nfsio_symlink (dbench_nfs, args[0].argm->cprt_val,
+				   	  args[1].argm->cprt_val);
 	}
 	break;
 	case NFSD_PROC_READLINK_OP: {
-	    /**int len = args[1].argm->i_val;
+	    //*exec_rvalue = nfs_readlink (nfs, args[0].argm->cprt_val, buf, len);*/
+	    //TODO:Note that, nfsio expose less paremeters than nfs_readlink, does
+	    //it matter ?
+	    int len = args[1].argm->i_val;
 	    char * buf = (char*) malloc (len * sizeof(char));
-	    *exec_rvalue = nfs_readlink (nfs, args[0].argm->cprt_val, buf, len);*/
-	    //*exec_rvalue = nfsio_readlink (dbench_nfs, args[0].argm->cprt_val);
-	    *exec_rvalue = -1;
+	    *exec_rvalue = nfsio_readlink (dbench_nfs, args[0].argm->cprt_val);
 	}
 	break;
 	case NFSD_PROC_READDIR_OP: {
@@ -243,18 +230,17 @@ int exec_nfs (struct replay_command* to_exec, int *exec_rvalue,
             *exec_rvalue = nfsio_readdirplus (dbench_nfs,
 			    		      args[0].argm->cprt_val,
 					      NULL, NULL);
-            //*exec_rvalue = -1;
 	}
 	break;
 	case NFSD_PROC_ACCESS_OP: {
-	    //FIXME: nfsio ?
-	    /***exec_rvalue = nfs_access (nfs, args[0].argm->cprt_val,
-			    	     args[0].argm->i_val);*/
+	    //TODO nfsio has more args the nfs_access how to match them ?
+	    //*exec_rvalue = nfs_access (nfs, args[0].argm->cprt_val, args[0].argm->i_val);
+	    //nfsio_access(struct nfsio *nfsio, const char *name, uint32_t desired, uint32_t *access)
 	    *exec_rvalue = -1;
 	}
 	break;
 	case NFSD_PROC_MKNOD_OP: {
-	    //FIXME: nfsio ?
+	    //FIXME: nfsio does not expose a mknod function
 	    //FIXME: it's not working; was returning an error code
 	    /**int mode, dev;
 	    mode = args[1].argm->i_val;
@@ -267,19 +253,16 @@ int exec_nfs (struct replay_command* to_exec, int *exec_rvalue,
 	break;
 	case NFSD_PROC_MKDIR_OP: {
 	    *exec_rvalue = nfsio_mkdir (dbench_nfs, args[0].argm->cprt_val);
-	    //*exec_rvalue = -1;
 	}
 	break;
 	case NFSD_PROC_CREAT_OP: {
-	    //nfsio_create misses the ivalue
+	    //TODO: Note that nfsio_create exposes less args than nfs_creat. does it matter ?
             //*exec_rvalue = nfs_creat (nfs, args[0].argm->cprt_val, args[1].argm->i_val, &fh);
             *exec_rvalue = nfsio_create (dbench_nfs, args[0].argm->cprt_val);
-	    //*exec_rvalue = -1;
 	}
 	break;
 	case NFSD_PROC_COMMIT_OP: {
 	    *exec_rvalue = nfsio_commit (dbench_nfs, args[0].argm->cprt_val);
-	    //*exec_rvalue = -1;
 	}
 	break;
 	default: {

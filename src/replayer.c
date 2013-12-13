@@ -16,6 +16,9 @@
 #include "replayer.h"
 #include "loader.h"
 #include "list.h"
+
+#include "libnfs-glue.h"
+
 #include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
@@ -25,12 +28,18 @@
 #include <sys/types.h>
 #include <sys/syscall.h>
 
-#include <nfsc/libnfs.h>
-
 #define PID_MAX 32768
 
 #define BUFF_SIZE   50000
 #define DEBUG 1
+
+
+static pthread_barrier_t repl_bar;
+struct replay_thread {
+	int id;
+	struct nfsio *connection;
+	pthread_t thread;
+};
 
 static pthread_cond_t cmds_were_produced_cond = PTHREAD_COND_INITIALIZER;
 static pthread_cond_t cmds_were_consumed_cond = PTHREAD_COND_INITIALIZER;
@@ -39,8 +48,7 @@ static pthread_mutex_t lock;
 static struct replay* __replay;
 static int add_delay_usec = 0;
 
-static struct nfs_context *nfs;
-static struct nfsio *dbench_nfsio;
+static struct nfsio *connections;
 
 void workflow_element_init (Workflow_element* element) {
 
@@ -322,8 +330,16 @@ static Workflow_element* take () {
  */
 void *consume (void *arg) {
 
-	int actual_rvalue = 0;
+	int actual_rvalue, status_wait = 0;
 	struct timespec sleep_t;
+	struct replay_thread * r_thread = arg;
+
+	if ((status_wait = pthread_barrier_wait (&repl_bar))
+		&& status_wait != PTHREAD_BARRIER_SERIAL_THREAD) {
+		fprintf (stderr, "Error waiting for the replay barrier: %s\n",
+				 strerror (status_wait));
+		exit (1);
+	}
 
 	while (1) {
 
@@ -342,6 +358,7 @@ void *consume (void *arg) {
 
 			command_replay_result *cmd_result = RESULT (__replay, element->id);
 			fill_command_replay_result (cmd_result);
+
 			double dlay = __replay->timing_ops.delay (__replay, element);
 			if (dlay > 0) {
 				if (dlay > 1000) {
@@ -361,8 +378,7 @@ void *consume (void *arg) {
 			int result = exec_nfs (element->command,
 						&actual_rvalue,
 						__replay,
-						nfs,
-						dbench_nfsio);
+						r_thread->connection);
 
 			//FIXME: We need to set expected rvalue
 			cmd_result->actual_rvalue = actual_rvalue;
@@ -374,7 +390,11 @@ void *consume (void *arg) {
 
 			pthread_mutex_lock (&lock);
 
-			if (result == REPLAY_SUCCESS) {
+			shared_buff->consumed_queue[++shared_buff->last_consumed] = element;
+			mark_consumed (element);
+			++shared_buff->consumed_count;
+
+			/**if (result == REPLAY_SUCCESS) {
 				shared_buff->consumed_queue[++shared_buff->last_consumed] = element;
 				mark_consumed (element);
 				++shared_buff->consumed_count;
@@ -384,7 +404,7 @@ void *consume (void *arg) {
 					element->id, element->command->command);
 				pthread_mutex_unlock (&lock);
 				exit (1);
-			}
+			}*/
 
 			cmd_result->delay = dlay;
 
@@ -476,46 +496,19 @@ void replay (struct replay* rpl) {
 	control_replay (rpl, 10, 0);
 }
 
-struct nfs_context *do_nfsio_connect (const char *server, const char *export) {
-
-	struct nfs_context *nfs_ctx;
-
-	if (export == NULL) {
-  	    fprintf (stderr, "NULL export\n");
-	    return NULL;
-	}
-
-	nfs_ctx = nfs_init_context ();
-	if (nfs_ctx == NULL) {
-	    fprintf (stderr, "Failed to init_context\n");
-	    return NULL;
-	}
-	if (nfs_mount (nfs_ctx, server, export) != 0) {
-	    fprintf (stderr, "Failed to mount server=%s export=%s. Error:%s\n",
-		     server, export, nfs_get_error (nfs_ctx));
-	    return NULL;
-	}
-
-	return nfs_ctx;
-}
-
 void control_replay (struct replay* rpl, int num_workers, int additional_delay_usec) {
 
-	int i;
+	int i, xid, status_bar;
+	struct replay_thread* repl_threads;
+
 	assert (rpl != NULL);
 	assert (rpl->workload != NULL);
 	assert (rpl->result != NULL);
 
 	__replay = rpl;
 	add_delay_usec = additional_delay_usec;
-	nfs = do_nfsio_connect ("150.165.85.56", "/local/nfs_server");
-	dbench_nfsio = nfsio_connect ("nfs://150.165.85.56//local/nfs_server",
-				      0,
-				      1,//random
-				      1,
-				      0);
 
-        shared_buff = (sbuffs_t*) malloc( sizeof(sbuffs_t));
+        shared_buff = (sbuffs_t*) malloc (sizeof (sbuffs_t));
 	fill_shared_buffer (__replay->workload, shared_buff);
 
 	pthread_mutex_init (&lock, NULL);
@@ -527,12 +520,31 @@ void control_replay (struct replay* rpl, int num_workers, int additional_delay_u
 	int num_consumers = (__replay->workload->num_cmds >= max_consumers)
 				? max_consumers : __replay->workload->num_cmds;
 
-	pthread_t *consumers = (pthread_t*) malloc (sizeof (pthread_t) * num_consumers);
+	if ((status_bar = pthread_barrier_init (&repl_bar, NULL, num_consumers))) {
+	    fprintf (stderr, "Error starting replay barrier: %s\n", strerror (status_bar));
+	    exit (1);
+	}
+	//create a connection per thread
+	xid = 666;
+	repl_threads = (struct replay_thread*)
+		malloc (sizeof (struct replay_thread) * num_consumers);
+
 	for (i = 0; i < num_consumers ; i++) {
-		pthread_create (&consumers[i], NULL, consume, 0);
+		repl_threads[i].id = i;
+		repl_threads[i].connection =
+			nfsio_connect ("nfs://150.165.85.56//local2/nfs_manel",
+	      				i, xid + i, 1, 0);
 	}
 
-	pthread_join(producer, NULL);
+	for (i = 0; i < num_consumers ; i++) {
+	        pthread_create (&repl_threads[i].thread, NULL, consume, &repl_threads[i]);
+	}
+
+	pthread_join (producer, NULL);
+
+	for (i = 0; i < num_consumers ; i++) {
+		nfsio_disconnect (repl_threads[i].connection);
+	}
 
 	__replay->result->produced_commands = shared_buff->produced_count;
 	__replay->result->replayed_commands = shared_buff->consumed_count;

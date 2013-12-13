@@ -22,6 +22,8 @@
 //#include "config.h"
 //#ifdef HAVE_LIBNFS
 
+#include <assert.h>
+
 #include <errno.h>
 #include <fcntl.h>
 #include <poll.h>
@@ -37,10 +39,11 @@
 
 #include <inttypes.h>
 
+/**
 #include <nfsc/libnfs.h>
 #include <nfsc/libnfs-raw.h>
 #include <nfsc/libnfs-raw-nfs.h>
-#include <nfsc/libnfs-raw-nlm.h>
+#include <nfsc/libnfs-raw-nlm.h>*/
 #include "libnfs-glue.h"
 
 #define discard_const(ptr) ((void *)((intptr_t)(ptr)))
@@ -49,25 +52,6 @@
 struct nfs_fh3 *nfs_get_rootfh(struct nfs_context *nfs);
 void nfs_set_error(struct nfs_context *nfs, char *error_string, ...);
 int rpc_nfs_pathconf_async(struct rpc_context *rpc, rpc_cb cb, struct nfs_fh3 *fh, void *private_data);
-
-typedef struct _tree_t {
-	nfs_fh3 key;
-	nfs_fh3 fh;
-	off_t  file_size;
-	struct _tree_t *parent;
-	struct _tree_t *left;
-	struct _tree_t *right;
-} tree_t;
-
-
-struct nfsio {
-	struct nfs_context *nfs;
-	struct rpc_context *nlm;
-	int child;
-	unsigned long xid;
-	int xid_stride;
-	tree_t *fhandles;
-};
 
 static void set_xid_value(struct nfsio *nfsio)
 {
@@ -1624,7 +1608,6 @@ nfsstat3 nfsio_mkdir(struct nfsio *nfsio, const char *name)
 		return NFS3ERR_SERVERFAULT;
 	}
 	nfsio_wait_for_nfs_reply(nfsio->nfs, &cb_data);
-
 	return cb_data.status;
 }
 
@@ -1749,6 +1732,7 @@ static void nfsio_rename_cb(struct rpc_context *rpc _U_, int status,
 	}
 
 	old_fh = lookup_fhandle(cb_data->nfsio, cb_data->old_name, NULL);
+
 	delete_fhandle(cb_data->nfsio, cb_data->old_name);
 	insert_fhandle(cb_data->nfsio, cb_data->name,
 			old_fh->data.data_val,

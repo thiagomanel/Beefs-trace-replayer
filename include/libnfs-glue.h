@@ -1,3 +1,28 @@
+#ifndef _LIBNFSGLUE_H
+#define _LIBNFSGLUE_H
+
+#include <nfsc/libnfs.h>
+#include <nfsc/libnfs-raw.h>
+#include <nfsc/libnfs-raw-nfs.h>
+#include <nfsc/libnfs-raw-nlm.h>
+
+typedef struct _tree_t {
+        nfs_fh3 key;
+        nfs_fh3 fh;
+        off_t  file_size;
+        struct _tree_t *parent;
+        struct _tree_t *left;
+        struct _tree_t *right;
+} tree_t;
+
+struct nfsio {
+        struct nfs_context *nfs;
+        struct rpc_context *nlm;
+        int child;
+        unsigned long xid;
+        int xid_stride;
+        tree_t *fhandles;
+};
 
 struct nfsio *nfsio_connect(const char *url, int child, int initial_xid, int xid_stride, int nlm);
 void nfsio_disconnect(struct nfsio *nfsio);
@@ -28,3 +53,6 @@ nfsstat3 nfsio_readdirplus(struct nfsio *nfsio, const char *name, nfs3_dirent_cb
 nfsstat3 nfsio_readdir(struct nfsio *nfsio, const char *name);
 
 const char *nfs_error(int error);
+
+#endif /* _LIBNFSGLUE_H */
+

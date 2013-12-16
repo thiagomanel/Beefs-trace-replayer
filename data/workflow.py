@@ -174,7 +174,7 @@ def update_dependency(w_line_to_update, w_line_target_parents):
             join(parent, w_line_to_update)
             break
 
-def nfs_fs_sort(workflow_line):
+def nfs_fs_sort(workflow_lines):
 
     W = "update_op"
     R = "access_op"
@@ -186,7 +186,7 @@ def nfs_fs_sort(workflow_line):
                       "nfsd_proc_readlink":    R,#1
                       "nfsd_proc_read":        R,#1
                       "nfsd_proc_write":       W,#1
-                      "nfsd_proc_create":      W,#2
+                      "nfsd_proc_creat":       W,#2
                       "nfsd_proc_mkdir":       W,#2
                       "nfsd_proc_symlink":     W,#4
                       "nfsd_proc_mknod":       W,#2
@@ -200,16 +200,27 @@ def nfs_fs_sort(workflow_line):
                       "nfsd_proc_commit":      W,#1
                      }
 
+    def find_pred(fullpath, update_log):
+        if fullpath in update_log:
+            return update_op_by_fullpath[fullpath]
+        return None
+
+    def log(fullpath, wline, update_log):
+        #it logs a modification to fullpath performed by the wline op
+        update_log[fullpath] = wline
+
     def nfs_path_objects(call_name, args):
+        #it recollects the file system objects related to each nfs call.
+        #Usually the target path and its parent
         if call_name in ["nfsd_proc_fsstat"]:
             return "/"
         elif call_name in ["nfsd_proc_getattr", "nfsd_proc_setattr",\
-                         "nfsd_proc_access", "nfsd_proc_readlink",\
-                         "nfsd_proc_read", "nfsd_proc_write",\
-                         "nfsd_proc_readdir", "nfsd_proc_readdirplus",\
-                         "nfsd_proc_commit"]:
+                           "nfsd_proc_access", "nfsd_proc_readlink",\
+                           "nfsd_proc_read", "nfsd_proc_write",\
+                           "nfsd_proc_readdir", "nfsd_proc_readdirplus",\
+                           "nfsd_proc_commit"]:
             return args[0]
-        elif call_name in ["nfsd_proc_lookup", "nfsd_proc_create",\
+        elif call_name in ["nfsd_proc_lookup", "nfsd_proc_creat",\
                            "nfsd_proc_mkdir", "nfsd_proc_remove",
                            "nfsd_proc_rmdir", "nfsd_proc_mknod"]:
             fullpath = args[0]
@@ -226,29 +237,29 @@ def nfs_fs_sort(workflow_line):
             raise Exception("Unknow call: " + call_name)
 
     def shared_objects(clean_call):
-        return nfs_path_objs(clean_call.call_name, clean_call.args),\
-               access_type(clean_call.call_name)
+        cname = clean_call.call
+        cargs = clean_call.args
+        return (nfs_path_objects(cname, cargs), access_type(cname))
 
     def access_type(call_name):
         return call_type_xlat[call_name]
 
-    shared_objs_table = {}
-
     #extract update and access operations
+    shared_objs_table = {}
     for w_line in workflow_lines:
-        shared_table[w_line._id] = shared_objects(w_line)
+        shared_objs_table[w_line._id] = shared_objects(w_line.clean_call)
 
     #find predecessors based on update and access type operations
-    last_update_ops = {}
+    update_log = {}
     for w_line in workflow_lines:
-        objs, acctype = shared_table[w_line._id]
+        objs, acctype = shared_objs_table[w_line._id]
         for obj in objs:
-            pred_id = find_pred(obj, last_update_ops)
+            pred = find_pred(obj, update_log)
             if pred:
-                join_nfs(w_line._id, pred_id)
+                join(pred, w_line)
         if acctype == W:
             for obj in objs:
-                last_update(obj, w_line, last_update_ops)
+                log(obj, w_line, update_log)
 
 def sfs(workflow_lines):
     """

@@ -7,14 +7,14 @@ if __name__ == "__main__":
        It applies an ordering police to a trace workflow, erasing any police
        already in place.
 
-       Usage: python $0 "fs"|"c" < worfklow.data > workflow.new.data
+       Usage: python $0 "fs"|"c" time_window_min < worfklow.data > workflow.new.data
          fs and c are Zhu's fs dependency and conservative polices
     """
     w_lines = [WorkflowLine.from_json(json.loads(line)) for line in sys.stdin]
 
     policy = sys.argv[1]
     if policy == "fs":
-        nfs_fs_dependency_sort(w_lines)
+        nfs_fs_sort(w_lines)
     elif policy == "c":
         conservative_sort(w_lines)
 

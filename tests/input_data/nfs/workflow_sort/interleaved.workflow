@@ -1,4 +1,3 @@
-10
 {"args": ["/dir_to_mk"], "parents": [], "stamp": {"begin": 10.0, "elapsed": 1}, "call": "nfsd_proc_mkdir", "rvalue": 0, "caller": {"tid": "0", "pid": "0", "uid": "0", "exec": "(nfsd)"}, "id": 1, "session_id": 1, "children": []}
 {"args": ["/dir_to_mk"], "parents": [], "stamp": {"begin": 20.0, "elapsed": 10}, "call": "nfsd_proc_readdir", "rvalue": 0, "caller": {"tid": "0", "pid": "0", "uid": "0", "exec": "(nfsd)"}, "id": 2, "session_id": 1, "children": []}
 {"args": ["/dir_to_readdirplus"], "parents": [], "stamp": {"begin": 30.0, "elapsed": 1}, "call": "nfsd_proc_mkdir", "rvalue": 0, "caller": {"tid": "0", "pid": "0", "uid": "0", "exec": "(nfsd)"}, "id": 3, "session_id": 1, "children": []}

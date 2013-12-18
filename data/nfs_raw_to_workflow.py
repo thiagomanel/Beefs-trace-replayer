@@ -51,24 +51,24 @@ def raw_to_workflow(lineid, rawline):
             return tokens[-1]
 
         callname = call()
-        if callname in ["nfsd3_proc_fsstat", "nfsd3_proc_link",\
-                        "nfsd3_proc_symlink","nfsd3_proc_readdir",\
-                        "nfsd3_proc_readlink", "nfsd3_proc_creat",\
-                        "nfsd3_proc_mknod"]:
+        if callname in ["nfsd_proc_fsstat", "nfsd_proc_link",\
+                        "nfsd_proc_symlink","nfsd_proc_readdir",\
+                        "nfsd_proc_readlink", "nfsd_proc_creat",\
+                        "nfsd_proc_mknod"]:
             return None
 
         uid, pid, tid = _id()
         _args = args()
-        if callname in ["nfsd3_proc_rmdir", "nfsd3_proc_remove",\
-                        "nfsd3_proc_lookup", "nfsd3_proc_mkdir",\
-                        "nfsd3_proc_readdirplus"]:
+        if callname in ["nfsd_proc_rmdir", "nfsd_proc_remove",\
+                        "nfsd_proc_lookup", "nfsd_proc_mkdir",\
+                        "nfsd_proc_readdirplus"]:
             _args = ["/".join(_args)]
-        elif callname == "nfsd3_proc_rename":
+        elif callname == "nfsd_proc_rename":
             parent_old, parent_new, name_old, name_new  = _args
             fullpath_old = "/".join([parent_old, name_old])
             fullpath_new = "/".join([parent_new, name_new])
             _args = [fullpath_old, fullpath_new]
-        elif callname == "nfsd3_proc_setattr":
+        elif callname == "nfsd_proc_setattr":
             #just to mark we implemented setattr, no need to transform args
             pass
 
@@ -87,6 +87,11 @@ def raw_to_workflow(lineid, rawline):
         return None
 
 def join_setattr_probes(args_probe, path_probe):
+    #during collection we were not able to get the full setattr information
+    #so, we have two seattr probes for a single call. One has the args:
+# <0 15770 15770 (nfsd)> <nfsd_proc_setattr> <null> <40> <0> <0> <0> <0>  <1386962495259405>
+    #and the second, the full name:
+#<0 15770 15770 (nfsd)> <nfsd_proc_setattr> <fullname> <1386962495259405> <1386962495259441> <0>
     #joined line gets args from earlier call and path from current
     _args = args_probe.split()[-6:-1]
     _path = path_probe.split()[:-3]
@@ -97,12 +102,6 @@ if __name__ == "__main__":
     """
         Usage: $0 time_window_min < rawfile > workflow
     """
-    #during collection we were not able to get the full setattr information
-    #so, we have two seattr probes for a single call. One has the args:
-# <0 15770 15770 (nfsd)> <nfsd3_proc_setattr> <null> <40> <0> <0> <0> <0>  <1386962495259405>
-    #and the second, the full name:
-#<0 15770 15770 (nfsd)> <nfsd3_proc_setattr> <fullname> <1386962495259405> <1386962495259441> <0>
-    #We need to join them. We use the start timestamp to find related calls.
 
     time_window_min = int(sys.argv[1])
     window_usec = None
@@ -113,7 +112,7 @@ if __name__ == "__main__":
     setattr_lines = {}
     id_wline = 1
     for line in sys.stdin:
-        if "nfsd3_proc_setattr" in line:
+        if "nfsd_proc_setattr" in line:
             if "null" in line:
                 start_stamp = line.split()[-1]
                 setattr_lines[start_stamp] = line

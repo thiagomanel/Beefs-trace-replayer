@@ -230,8 +230,6 @@ def nfs_fs_sort(workflow_lines):
                      }
 
     def find_pred(fullpath, update_log):
-        #sys.stderr.write("find_pred fullpath " + fullpath + " update_log " +\
-        #                 str(update_log) + "\n")
         return update_log.get(fullpath, None)
 
     def log(fullpath, wline, update_log):
@@ -250,13 +248,9 @@ def nfs_fs_sort(workflow_lines):
     update_log = {}
     for w_line in workflow_lines:
         objs, acctype = shared_objects(w_line.clean_call)
-        sys.stderr.write("wline " + str(w_line._id) + "\n")
-        sys.stderr.write("objs " + str(objs) + "\n")
-        sys.stderr.write("acctype " + str(acctype) + "\n")
         for obj in objs:
             pred = find_pred(obj, update_log)
             if pred:
-                sys.stderr.write("pred " + str(pred._id) + "\n")
                 join(pred, w_line)
         if acctype == W:
             for obj in objs:

@@ -45,24 +45,24 @@ class TestOrderTrace(unittest.TestCase):
         lines = [
                  WorkflowLine(1, [], [],
                   CleanCall("0", "940", "940", "(tar)", "open", "1319227151896624-20", ["/home/user/bla1.rrd", "32961", "384"], "5")),
-                 WorkflowLine(2, [], [], 
+                 WorkflowLine(2, [], [],
                   CleanCall("0", "940", "941", "(tar)", "stat", "1319227151896625-20", ["/home/user/bla1.rrd", "5"], "0")),
-                 WorkflowLine(3, [], [], 
+                 WorkflowLine(3, [], [],
                   CleanCall("0", "940", "942", "(tar)", "write", "1319227151896626-20", ["/home/user/bla1.rrd", "5", "5120"], "5120")),
-                 WorkflowLine(4, [], [], 
+                 WorkflowLine(4, [], [],
                   CleanCall("0", "940", "943", "(tar)", "read", "1319227151896627-20", ["/home/user/bla1.rrd", "5", "5120"], "5120")),
-                 WorkflowLine(5, [], [], 
+                 WorkflowLine(5, [], [],
                   CleanCall("0", "940", "944", "(tar)", "close", "1319227151896628-20", ["5"], "0")),
 
-                 WorkflowLine(6, [], [], 
+                 WorkflowLine(6, [], [],
                   CleanCall("0", "941", "945", "(tar)", "open", "1319227151896625-20", ["/home/user/bla1.rrd", "32961", "384"], "5")),
-                 WorkflowLine(7, [], [], 
+                 WorkflowLine(7, [], [],
                   CleanCall("0", "941", "946", "(tar)", "stat", "1319227151896626-20", ["/home/user/bla1.rrd", "5"], "0")),
-                 WorkflowLine(8, [], [], 
+                 WorkflowLine(8, [], [],
                   CleanCall("0", "941", "947", "(tar)", "write", "1319227151896627-20", ["/home/user/bla1.rrd", "5", "5120"], "5120")),
-                 WorkflowLine(9, [], [], 
+                 WorkflowLine(9, [], [],
                   CleanCall("0", "941", "948", "(tar)", "read", "1319227151896628-20", ["/home/user/bla1.rrd", "5", "5120"], "5120")),
-                 WorkflowLine(10, [], [], 
+                 WorkflowLine(10, [], [],
                   CleanCall("0", "941", "949", "(tar)", "close", "1319227151896629-20", ["5"], "0"))
                 ]
 
@@ -83,24 +83,24 @@ class TestOrderTrace(unittest.TestCase):
         lines = [
                  WorkflowLine(1, [], [],
                   CleanCall("0", "940", "940", "(tar)", "open", "1319227151896624-20", ["/home/user/bla1.rrd", "32961", "384"], "5")),
-                 WorkflowLine(2, [], [], 
+                 WorkflowLine(2, [], [],
                   CleanCall("0", "940", "941", "(tar)", "fstat", "1319227151896625-20", ["/home/user/bla1.rrd", "5"], "0")),
-                 WorkflowLine(3, [], [], 
+                 WorkflowLine(3, [], [],
                   CleanCall("0", "940", "942", "(tar)", "write", "1319227151896626-20", ["/home/user/bla1.rrd", "5", "5120"], "5120")),
-                 WorkflowLine(4, [], [], 
+                 WorkflowLine(4, [], [],
                   CleanCall("0", "940", "943", "(tar)", "read", "1319227151896627-20", ["/home/user/bla1.rrd", "5", "5120"], "5120")),
-                 WorkflowLine(5, [], [], 
+                 WorkflowLine(5, [], [],
                   CleanCall("0", "940", "944", "(tar)", "close", "1319227151896628-20", ["5"], "0")),
 
-                 WorkflowLine(6, [], [], 
+                 WorkflowLine(6, [], [],
                   CleanCall("0", "941", "945", "(tar)", "open", "1319227151896625-20", ["/home/user/bla1.rrd", "32961", "384"], "5")),
-                 WorkflowLine(7, [], [], 
+                 WorkflowLine(7, [], [],
                   CleanCall("0", "941", "946", "(tar)", "fstat", "1319227151896626-20", ["/home/user/bla1.rrd", "5"], "0")),
-                 WorkflowLine(8, [], [], 
+                 WorkflowLine(8, [], [],
                   CleanCall("0", "941", "947", "(tar)", "write", "1319227151896627-20", ["/home/user/bla1.rrd", "5", "5120"], "5120")),
-                 WorkflowLine(9, [], [], 
+                 WorkflowLine(9, [], [],
                   CleanCall("0", "941", "948", "(tar)", "read", "1319227151896628-20", ["/home/user/bla1.rrd", "5", "5120"], "5120")),
-                 WorkflowLine(10, [], [], 
+                 WorkflowLine(10, [], [],
                   CleanCall("0", "941", "949", "(tar)", "close", "1319227151896629-20", ["5"], "0"))
                 ]
 
@@ -136,11 +136,11 @@ class TestOrderTrace(unittest.TestCase):
 
     def test_RWW_stat_llssek_llseek(self):
         lines = [
-                 WorkflowLine(1, [], [], 
+                 WorkflowLine(1, [], [],
                      CleanCall("65534", "1856", "1867", "(gmetad)", "stat", "1319227151896626-20", ["/home/user/bla1.rrd"], "0")),
-                 WorkflowLine(2, [], [], 
+                 WorkflowLine(2, [], [],
                      CleanCall("0", "940", "940", "(tar)", "llseek", "1319227151896627-20", ["/home/user/bla1.rrd", "0", "4294967295", "4294967295", "SEEK_CUR"], "0")),
-                 WorkflowLine(3, [], [], 
+                 WorkflowLine(3, [], [],
                      CleanCall("0", "940", "940", "(tar)", "llseek", "1319227151896628-20", ["/home/user/bla1.rrd", "0", "4294967295", "4294967295", "SEEK_CUR"], "0"))
                 ]
 
@@ -154,9 +154,9 @@ class TestOrderTrace(unittest.TestCase):
         lines = [
                  WorkflowLine(1, [], [],
                      CleanCall("0", "960", "960", "(tar)", "rmdir", "1319227151896627-20", ["/home/user/bla1.rdd"], "0")),
-                 WorkflowLine(2, [], [], 
+                 WorkflowLine(2, [], [],
                      CleanCall("0", "970", "970", "(tar)", "stat", "1319227151896628-20", ["/home/user/bla1.rdd"], "0")),
-                 WorkflowLine(3, [], [], 
+                 WorkflowLine(3, [], [],
                      CleanCall("0", "980", "980", "(tar)", "stat", "1319227151896629-20", ["/home/user"], "0"))
                 ]
 
@@ -169,13 +169,13 @@ class TestOrderTrace(unittest.TestCase):
 
     def test_RWR_stat_unlink_stat(self):
         lines = [
-                 WorkflowLine(1, [], [], 
+                 WorkflowLine(1, [], [],
                      CleanCall("0", "950", "950", "(tar)", "stat", "1319227151896626-20", ["/home/user/bla1.rdd"], "0")),
-                 WorkflowLine(2, [], [], 
+                 WorkflowLine(2, [], [],
                      CleanCall("0", "960", "960", "(tar)", "unlink", "1319227151896627-20", ["/home/user/bla1.rdd"], "0")),
-                 WorkflowLine(3, [], [], 
+                 WorkflowLine(3, [], [],
                      CleanCall("0", "970", "970", "(tar)", "stat", "1319227151896628-20", ["/home/user/bla1.rdd"], "0")),
-                 WorkflowLine(4, [], [], 
+                 WorkflowLine(4, [], [],
                      CleanCall("0", "980", "980", "(tar)", "stat", "1319227151896629-20", ["/home/user"], "0"))
                 ]
 
@@ -194,7 +194,7 @@ class TestOrderTrace(unittest.TestCase):
                      CleanCall("65534", "1856", "1868", "(gmetad)", "stat", "1319227151896626-114", ["/home/user/bla1.rrd"], "0")),
                  WorkflowLine(3, [1], [],
                      CleanCall("65534", "1856", "1867", "(gmetad)", "stat", "1319227151896626-115", ["/home/user/bla1.rrd"], "0")),
-                 WorkflowLine(4, [2], [], 
+                 WorkflowLine(4, [2], [],
                      CleanCall("65534", "1856", "1868", "(gmetad)", "stat", "1319227151896626-116", ["/home/user/bla1.rrd"], "0"))
                 ]
 
@@ -231,17 +231,17 @@ class TestOrderTrace(unittest.TestCase):
         self.assertEquals(actual[3], expected[3])#n_children
         self.assertEquals(set(actual[4]), set(expected[4]))#children
         self.assertEquals(actual[5], expected[5])#CleanCall
-        
+
 
     def test_fs_order_mkdir_and_stat_short_circuit(self):
         lines = [
-                 WorkflowLine(1, [], [], 
+                 WorkflowLine(1, [], [],
                    CleanCall("65534", "1856", "1856", "(gmetad)", "mkdir", "1318615768915818-17", ["/home/user/d1", "493"], "0")),
                  WorkflowLine(2, [], [],
                    CleanCall("65534", "1856", "1857", "(gmetad)", "mkdir", "1318615768915818-18", ["/home/user/d1/d2", "493"], "0")),
                  WorkflowLine(3, [], [],
                    CleanCall("65534", "1856", "1858", "(gmetad)", "stat", "1318615768915818-19", ["/home/user/d1/d2"], "0")),
-                 WorkflowLine(4, [], [], 
+                 WorkflowLine(4, [], [],
                    CleanCall("65534", "1856", "1859", "(gmetad)", "mkdir", "1318615768915818-20", ["/home/user/d1/d2/d3", "493"], "0"))
                 ]
 
@@ -257,10 +257,10 @@ class TestOrderTrace(unittest.TestCase):
     def test_order_open_read_close_short_circuit(self):
     #based on a replay bug (in fact, replay was expecting always single parents
         lines = [
-                 CleanCall("1159", "2205", "9951", "(firefox-bin)", 
+                 CleanCall("1159", "2205", "9951", "(firefox-bin)",
                            "open",
                            "1319204801598460-61446",
-                           ["/home/thiagoepdc/.mozilla/firefox/tqcuxi3p.default/Cache/9/8E/3AE45d01", "32768", "0"], 
+                           ["/home/thiagoepdc/.mozilla/firefox/tqcuxi3p.default/Cache/9/8E/3AE45d01", "32768", "0"],
                            "69"),
                  CleanCall("1159", "2205", "2306", "(firefox-bin)",
                            "read",
@@ -283,9 +283,9 @@ class TestOrderTrace(unittest.TestCase):
 
     def test_order_pid_tid(self):
         lines = [
-                 CleanCall("65534", "1856", "1867", "(gmetad)", "stat", 
+                 CleanCall("65534", "1856", "1867", "(gmetad)", "stat",
                            "1319227151896626-113",
-                           ["/home/user/bla1.rrd"], 
+                           ["/home/user/bla1.rrd"],
                            "0"),
                  CleanCall("65534", "1856", "1868", "(gmetad)", "stat",
                            "1319227151896626-114",
@@ -297,7 +297,7 @@ class TestOrderTrace(unittest.TestCase):
                            "0"),
                  CleanCall("65534", "1856", "1868", "(gmetad)", "stat",
                            "1319227151896626-116",
-                           ["/home/user/bla4.rrd"], 
+                           ["/home/user/bla4.rrd"],
                            "0")
                 ]
 
@@ -317,32 +317,32 @@ class TestOrderTrace(unittest.TestCase):
         exp_children = [2, 50, 44]
         _json = {
                        "args": [
-                                "/home/nathaniel/.config/google-chrome/Default", 
-                                "32768", 
+                                "/home/nathaniel/.config/google-chrome/Default",
+                                "32768",
                                 "0"
-                               ], 
-                       "call": "open", 
+                               ],
+                       "call": "open",
                        "caller": {
-                                  "exec": "(chrome)", 
-                                  "pid": "9822", 
-                                  "tid": "9887", 
+                                  "exec": "(chrome)",
+                                  "pid": "9822",
+                                  "tid": "9887",
                                   "uid": "1057"
-                                 }, 
+                                 },
                        "children": exp_children,
-                       "id": exp_id, 
-                       "parents": exp_parents, 
-                       "rvalue": 146, 
+                       "id": exp_id,
+                       "parents": exp_parents,
+                       "rvalue": 146,
                        "stamp": {
-                                 "begin": 1319217009707385.0, 
+                                 "begin": 1319217009707385.0,
                                  "elapsed": 277
                                  }
                 }
 
         workflow = WorkflowLine.from_json(_json)
-        self.assertWLine(workflow, exp_id, exp_parents, exp_children, 
+        self.assertWLine(workflow, exp_id, exp_parents, exp_children,
                                   CleanCall("1057", "9822", "9887", "(chrome)",
                                             "open", "1319217009707385-277",
-                                            ["/home/nathaniel/.config/google-chrome/Default", 
+                                            ["/home/nathaniel/.config/google-chrome/Default",
                                              "32768", "0"],
                                             "146"))
 
@@ -351,6 +351,17 @@ class TestOrderTrace(unittest.TestCase):
         self.assertEquals(actual_wline._id, exp_id)
         self.assertEquals(set(actual_wline.parents), set(exp_parents))
         self.assertEquals(set(actual_wline.children), set(exp_children))
+
+class TestNFSOrder(unittest.TestCase):
+    def test_nfs_path_objects(self):
+        self.assertEquals(nfs_path_objects("nfsd_proc_mkdir", ["/dir_to_mk"]),
+                          ["/", "/dir_to_mk"])
+
+        self.assertEquals(parent_path("/dir_to_mk/path_to_creat"),
+                            "/dir_to_mk")
+        self.assertEquals(nfs_path_objects("nfsd_proc_creat",
+                                           ["/dir_to_mk/path_to_creat"]),
+                          ["/dir_to_mk", "/dir_to_mk/path_to_creat"])
 
 if __name__ == "__main__":
     unittest.main()

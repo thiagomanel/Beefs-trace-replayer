@@ -36,17 +36,17 @@ class CleanCall():
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
-    
+
     def __ne__(self, other):
         return not self.__eq__(other)
 
     def __str__(self):
         return " ".join(["<uid="+self.uid+"\>",
                          "<pid="+self.pid+"\>",
-                         "<tid="+self.tid+"\>", 
+                         "<tid="+self.tid+"\>",
                          "<pname="+self.pname+"\>",
                          "<call="+self.call+"\>",
-                         "<stamp="+self.__stamp_str__()+"\>"] + 
+                         "<stamp="+self.__stamp_str__()+"\>"] +
                          ["<arg="+arg+"\>" for arg in self.args] +
                          ["<rvalue="+self.rvalue+"\>"])
 
@@ -84,8 +84,8 @@ class CleanCall():
 
     def raw_str(self):
         return " ".join([self.uid, self.pid, self.tid, self.pname,
-                         self.call, self.__stamp_str__()] + 
-                         self.args + 
+                         self.call, self.__stamp_str__()] +
+                         self.args +
                          [self.rvalue])
 
 """
@@ -124,7 +124,11 @@ def open_flags(clean_call):
   50483 sys_write
 """
 def parent_path(fullpath):
-    return fullpath[:fullpath.rfind("/")]
+    _parent = fullpath[:fullpath.rfind("/")]
+    if _parent == "":
+        return "/"
+    else:
+        return _parent
 
 def basename(fullpath):
     return fullpath[(fullpath.rfind("/") + 1):]
@@ -299,11 +303,11 @@ def clean_rmdir(tokens):
 
 def clean_fstat(tokens, fullpath):
     """
-    when 
+    when
     65534 1856 1867 (gmetad) sys_fstat64 1319227151912074-154 5 0
     returns
     65534 1856 1867 (gmetad) fstat 1319227151912074-154 5 0
-    or 
+    or
     65534 1856 1867 (gmetad) fstat 1319227151912074-154 fullpath 5 0
     if fullpath is available. Note that we keep fd anyway
     """
@@ -313,7 +317,7 @@ def clean_fstat(tokens, fullpath):
         args = [tokens[-2]]
     return CleanCall(tokens[0], tokens[1], tokens[2], tokens[3], "fstat",
                      tokens[5], args, tokens[-1])
-        
+
 def is_reg(tokens):
     for token in tokens:
         if "S_IFREG" in token:
@@ -371,7 +375,7 @@ def clean_rw(tokens, _call, fullpath):
 def clean_open(tokens):
     #interesting line -> 0 940 940 (tar) sys_open 1319227153693893-147 /local/ourgrid/vserver_images/worker.lsd.ufcg.edu.br_2/ usr/lib/python2.5/encodings/euc_jp.pyc 32961 384 5
     """
-    when 
+    when
     0 940 940 (tar) sys_open 1319227153693893-147 /local/ourgrid/vserver_images/worker.lsd.ufcg.edu.br_2/ usr/lib/python2.5/encodings/euc_jp.pyc 32961 384 5
     returns
      0 940 940 (tar) open 1319227153693893-147 /local/ourgrid/vserver_images/worker.lsd.ufcg.edu.br_2/usr/lib/python2.5/encodings/euc_jp.pyc 32961 384 5
@@ -397,7 +401,7 @@ def clean_stat(tokens):
 
 def clean_mkdir(tokens):
     """
-    when 
+    when
     65534 1856 1856 (gmetad) sys_mkdir 1318615768915818-17 / /var/lib/ganglia/rrds/__SummaryInfo__ 493 -17
     returns
     65534 1856 1856 (gmetad) mkdir 1318615768915818-17 /var/lib/ganglia/rrds/__SummaryInfo__ 493 -17

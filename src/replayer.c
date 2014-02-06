@@ -375,10 +375,12 @@ void *consume (void *arg) {
 
 			gettimeofday (cmd_result->dispatch_begin, NULL);
 			//FIXME we should make it polimorfic right here.
+			//fprintf (stderr, "-> replaying workflow_id=%d\n", element->id);
 			int result = exec_nfs (element->command,
 						&actual_rvalue,
 						__replay,
 						r_thread->connection);
+			//fprintf (stderr, "<- replaying command workflow_id=%d\n", element->id);
 
 			//FIXME: We need to set expected rvalue
 			cmd_result->actual_rvalue = actual_rvalue;
@@ -390,11 +392,11 @@ void *consume (void *arg) {
 
 			pthread_mutex_lock (&lock);
 
-			shared_buff->consumed_queue[++shared_buff->last_consumed] = element;
-			mark_consumed (element);
-			++shared_buff->consumed_count;
+			/**shared_buff->consumed_queue[++shared_buff->last_consumed] = element;
+			*mark_consumed (element);
+			++shared_buff->consumed_count;*/
 
-			/**if (result == REPLAY_SUCCESS) {
+			if (result == REPLAY_SUCCESS) {
 				shared_buff->consumed_queue[++shared_buff->last_consumed] = element;
 				mark_consumed (element);
 				++shared_buff->consumed_count;
@@ -404,7 +406,7 @@ void *consume (void *arg) {
 					element->id, element->command->command);
 				pthread_mutex_unlock (&lock);
 				exit (1);
-			}*/
+			}
 
 			cmd_result->delay = dlay;
 

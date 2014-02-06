@@ -226,9 +226,9 @@ int exec_nfs (struct replay_command* to_exec, int *exec_rvalue,
 	break;
 	case NFSD_PROC_ACCESS_OP: {
 	    //TODO nfsio has more args the nfs_access how to match them ?
-	    //*exec_rvalue = nfs_access (nfs, args[0].argm->cprt_val, args[0].argm->i_val);
+	    *exec_rvalue = nfs_access (con->nfs, args[0].argm->cprt_val, args[0].argm->i_val);
 	    //nfsio_access(struct nfsio *nfsio, const char *name, uint32_t desired, uint32_t *access)
-	    *exec_rvalue = -1;
+	    //*exec_rvalue = -1;
 	}
 	break;
 	case NFSD_PROC_MKNOD_OP: {

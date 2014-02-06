@@ -130,6 +130,7 @@ static nfs_fh3 *recursive_lookup_fhandle(struct nfsio *nfsio, const char *name)
 static nfs_fh3 *lookup_fhandle(struct nfsio *nfsio, const char *name, off_t *off)
 {
 	tree_t *t;
+	//fprintf(stderr, "lookup_fhandle name=%s\n", name);
 
 	while (name[0] == '.') name++;
 
@@ -376,6 +377,9 @@ struct nfsio_cb_data {
 
 	int is_finished;
 	int status;
+	
+	char *val;
+	int len;
 };
 
 static void nfsio_wait_for_rpc_reply(struct rpc_context *rpc, struct nfsio_cb_data *cb_data)
@@ -598,6 +602,8 @@ nfsstat3 nfsio_lookup(struct nfsio *nfsio, const char *name, fattr3 *attributes)
 	char *ptr;
 	struct nfs_fh3 *fh;
 	struct nfsio_cb_data cb_data;
+	
+	//fprintf(stderr, "nfsio_lookup name=%s\n", name);
 
 	tmp_name = strdupa(name);
 	if (tmp_name == NULL) {
@@ -1719,6 +1725,7 @@ static void nfsio_rename_cb(struct rpc_context *rpc _U_, int status,
 	struct RENAME3res *RENAME3res = data;
 	struct nfsio_cb_data *cb_data = private_data;
 	nfs_fh3 *old_fh;
+	//fprintf (stderr, "nfsio_rename_cb\n");
 
 	cb_data->is_finished = 1;
 
@@ -1731,12 +1738,23 @@ static void nfsio_rename_cb(struct rpc_context *rpc _U_, int status,
 		return;
 	}
 
-	old_fh = lookup_fhandle(cb_data->nfsio, cb_data->old_name, NULL);
+	//MKDIR3res->MKDIR3res_u.resok.obj.post_op_fh3_u.handle.data.data_val
+	//./nfs/libnfs-raw-nfs.h:748:struct RENAME3resok {
+  	///nfs/libnfs-raw-nfs.h:760:struct RENAME3res {
+	//struct RENAME3resok {
+
+	//old_fh = lookup_fhandle(cb_data->nfsio, cb_data->old_name, NULL);
+	//assert (old_fh != NULL);
 
 	delete_fhandle(cb_data->nfsio, cb_data->old_name);
-	insert_fhandle(cb_data->nfsio, cb_data->name,
+	/**insert_fhandle(cb_data->nfsio, cb_data->name,
 			old_fh->data.data_val,
 			old_fh->data.data_len,
+			0 // FIXME
+		);*/
+	insert_fhandle(cb_data->nfsio, cb_data->name,
+			cb_data->val,
+			cb_data->len,
 			0 /* FIXME */
 		);
 
@@ -1751,7 +1769,9 @@ nfsstat3 nfsio_rename(struct nfsio *nfsio, const char *old, const char *new)
 	char *old_ptr, *new_ptr;
 	struct nfsio_cb_data cb_data;
 
+	//fprintf (stderr, "nfsio_rename old=%s new=%s\n", old, new);
 	tmp_old_name = strdupa(old);
+	//fprintf (stderr, "nfsio_rename tmp_old_name=%s\n", tmp_old_name);
 	if (tmp_old_name == NULL) {
 		fprintf(stderr, "failed to strdup name in nfsio_rename\n");
 		return NFS3ERR_SERVERFAULT;
@@ -1767,12 +1787,20 @@ nfsstat3 nfsio_rename(struct nfsio *nfsio, const char *old, const char *new)
 	old_ptr++;
 
 	old_fh = lookup_fhandle(nfsio, tmp_old_name, NULL);
+	assert (old_fh != NULL);
 	if (old_fh == NULL) {
-		fprintf(stderr, "failed to fetch parent handle in nfsio_rename\n");
+		fprintf(stderr, "failed to fetch parent handle in nfsio_rename name=%s\n", tmp_old_name);
 		return NFS3ERR_SERVERFAULT;
 	}
+	//fprintf (stderr, "val=%s len=%d\n", old_fh->data.data_val, old_fh->data.data_len);
+	insert_fhandle(nfsio, tmp_old_name, 
+			old_fh->data.data_val,
+			old_fh->data.data_len,
+			0 /* FIXME */
+		);
 
 	tmp_new_name = strdupa(new);
+	//fprintf (stderr, "nfsio_rename tmp_new_name=%s\n", tmp_new_name);
 	if (tmp_new_name == NULL) {
 		fprintf(stderr, "failed to strdup name in nfsio_rename\n");
 		return NFS3ERR_SERVERFAULT;
@@ -1789,7 +1817,7 @@ nfsstat3 nfsio_rename(struct nfsio *nfsio, const char *old, const char *new)
 
 	new_fh = lookup_fhandle(nfsio, tmp_new_name, NULL);
 	if (new_fh == NULL) {
-		fprintf(stderr, "failed to fetch parent handle in nfsio_rename\n");
+		fprintf(stderr, "failed to fetch parent handle in nfsio_rename name=%s\n", tmp_new_name);
 		return NFS3ERR_SERVERFAULT;
 	}
 
@@ -1797,6 +1825,8 @@ nfsstat3 nfsio_rename(struct nfsio *nfsio, const char *old, const char *new)
 	cb_data.nfsio    = nfsio;
 	cb_data.name     = discard_const(new);
 	cb_data.old_name = discard_const(old);
+	cb_data.val = old_fh->data.data_val;
+	cb_data.len = old_fh->data.data_len;
 
 	set_xid_value(nfsio);
 	if (rpc_nfs_rename_async(nfs_get_rpc_context(nfsio->nfs),

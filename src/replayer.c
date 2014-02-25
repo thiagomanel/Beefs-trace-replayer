@@ -16,6 +16,7 @@
 #include "replayer.h"
 #include "loader.h"
 #include "list.h"
+#include "queue.h"
 
 #include "libnfs-glue.h"
 
@@ -78,11 +79,8 @@ struct frontier {//we can use a generic list instead of this struct
 
 typedef struct _sbuffs_t {
 
-	Workflow_element* produced_queue[BUFF_SIZE];
-	int last_produced;
-
-	Workflow_element* consumed_queue[BUFF_SIZE];
-	int last_consumed;
+	queue* produced_queue;
+	queue* consumed_queue;
 
 	int produced_count;
 	int consumed_count;
@@ -102,12 +100,18 @@ static int all_consumed (sbuffs_t* shared) {
 	return (shared->consumed_count >= shared->total_commands);
 }
 
-static int has_commands_to_consume (sbuffs_t* shared) {
-	return shared->last_produced >= 0;
+//static int has_commands_to_consume (sbuffs_t* shared) {
+static int produced_available (sbuffs_t* shared) {
+	return ! empty (shared->produced_queue);
 }
 
-static int commands_were_consumed (sbuffs_t* shared) {
-	return shared->last_consumed >= 0;
+//static int commands_were_consumed (sbuffs_t* shared) {
+static int consumed_available (sbuffs_t* shared) {
+	return ! empty (shared->consumed_queue);
+}
+
+static int produce_buffer_full() {
+	return full (shared_buff->produced_queue);
 }
 
 //FIXME we can move this list method do an util list code outside replayer
@@ -193,23 +197,24 @@ static void mark_consumed (Workflow_element* element) {
 	element->consumed = 1;
 }
 
-static void do_produce(Workflow_element* el_to_produce) {
-	//1. produce
-	shared_buff->produced_queue[++shared_buff->last_produced] = el_to_produce;
-	//2. mark
-	mark_produced (el_to_produce);
-	//3. increment count
+static void do_produce (Workflow_element* to_produce) {
+
+	enqueue (shared_buff->produced_queue, to_produce->id);
+	mark_produced (to_produce);
 	++shared_buff->produced_count;
+}
+
+static void do_consume (Workflow_element* to_consume) {
+
+	enqueue (shared_buff->produced_queue, to_consume->id);
+	mark_consumed (to_consume);
+	++shared_buff->consumed_count;
 }
 
 static void fill_command_replay_result (command_replay_result *result) {
 	result->dispatch_begin = (struct timeval*) malloc (sizeof (struct timeval));
 	result->dispatch_end = (struct timeval*) malloc (sizeof (struct timeval));
 	result->schedule_stamp = (struct timeval*) malloc (sizeof (struct timeval));
-}
-
-static int produce_buffer_full() {
-	return (shared_buff->last_produced + 1) >= BUFF_SIZE;
 }
 
 /**
@@ -257,17 +262,18 @@ void *produce (void *arg) {
 				frontier = frontier->next;
 			}
 
-			if (has_commands_to_consume (shared_buff)) {
+			if (produced_available (shared_buff)) {
 				pthread_cond_broadcast (&cmds_were_produced_cond);
 			}
 
-			if (commands_were_consumed(shared_buff)) {
+			if (consumed_available (shared_buff)) {
 				//items come to the frontier after
 				//they have been consumed (dispatched)
-				Workflow_element* consumed;
-				for (i = 0; i <= shared_buff->last_consumed; i++) {
+				while (! empty (shared_buff->consumed_queue)) {
+					Workflow_element* consumed =
+						element (__replay->workload,
+							 dequeue (shared_buff->consumed_queue));
 
-					consumed = shared_buff->consumed_queue[i];
 					int parent_i;
 					for (parent_i = 0;
 						parent_i < consumed->n_parents;
@@ -294,10 +300,8 @@ void *produce (void *arg) {
 						frontier_append (consumed);
 					}
 				}
-				//cleaning consumed_queue
-				shared_buff->last_consumed = -1;
 			} else {
-				while ( ! commands_were_consumed(shared_buff)) {
+				while ( ! consumed_available (shared_buff)) {
 					//SPURIOUS IF, docs says to use a while
 					pthread_cond_wait (&cmds_were_consumed_cond,
 								 &lock);
@@ -318,9 +322,8 @@ void *produce (void *arg) {
  * Take a command from produced buffer
  */
 static Workflow_element* take () {
-	Workflow_element* cmd = shared_buff->produced_queue[shared_buff->last_produced];
-	--shared_buff->last_produced;
-	return cmd;
+	int id_to_take = dequeue (shared_buff->produced_queue);
+	return element (__replay->workload, id_to_take);
 }
 
 /**
@@ -345,13 +348,13 @@ void *consume (void *arg) {
 
 		pthread_mutex_lock (&lock);
 
-		while (! has_commands_to_consume (shared_buff) &&
+		while (! produced_available (shared_buff) &&
 			! all_consumed (shared_buff)) {
 			//if we use "if" we can get spurious behaviour
 			pthread_cond_wait (&cmds_were_produced_cond, &lock);
 		}
 
-		if ( has_commands_to_consume (shared_buff)) {
+		if ( produced_available (shared_buff)) {
 
 			Workflow_element* element = take ();
 			pthread_mutex_unlock (&lock);
@@ -359,6 +362,7 @@ void *consume (void *arg) {
 			command_replay_result *cmd_result = RESULT (__replay, element->id);
 			fill_command_replay_result (cmd_result);
 
+			//FIXME: move all this timing control to a new function
 			double dlay = __replay->timing_ops.delay (__replay, element);
 			if (dlay > 0) {
 				if (dlay > 1000) {
@@ -397,9 +401,7 @@ void *consume (void *arg) {
 			++shared_buff->consumed_count;*/
 
 			if (result == REPLAY_SUCCESS) {
-				shared_buff->consumed_queue[++shared_buff->last_consumed] = element;
-				mark_consumed (element);
-				++shared_buff->consumed_count;
+				do_consume (element);
 			} else {
 				fprintf (stderr,
 					"Err replaying command workflow_id=%d type=%d\n",
@@ -426,8 +428,10 @@ static void fill_shared_buffer (Replay_workload* workload, sbuffs_t* shared) {
 	shared->produced_count = 1;
 	shared->consumed_count = 1;
 
-	shared->last_consumed = -1;
-	shared->last_produced = -1;
+	shared->produced_queue = (queue*) malloc (sizeof (queue));
+	init_queue (shared->produced_queue);
+	shared->consumed_queue = (queue*) malloc (sizeof (queue));
+	init_queue (shared->consumed_queue);
 
 	shared->total_commands = workload->num_cmds;
 

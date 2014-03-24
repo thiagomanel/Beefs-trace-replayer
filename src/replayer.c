@@ -206,7 +206,7 @@ static void do_produce (Workflow_element* to_produce) {
 
 static void do_consume (Workflow_element* to_consume) {
 
-	enqueue (shared_buff->produced_queue, to_consume->id);
+	enqueue (shared_buff->consumed_queue, to_consume->id);
 	mark_consumed (to_consume);
 	++shared_buff->consumed_count;
 }

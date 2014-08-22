@@ -111,6 +111,19 @@ int exec (struct replay_command* to_exec, int *exec_rvalue, struct replay* rpl) 
 			*exec_rvalue = pread (repl_fd, buf, read_count, offset);
 		}
 		break;
+		case PWRITE_OP: {
+			int traced_fd = args[1].argm->i_val;
+			int repl_fd =  (rpl->session_enabled) ?
+						session_fd (current_session_id, rpl) :
+						replayed_fd (to_exec->caller->pid, traced_fd, rpl->pids_to_fd_pairs);
+
+			//FIXME should share a big bufer to avoid malloc'ing time wasting ?
+			int write_count = args[2].argm->i_val;
+			char* buf = (char*) malloc (sizeof (char) * write_count);
+			int offset = args[3].argm->i_val;
+			*exec_rvalue = pwrite (repl_fd, buf, write_count, offset);
+		}
+		break;
 		case WRITE_OP: {
 			int traced_fd = args[1].argm->i_val;
 			int repl_fd =  (rpl->session_enabled) ?

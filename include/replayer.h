@@ -60,6 +60,7 @@ typedef unsigned short op_t;
 #define FLISTXATTR_OP (FSETXATTR_OP + 1)
 #define LSETXATTR_OP (FLISTXATTR_OP + 1)
 #define PREAD_OP (LSETXATTR_OP + 1)
+#define PWRITE_OP (PREAD_OP + 1)
 
 #define ROOT_ID 0
 

@@ -63,6 +63,7 @@ static struct lookuptab {
 	{"flistxattr",	FLISTXATTR_OP},
 	{"lsetxattr",	LSETXATTR_OP},
 	{"pread",	PREAD_OP},
+	{"pwrite",	PWRITE_OP},
 
 };
 
@@ -162,6 +163,7 @@ static Parms* alloc_and_parse_parms (op_t cmd_type,  json_t *replay_object) {
 			parm[2].argm->i_val = atoi(count);
 		}
 		break;
+		case PWRITE_OP:
 		case PREAD_OP: {
 			parm = (Parms*) malloc(4 * sizeof(Parms));
 			const char *fullpath = json_string_value (json_array_get (args, 0));

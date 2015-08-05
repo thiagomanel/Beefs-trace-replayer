@@ -88,7 +88,7 @@ int main (int argc, const char* argv[]) {
 	fprintf (stderr, "main_tid=%d num_workers=%d sched_err=%d add_delay=%d policy=%s\n",
 			main_tid, num_workers, try_sched_rr, additional_delay_usec, argv[2]);
 
-	control_replay (repl, num_workers, additional_delay_usec);
+	control_replay (repl, additional_delay_usec);
 
 	Replay_result *result = repl->result;
 	results = result->cmds_replay_result;

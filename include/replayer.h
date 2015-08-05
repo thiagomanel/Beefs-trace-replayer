@@ -74,9 +74,9 @@ typedef unsigned short op_t;
 #define SESSION_ID_MAX 32768
 
 typedef struct _caller {
-	int uid;
-	int pid;
-	int tid;
+    int uid;
+    int pid;
+    int tid;
 } Caller;
 
 typedef union args {
@@ -86,107 +86,107 @@ typedef union args {
 } arg;
 
 typedef struct _parms {
-	arg* argm;
+    arg* argm;
 } Parms;
 
 struct replay_command {
 
-	op_t command;
-	Caller* caller;
-	Parms* params;
+    op_t command;
+    Caller* caller;
+    Parms* params;
 
-	double traced_begin;
-	long traced_elapsed_time;
+    double traced_begin;
+    long traced_elapsed_time;
 
-	int session_id;
-	int expected_retval;
+    int session_id;
+    int expected_retval;
 };
 
 typedef struct workflow_element {
 
-	struct replay_command* command;
+    struct replay_command* command;
 
-	int n_children;
-	int* children_ids;
+    int n_children;
+    int* children_ids;
 
-	int n_parents;
-	int* parents_ids;
+    int n_parents;
+    int* parents_ids;
 
-	int produced;
-	int consumed;
-	int id;
+    int produced;
+    int consumed;
+    int id;
 
-	struct list_head frontier;
+    struct list_head frontier;
 } Workflow_element;
 
 typedef struct _command_replay_result {
-	struct timeval *schedule_stamp;//when we scheduled the command
-	struct timeval *dispatch_begin;
-	struct timeval *dispatch_end;
-	double delay;
+    struct timeval *schedule_stamp;//when we scheduled the command
+    struct timeval *dispatch_begin;
+    struct timeval *dispatch_end;
+    double delay;
 
-	//These analysis is specially important for read/write to check
-	//acessed number of bytes and for check returned errors codes.
-	int expected_rvalue;
-	int actual_rvalue;
-	pid_t worker_id;
+    //These analysis is specially important for read/write to check
+    //acessed number of bytes and for check returned errors codes.
+    int expected_rvalue;
+    int actual_rvalue;
+    pid_t worker_id;
 } command_replay_result ;
 
 typedef struct replay_workload {
-	Workflow_element* element_list;
-	int num_cmds;
-	int current_cmd;
+    Workflow_element* element_list;
+    int num_cmds;
+    int current_cmd;
 } Replay_workload;
 
 typedef struct replay_result {
-	int replayed_commands;
-	int produced_commands;
-	command_replay_result* cmds_replay_result;
+    int replayed_commands;
+    int produced_commands;
+    command_replay_result* cmds_replay_result;
 } Replay_result;
 
 struct timing_policy {
-	double (*delay) (struct replay*, Workflow_element*);
+    double (*delay) (struct replay*, Workflow_element*);
 };
 
 struct replay {
 
-	/**
-	 *  As we are a single process replayer, we need some magic to handle a
-	 *  trace with multiple process. To make it clear, note that our trace
-	 *  may have concurrent processes manipulating file descriptors of the
-	 *  same value, since fd is a per-process variable.
-	 *
-	 *  We use two methods to manage file descriptors:
-	 *
-	 *  session_id - session_id in a unique number assigned to trace
-	 *  	operations related to the same open-to-close sequence.
-	 *  	*session_id_to_fd array is a {session_id:replayed_fd} mapping
-	 *
-	 * pids_to_fid - In replay time, we map and lookup pid to traced and
-	 * 	replayed file descriptor tuples. Maps are made by open syscalls
-	 * 	and remove by close syscalls.
-	 *
-	 * FIXME: convert conservative traces to use session_id too.
-	 **/
-	int session_enabled;
-	int *session_id_to_fd;
-	int **pids_to_fd_pairs;
+    /**
+     *  As we are a single process replayer, we need some magic to handle a
+     *  trace with multiple process. To make it clear, note that our trace
+     *  may have concurrent processes manipulating file descriptors of the
+     *  same value, since fd is a per-process variable.
+     *
+     *  We use two methods to manage file descriptors:
+     *
+     *  session_id - session_id in a unique number assigned to trace
+     *  	operations related to the same open-to-close sequence.
+     *  	*session_id_to_fd array is a {session_id:replayed_fd} mapping
+     *
+     * pids_to_fid - In replay time, we map and lookup pid to traced and
+     * 	replayed file descriptor tuples. Maps are made by open syscalls
+     * 	and remove by close syscalls.
+     *
+     * FIXME: convert conservative traces to use session_id too.
+     **/
+    int session_enabled;
+    int *session_id_to_fd;
+    int **pids_to_fd_pairs;
 
-	Replay_workload* workload;
-	Replay_result* result;
+    Replay_workload* workload;
+    Replay_result* result;
 
-	struct timing_policy timing_ops;
+    struct timing_policy timing_ops;
 };
 
 void workflow_element_init (Workflow_element* element);
 
 Workflow_element* element (Replay_workload* workload, int element_id);
 Workflow_element* parent (Replay_workload* workload, Workflow_element* child,
-				int parent_index);
+                          int parent_index);
 
 struct replay_command* replay_command_create (Caller* caller, op_t command, Parms* params,
-			                       double traced_begin, long traced_elapsed_time,
-                       				int expected_retval);
+        double traced_begin, long traced_elapsed_time,
+        int expected_retval);
 
 struct replay* create_replay (Replay_workload* workload);
 

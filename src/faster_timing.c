@@ -21,16 +21,17 @@
 static double faster_delay (struct replay* rep, Workflow_element* to_replay);
 
 const struct timing_policy faster_policy_ops = {
-	faster_delay,
+    faster_delay,
 };
 
-double faster_delay (struct replay* rep, Workflow_element* to_replay) {
+double faster_delay (struct replay* rep, Workflow_element* to_replay)
+{
 
-	assert (rep != NULL);
-	assert (to_replay != NULL);
+    assert (rep != NULL);
+    assert (to_replay != NULL);
 
-	command_replay_result* cmd_result = RESULT (rep, to_replay->id);
-	assert (cmd_result != NULL);
-	gettimeofday (cmd_result->schedule_stamp, NULL);
-	return 0.0;
+    command_replay_result* cmd_result = RESULT (rep, to_replay->id);
+    assert (cmd_result != NULL);
+    gettimeofday (cmd_result->schedule_stamp, NULL);
+    return 0.0;
 }

@@ -130,23 +130,34 @@ static int do_consume (Workflow_element* element) {
 
 void *consume (void *arg) {
 
-    int i;
+    int i, j, child_id;
     int result = -1;
     int total_cmds = __replay->workload->num_cmds;
+    Workflow_element * child;
 
     thread_info* t_info = (thread_info*) arg;
 
     for (i = 1; i < total_cmds; i++) {
-        Workflow_element* el = element(__replay->workload, i);
+
+        Workflow_element* el = element (__replay->workload, i);
+
         if (belongs(el, t_info)) {
-            //TODO
-            while (!_consumed(el->parents_ids, el->n_parents)) {
-                //do nothing
-            }
+	    pthread_mutex_lock (&el->mutex);
+	    while (! _consumed (el->parents_ids, el->n_parents)) {
+		pthread_cond_wait (&el->condition, &el->mutex);
+	    }
+
+	    pthread_mutex_unlock (&el->mutex);
             result = do_consume(el);
 
             if (result == REPLAY_SUCCESS) {
                 mark_consumed (el);
+		for (j = 0; j < el->n_children; j++) {
+		   child_id = el->children_ids[j];
+		   child = element (__replay->workload, child_id);
+		   //TODO: do we need to lock unlock the child mutex?
+		   pthread_cond_signal (&child->condition);
+		}
             } else {
                 fprintf (stderr,
                     "Err replaying command workflow_id=%d type=%d\n",

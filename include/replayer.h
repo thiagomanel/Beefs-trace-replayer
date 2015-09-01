@@ -116,6 +116,9 @@ typedef struct workflow_element {
 	int consumed;
 	int id;
 
+	pthread_cond_t condition;
+	pthread_mutex_t mutex;
+
 	struct list_head frontier;
 } Workflow_element;
 

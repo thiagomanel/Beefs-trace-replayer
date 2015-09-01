@@ -15,12 +15,14 @@
 */
 #include "replayer.h"
 
-Workflow_element* element (Replay_workload* workload, int element_id) {
-        return &(workload->element_list[element_id]);
+Workflow_element* element (Replay_workload* workload, int element_id)
+{
+    return &(workload->element_list[element_id]);
 }
 
-Workflow_element* parent (Replay_workload* workload, Workflow_element* child, 
-				int parent_index) {
-        int parent_id = child->parents_ids[parent_index];
-        return element(workload, parent_id);
+Workflow_element* parent (Replay_workload* workload, Workflow_element* child,
+                          int parent_index)
+{
+    int parent_id = child->parents_ids[parent_index];
+    return element(workload, parent_id);
 }

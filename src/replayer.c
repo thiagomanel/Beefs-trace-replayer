@@ -39,7 +39,8 @@ typedef struct thread_info {
     int trace_tid;
 } thread_info;
 
-void workflow_element_init (Workflow_element* element) {
+void workflow_element_init (Workflow_element* element)
+{
 
     element->n_children = 0;
     element->children_ids = NULL;
@@ -51,7 +52,8 @@ void workflow_element_init (Workflow_element* element) {
     element->command = NULL;
 }
 
-static Workflow_element* get_child (Workflow_element* parent, int child_index) {
+static Workflow_element* get_child (Workflow_element* parent, int child_index)
+{
     int child_id = parent->children_ids[child_index];
     return element(__replay->workload, child_id);
 }
@@ -60,7 +62,8 @@ static Workflow_element* get_child (Workflow_element* parent, int child_index) {
  * Returns non-zero if all Workflow_element identified by the ids stored in
  * *element_ids were consumed (dispatched) or n_elements is zero
  */
-static int _consumed (int* elements_ids, int n_elements) {
+static int _consumed (int* elements_ids, int n_elements)
+{
 
     int i;
     int total_consumed = 0;
@@ -73,22 +76,26 @@ static int _consumed (int* elements_ids, int n_elements) {
     return total_consumed == n_elements;
 }
 
-static void mark_consumed (Workflow_element* element) {
+static void mark_consumed (Workflow_element* element)
+{
     element->consumed = 1;
 }
 
-static void fill_command_replay_result (command_replay_result *result) {
+static void fill_command_replay_result (command_replay_result *result)
+{
     result->dispatch_begin = (struct timeval*) malloc (sizeof (struct timeval));
     result->dispatch_end = (struct timeval*) malloc (sizeof (struct timeval));
     result->schedule_stamp = (struct timeval*) malloc (sizeof (struct timeval));
 }
 
-static int belongs (Workflow_element* element, thread_info* t_info) {
+static int belongs (Workflow_element* element, thread_info* t_info)
+{
     return ( (t_info->trace_pid == element->command->caller->pid) &&
-		    (t_info->trace_tid == element->command->caller->tid));
+             (t_info->trace_tid == element->command->caller->tid));
 }
 
-static int do_consume (Workflow_element* element) {
+static int do_consume (Workflow_element* element)
+{
 
     int result;
     int actual_rvalue = 0;
@@ -128,7 +135,8 @@ static int do_consume (Workflow_element* element) {
     return result;
 }
 
-void *consume (void *arg) {
+void *consume (void *arg)
+{
 
     int i, j, child_id;
     int result = -1;
@@ -160,8 +168,8 @@ void *consume (void *arg) {
 		}
             } else {
                 fprintf (stderr,
-                    "Err replaying command workflow_id=%d type=%d\n",
-                    el->id, el->command->command);
+                         "Err replaying command workflow_id=%d type=%d\n",
+                         el->id, el->command->command);
                 exit (1);
             }
         }
@@ -169,7 +177,8 @@ void *consume (void *arg) {
     return NULL;
 }
 
-static void fill_root () {
+static void fill_root ()
+{
 
     //bootstrap element is consumed and produced
     //stamping root
@@ -184,7 +193,8 @@ static void fill_root () {
     gettimeofday (root_result->schedule_stamp, NULL);
 }
 
-static void assign_expected_rvalue (command_replay_result *results, Replay_workload *wld) {
+static void assign_expected_rvalue (command_replay_result *results, Replay_workload *wld)
+{
 
     int i;
     for (i = 0; i < wld->num_cmds ; i++) {
@@ -193,7 +203,8 @@ static void assign_expected_rvalue (command_replay_result *results, Replay_workl
     }
 }
 
-struct replay* create_replay (Replay_workload* workload) {
+struct replay* create_replay (Replay_workload* workload)
+{
 
     struct replay* repl = (struct replay*) malloc (sizeof (struct replay));
     repl->workload = workload;
@@ -222,17 +233,19 @@ struct replay* create_replay (Replay_workload* workload) {
     repl->result = (Replay_result*) malloc (sizeof(Replay_result));
     repl->result->replayed_commands = 0;
     repl->result->cmds_replay_result = (command_replay_result*) malloc (
-            sizeof (command_replay_result) * workload->num_cmds);
+                                           sizeof (command_replay_result) * workload->num_cmds);
     assign_expected_rvalue (repl->result->cmds_replay_result, workload);
 
     return repl;
 }
 
-void replay (struct replay* rpl) {
+void replay (struct replay* rpl)
+{
     control_replay (rpl, 0);
 }
 
-void control_replay (struct replay* rpl, int additional_delay_usec) {
+void control_replay (struct replay* rpl, int additional_delay_usec)
+{
 
     int i,j,k;
     int pid;
@@ -262,7 +275,7 @@ void control_replay (struct replay* rpl, int additional_delay_usec) {
 
         if (!pids_map[pid]) {
             pids_map[pid] = (int*) malloc (PID_MAX * sizeof (int));
-                        memset (pids_map[pid], 0, FD_MAX * sizeof(int));
+            memset (pids_map[pid], 0, FD_MAX * sizeof(int));
         }
         int* tids = pids_map[pid];
         if (!tids[tid]) {
@@ -289,7 +302,7 @@ void control_replay (struct replay* rpl, int additional_delay_usec) {
     }
 
     for (i = 0; i < num_workers; i++) {
-    	pthread_join(consumers[i], NULL);
+        pthread_join(consumers[i], NULL);
     }
 
     __replay->result->produced_commands = __replay->workload->num_cmds;

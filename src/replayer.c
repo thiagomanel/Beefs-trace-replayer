@@ -24,6 +24,10 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/syscall.h>
+#include <errno.h>
+
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
 
 #define PID_MAX 32768
 
@@ -50,6 +54,16 @@ void workflow_element_init (Workflow_element* element)
 
     element->id = -1;
     element->command = NULL;
+}
+
+static uint64_t stamp (void)
+{
+    struct timespec tspec;
+    if (clock_gettime (CLOCK_MONOTONIC, &tspec)) {
+        fprintf (stderr, "Error getting timestamp: %s\n", strerror(errno));
+        exit (1);
+    }
+    return ((tspec.tv_sec * 1000000000ULL) + tspec.tv_nsec) / 1000;
 }
 
 static Workflow_element* get_child (Workflow_element* parent, int child_index)
@@ -81,13 +95,6 @@ static void mark_consumed (Workflow_element* element)
     element->consumed = 1;
 }
 
-static void fill_command_replay_result (command_replay_result *result)
-{
-    result->dispatch_begin = (struct timeval*) malloc (sizeof (struct timeval));
-    result->dispatch_end = (struct timeval*) malloc (sizeof (struct timeval));
-    result->schedule_stamp = (struct timeval*) malloc (sizeof (struct timeval));
-}
-
 static int belongs (Workflow_element* element, thread_info* t_info)
 {
     return ( (t_info->trace_pid == element->command->caller->pid) &&
@@ -102,8 +109,8 @@ static int do_consume (Workflow_element* element)
     struct timespec sleep_t;
 
     command_replay_result *cmd_result = RESULT (__replay, element->id);
-    fill_command_replay_result (cmd_result);
     double dlay = __replay->timing_ops.delay (__replay, element);
+
     if (dlay > 0) {
         if (dlay > 1000) {
             usleep (dlay + add_delay_usec);
@@ -116,7 +123,7 @@ static int do_consume (Workflow_element* element)
         }
     }
 
-    gettimeofday (cmd_result->dispatch_begin, NULL);
+    cmd_result->dispatch_begin = stamp ();
     result = exec (element->command, &actual_rvalue, __replay);
 
     //assigning actual syscall returning value. We do not check
@@ -125,11 +132,12 @@ static int do_consume (Workflow_element* element)
 
     //FIXME: We need to set expected rvalue
     cmd_result->actual_rvalue = actual_rvalue;
-    gettimeofday (cmd_result->dispatch_end, NULL);
+    cmd_result->dispatch_end = stamp();
 
     //FIXME: debugging purposes, remove soon to avoid the
     //syscall overhead (or add a debug switch)
-    cmd_result->worker_id = syscall(SYS_gettid);
+    //cmd_result->worker_id = syscall(SYS_gettid);
+    cmd_result->worker_id = -1;
     cmd_result->delay = dlay;
 
     return result;
@@ -146,26 +154,29 @@ void *consume (void *arg)
     thread_info* t_info = (thread_info*) arg;
 
     for (i = 1; i < total_cmds; i++) {
+        //printf("to_exec i=%d t_pid=%d t_tid=%d\n", i, t_info->trace_pid, t_info->trace_tid);
 
         Workflow_element* el = element (__replay->workload, i);
 
         if (belongs(el, t_info)) {
-	    pthread_mutex_lock (&el->mutex);
-	    while (! _consumed (el->parents_ids, el->n_parents)) {
-		pthread_cond_wait (&el->condition, &el->mutex);
-	    }
+            //pthread_mutex_lock (&el->mutex);
+            while (! _consumed (el->parents_ids, el->n_parents)) {
+                pthread_cond_wait (&el->condition, &el->mutex);
+            }
 
-	    pthread_mutex_unlock (&el->mutex);
+            //pthread_mutex_unlock (&el->mutex);
             result = do_consume(el);
 
             if (result == REPLAY_SUCCESS) {
                 mark_consumed (el);
-		for (j = 0; j < el->n_children; j++) {
-		   child_id = el->children_ids[j];
-		   child = element (__replay->workload, child_id);
-		   //TODO: do we need to lock unlock the child mutex?
-		   pthread_cond_signal (&child->condition);
-		}
+                for (j = 0; j < el->n_children; j++) {
+                    child_id = el->children_ids[j];
+                    child = element (__replay->workload, child_id);
+                    //TODO: do we need to lock unlock the child mutex?
+                    if (!belongs(child, t_info)) {
+                        pthread_cond_signal (&child->condition);
+                    }
+                }
             } else {
                 fprintf (stderr,
                          "Err replaying command workflow_id=%d type=%d\n",
@@ -187,10 +198,12 @@ static void fill_root ()
     root_result->actual_rvalue = -666;
     root_result->delay = 0;
 
-    fill_command_replay_result (root_result);
-    gettimeofday (root_result->dispatch_begin, NULL);
-    gettimeofday (root_result->dispatch_end, NULL);
-    gettimeofday (root_result->schedule_stamp, NULL);
+    //gettimeofday (root_result->dispatch_begin, NULL);
+    //gettimeofday (root_result->dispatch_end, NULL);
+    //gettimeofday (root_result->schedule_stamp, NULL);
+    root_result->dispatch_begin = stamp();
+    root_result->dispatch_end = stamp();
+    root_result->schedule_stamp = stamp();
 }
 
 static void assign_expected_rvalue (command_replay_result *results, Replay_workload *wld)

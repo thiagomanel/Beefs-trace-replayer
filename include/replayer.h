@@ -18,6 +18,7 @@
 
 #include "list.h"
 #include <sys/types.h>
+#include <stdint.h>
 
 #define MAX_ARGS 5
 #define PROC_NAME_LEN 256 //FIXME TOO BIG. search for exec name in task structs
@@ -123,9 +124,9 @@ typedef struct workflow_element {
 } Workflow_element;
 
 typedef struct _command_replay_result {
-    struct timeval *schedule_stamp;//when we scheduled the command
-    struct timeval *dispatch_begin;
-    struct timeval *dispatch_end;
+    uint64_t schedule_stamp;//when we scheduled the command
+    uint64_t dispatch_begin;
+    uint64_t dispatch_end;
     double delay;
 
     //These analysis is specially important for read/write to check

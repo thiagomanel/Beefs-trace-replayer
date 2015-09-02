@@ -35,6 +35,9 @@
 #include <sys/syscall.h>
 #include <sched.h>
 
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
+
 int main (int argc, const char* argv[])
 {
 
@@ -98,13 +101,10 @@ int main (int argc, const char* argv[])
         if (strncmp (argv[5], "debug", 5) == 0) {
             for (i = 0; i < result->replayed_commands; i++) {
                 tmp = &(results[i]);
-                printf ("%ld %ld %ld %ld %ld %ld %f %d %d %d\n",
-                        tmp->dispatch_begin->tv_sec,
-                        tmp->dispatch_begin->tv_usec,
-                        tmp->dispatch_end->tv_sec,
-                        tmp->dispatch_end->tv_usec,
-                        tmp->schedule_stamp->tv_sec,
-                        tmp->schedule_stamp->tv_usec,
+                printf ("%" PRIu64 " %" PRIu64 " %" PRIu64 " %f %d %d %d\n",
+                        tmp->dispatch_begin,
+                        tmp->dispatch_end,
+                        tmp->schedule_stamp,
                         tmp->delay,
                         tmp->expected_rvalue,
                         tmp->actual_rvalue,

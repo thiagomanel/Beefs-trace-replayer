@@ -19,11 +19,25 @@
 #include <assert.h>
 #include <sys/time.h>
 
+#include <errno.h>
+#include <time.h>
+#include <string.h>
+
 static double teka_delay (struct replay* rep, Workflow_element* to_replay);
 
 const struct timing_policy teka_policy_ops = {
     teka_delay,
 };
+
+static uint64_t stamp (void)
+{
+    struct timespec tspec;
+    if (clock_gettime (CLOCK_MONOTONIC, &tspec)) {
+        fprintf (stderr, "Error getting timestamp: %s\n", strerror(errno));
+        exit (1);
+    }
+    return ((tspec.tv_sec * 1000000000ULL) + tspec.tv_nsec) / 1000;
+}
 
 static double elapsed (struct timeval *later, struct timeval *earlier)
 {
@@ -79,9 +93,9 @@ double teka_delay (struct replay* rep, Workflow_element* to_replay)
     assert (parent_result != NULL);
 
     //microseconds since the replay of parent
-    gettimeofday (cmd_result->schedule_stamp, NULL);
-    double elaps = elapsed (cmd_result->schedule_stamp,
-                            parent_result->dispatch_end);
+    //gettimeofday (cmd_result->schedule_stamp, NULL);
+    cmd_result->schedule_stamp = stamp();
+    double elaps = cmd_result->schedule_stamp - parent_result->dispatch_end;
     //double elapsed = elapsed_since_replay (parent_cmd_result);
     return dlay_trace - elaps;
 }

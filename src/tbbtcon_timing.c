@@ -19,11 +19,25 @@
 #include <assert.h>
 #include <sys/time.h>
 
+#include <errno.h>
+#include <time.h>
+#include <string.h>
+
 static double tbbtcon_delay (struct replay* rep, Workflow_element* to_replay);
 
 const struct timing_policy tbbtcon_policy_ops = {
     tbbtcon_delay,
 };
+
+static uint64_t stamp (void)
+{
+    struct timespec tspec;
+    if (clock_gettime (CLOCK_MONOTONIC, &tspec)) {
+        fprintf (stderr, "Error getting timestamp: %s\n", strerror(errno));
+        exit (1);
+    }
+    return ((tspec.tv_sec * 1000000000ULL) + tspec.tv_nsec) / 1000;
+}
 
 static double elapsed (struct timeval *later, struct timeval *earlier)
 {
@@ -69,11 +83,11 @@ double tbbtcon_delay (struct replay* rep, Workflow_element* to_replay)
 
     command_replay_result* cmd_result = RESULT (rep, to_replay->id);
     assert (cmd_result != NULL);
-    gettimeofday (cmd_result->schedule_stamp, NULL);
+    //gettimeofday (cmd_result->schedule_stamp, NULL);
+    cmd_result->schedule_stamp = stamp ();
 
     command_replay_result *root_result = RESULT (rep, ROOT_ID);
     assert (root_result != NULL);
-    double elaps = elapsed (cmd_result->schedule_stamp,
-                            root_result->schedule_stamp);
+    double elaps = cmd_result->schedule_stamp - root_result->schedule_stamp;
     return dlay_trace - elaps;
 }

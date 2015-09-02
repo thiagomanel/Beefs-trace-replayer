@@ -35,8 +35,8 @@ MAIN = beefs_replayer
 GTEST_HEADERS = $(GTEST_DIR)/include/gtest/*.h \
                 $(GTEST_DIR)/include/gtest/internal/*.h
 
-all : $(TESTS) $(MAIN)
-#all : $(MAIN)
+#all : $(TESTS) $(MAIN)
+all : $(MAIN)
 
 clean :
 	rm -f $(TESTS) $(MAIN) $(TESTS) gtest.a gtest_main.a *.o
@@ -97,11 +97,11 @@ beefs_replayer.o : $(USER_DIR)/src/loader.c $(USER_DIR)/src/replayer.c $(USER_DI
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/src/beefs_replayer.c
 
 beefs_replayer : loader.o replayer.o beefs_replayer.o dispatch.o workflow.o conservative_timing.o faster_timing.o teka_timing.o tbbtcon_timing.o
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $^ -o $@ -ljansson -pthread
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $^ -o $@ -lrt -ljansson -pthread
 
 loader_unittest.o : $(USER_DIR)/tests/loader_unittest.cc \
                      $(GTEST_HEADERS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/tests/loader_unittest.cc
 
 loader_unittest : loader.o replayer.o dispatch.o workflow.o conservative_timing.o faster_timing.o teka_timing.o tbbtcon_timing.o loader_unittest.o gtest_main.a
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $^ -o $@ -ljansson -pthread
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $^ -o $@ -lrt -ljansson -pthread

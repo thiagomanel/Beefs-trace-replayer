@@ -17,12 +17,28 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <sys/time.h>
+#include <time.h>
+#include <string.h>
+
+#include <stdio.h>
+#include <errno.h>
 
 static double faster_delay (struct replay* rep, Workflow_element* to_replay);
 
 const struct timing_policy faster_policy_ops = {
     faster_delay,
 };
+
+static uint64_t stamp (void)
+{
+    struct timespec tspec;
+    if (clock_gettime (CLOCK_MONOTONIC, &tspec)) {
+        fprintf (stderr, "Error getting timestamp: %s\n", strerror(errno));
+        exit (1);
+    }
+    return ((tspec.tv_sec * 1000000000ULL) + tspec.tv_nsec) / 1000;
+}
+
 
 double faster_delay (struct replay* rep, Workflow_element* to_replay)
 {
@@ -32,6 +48,7 @@ double faster_delay (struct replay* rep, Workflow_element* to_replay)
 
     command_replay_result* cmd_result = RESULT (rep, to_replay->id);
     assert (cmd_result != NULL);
-    gettimeofday (cmd_result->schedule_stamp, NULL);
+    //gettimeofday (cmd_result->schedule_stamp, NULL);
+    cmd_result->schedule_stamp = stamp();
     return 0.0;
 }

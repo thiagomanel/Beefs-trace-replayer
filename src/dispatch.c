@@ -23,6 +23,8 @@
 #include <string.h>
 #include <stdio.h>
 
+static char* DEFAULT_BUFFER = (char*) malloc (sizeof (char) * 4096);
+
 /*
 * Maps traced file descriptors to the real one returned during
 * replay for each pid registered in trace calls.
@@ -97,8 +99,12 @@ int exec (struct replay_command* to_exec, int *exec_rvalue, struct replay* rpl)
 
         //FIXME should share a big bufer to avoid malloc'ing time wasting ?
         int read_count = args[2].argm->i_val;
-        char* buf = (char*) malloc (sizeof (char) * read_count);
-        *exec_rvalue = read (repl_fd, buf, read_count);
+        if (read_count == 4096) {
+            *exec_rvalue = read (repl_fd, DEFAULT_BUFFER, read_count);
+        } else {
+            char* buf = (char*) malloc (sizeof (char) * read_count);
+            *exec_rvalue = read (repl_fd, buf, read_count);
+        }
     }
     break;
     case PREAD_OP: {
@@ -111,9 +117,13 @@ int exec (struct replay_command* to_exec, int *exec_rvalue, struct replay* rpl)
 
         //FIXME should share a big bufer to avoid malloc'ing time wasting ?
         int read_count = args[2].argm->i_val;
-        char* buf = (char*) malloc (sizeof (char) * read_count);
         int offset = args[3].argm->i_val;
-        *exec_rvalue = pread (repl_fd, buf, read_count, offset);
+        if (read_count == 4096) {
+            *exec_rvalue = pread (repl_fd, DEFAULT_BUFFER, read_count, offset);
+        } else {
+            char* buf = (char*) malloc (sizeof (char) * read_count);
+            *exec_rvalue = pread (repl_fd, buf, read_count, offset);
+        }
     }
     break;
     case PWRITE_OP: {
@@ -124,9 +134,14 @@ int exec (struct replay_command* to_exec, int *exec_rvalue, struct replay* rpl)
 
         //FIXME should share a big bufer to avoid malloc'ing time wasting ?
         int write_count = args[2].argm->i_val;
-        char* buf = (char*) malloc (sizeof (char) * write_count);
         int offset = args[3].argm->i_val;
-        *exec_rvalue = pwrite (repl_fd, buf, write_count, offset);
+
+        if (write_count == 4096) {
+            *exec_rvalue = pwrite (repl_fd, DEFAULT_BUFFER, write_count, offset);
+        } else {
+            char* buf = (char*) malloc (sizeof (char) * write_count);
+            *exec_rvalue = pwrite (repl_fd, buf, write_count, offset);
+        }
     }
     break;
     case WRITE_OP: {
@@ -137,8 +152,13 @@ int exec (struct replay_command* to_exec, int *exec_rvalue, struct replay* rpl)
 
         //FIXME should share a big bufer to avoid malloc'ing time wasting ?
         int write_count = args[2].argm->i_val;
-        char* buf = (char*) malloc (sizeof (char) * write_count);
-        *exec_rvalue = write (repl_fd, buf, write_count);
+
+        if (write_count == 4096) {
+            *exec_rvalue = write (repl_fd, DEFAULT_BUFFER, write_count);
+        } else {
+            char* buf = (char*) malloc (sizeof (char) * write_count);
+            *exec_rvalue = write (repl_fd, buf, write_count);
+        }
     }
     break;
     case CLOSE_OP: {

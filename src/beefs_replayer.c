@@ -86,7 +86,7 @@ int main (int argc, const char* argv[])
     }
 
     int num_workers = atoi (argv[3]);
-    try_sched_rr = sched_setscheduler (0, SCHED_FIFO, &param);
+    //try_sched_rr = sched_setscheduler (0, SCHED_FIFO, &param);
     additional_delay_usec = atoi (argv[4]);
 
     fprintf (stderr, "main_tid=%d num_workers=%d sched_err=%d add_delay=%d policy=%s\n",

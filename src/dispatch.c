@@ -48,11 +48,12 @@ int session_fd (int session_id, struct replay* rpl)
 void map_fd (int traced_pid, int traced_fd, int replayed_fd, int *pids_to_fd_pairs[])
 {
 
+    /**
     if (!pids_to_fd_pairs[traced_pid]) {
         //TODO: create a function to allocate and memset this ?
         pids_to_fd_pairs[traced_pid] = (int*) malloc (FD_MAX * sizeof (int));
         memset (pids_to_fd_pairs[traced_pid], -1, FD_MAX * sizeof(int));
-    }
+    }*/
 
     int* fd_pairs = pids_to_fd_pairs[traced_pid];
     fd_pairs[traced_fd] = replayed_fd;

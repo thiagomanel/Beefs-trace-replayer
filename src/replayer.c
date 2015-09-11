@@ -275,7 +275,9 @@ void control_replay (struct replay* rpl, int additional_delay_usec)
 
     fill_root ();
 
-    //a matrix with the pid-tid mapping
+    //A matrix with the pid-tid mapping. this map is used to allocate pthreads
+    //and to decide during replay if an event belongs to an worker pthread.
+    //It is also used init the pid-to-fd map we pass to the dispatch code
     num_workers = 0;
     pids_map = (int**) malloc (PID_MAX * sizeof (int*));
     memset (pids_map, 0, PID_MAX * sizeof (int*));
@@ -294,6 +296,14 @@ void control_replay (struct replay* rpl, int additional_delay_usec)
         if (!tids[tid]) {
             tids[tid] = 1;
             ++num_workers;
+        }
+    }
+
+    //init pid-to-fd map
+    for (i = 0; i < PID_MAX; i++) {
+        if (pids_map[i]) {
+	    __replay->pids_to_fd_pairs[i] = (int*) malloc (FD_MAX * sizeof (int));
+	    memset (__replay->pids_to_fd_pairs[i], -1, FD_MAX * sizeof(int));
         }
     }
 
